@@ -1,0 +1,412 @@
+/**
+ * Forms Component
+ * Form elements, inputs, labels, and validation styles
+ */
+
+/* ==================== Base Form ==================== */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-inline {
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ==================== Form Group ==================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-group.form-group-inline {
+  flex-direction: row;
+  align-items: flex-end;
+}
+
+.form-group.form-group-inline label {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.form-group.form-group-inline input,
+.form-group.form-group-inline select,
+.form-group.form-group-inline textarea {
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+/* ==================== Labels ==================== */
+
+.form-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+.form-label-required::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
+.form-label-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.form-label-icon svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* ==================== Input & Textarea ==================== */
+
+.form-input,
+.form-textarea,
+.form-select {
+  padding: var(--space-3) var(--space-4);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Focus State */
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Disabled State */
+.form-input:disabled,
+.form-textarea:disabled,
+.form-select:disabled {
+  background-color: var(--color-gray-100);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Readonly State */
+.form-input:read-only {
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-200);
+  cursor: default;
+}
+
+/* ==================== Input Variants ==================== */
+
+/* Small Input */
+.form-input-sm,
+.form-textarea-sm,
+.form-select-sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+}
+
+/* Large Input */
+.form-input-lg,
+.form-textarea-lg,
+.form-select-lg {
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+}
+
+/* ==================== Textarea ==================== */
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-textarea.form-textarea-auto {
+  resize: none;
+}
+
+/* ==================== Select ==================== */
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px 12px;
+  padding-right: var(--space-10);
+}
+
+.form-select::-ms-expand {
+  display: none;
+}
+
+/* ==================== Checkbox & Radio ==================== */
+
+.form-checkbox,
+.form-radio {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  margin-right: var(--space-2);
+  cursor: pointer;
+  appearance: none;
+  border: 2px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-primary);
+  transition: all var(--transition-base);
+  accent-color: var(--color-primary);
+}
+
+.form-checkbox:checked,
+.form-radio:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+
+.form-checkbox:focus,
+.form-radio:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: var(--color-primary);
+}
+
+.form-radio {
+  border-radius: var(--radius-full);
+}
+
+.form-radio:checked {
+  background-image: radial-gradient(white 35%, var(--color-primary) 36%);
+}
+
+/* ==================== Checkbox & Radio Label ==================== */
+
+.checkbox-label,
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.checkbox-label input,
+.radio-label input {
+  margin: 0;
+}
+
+/* ==================== Form Feedback ==================== */
+
+.form-text {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.form-text.form-text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ==================== Validation States ==================== */
+
+/* Success State */
+.form-input.is-valid,
+.form-textarea.is-valid,
+.form-select.is-valid {
+  border-color: var(--color-success);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2316A34A' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px 12px;
+  padding-right: calc(var(--space-10) + 4px);
+}
+
+.form-select.is-valid {
+  padding-right: var(--space-10);
+}
+
+/* Error State */
+.form-input.is-invalid,
+.form-textarea.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--color-danger);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23DC2626' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.9h-.4z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23DC2626' stroke='none'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px 12px;
+  padding-right: calc(var(--space-10) + 4px);
+}
+
+.form-select.is-invalid {
+  padding-right: var(--space-10);
+}
+
+/* Error Message */
+.form-error {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Success Message */
+.form-success {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-success);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Floating Labels ==================== */
+
+.form-floating {
+  position: relative;
+}
+
+.form-floating > label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: var(--space-3) var(--space-4);
+  pointer-events: none;
+  border: 1px solid transparent;
+  transform-origin: 0 0;
+  transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.form-floating > input:focus ~ label,
+.form-floating > input:not(:placeholder-shown) ~ label,
+.form-floating > textarea:focus ~ label,
+.form-floating > textarea:not(:placeholder-shown) ~ label,
+.form-floating > select ~ label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-1.5em) translateX(0.15em);
+}
+
+/* ==================== Input Groups ==================== */
+
+.input-group {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group > .form-input,
+.input-group > .form-select {
+  position: relative;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+}
+
+.input-group > .form-input:focus,
+.input-group > .form-select:focus {
+  z-index: 5;
+}
+
+.input-group-addon {
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+}
+
+.input-group > .form-input:not(:last-child),
+.input-group > .input-group-addon:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-group > .form-input:not(:first-child),
+.input-group > .input-group-addon:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -2px;
+}
+
+/* ==================== Responsive ==================== */
+
+@media (max-width: 768px) {
+  .form-inline {
+    flex-direction: column;
+  }
+
+  .form-inline .form-group {
+    width: 100%;
+  }
+
+  .form-inline .form-group-inline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-inline .form-group-inline label {
+    margin-bottom: var(--space-2);
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group > .form-input,
+  .input-group > .input-group-addon {
+    width: 100%;
+  }
+
+  .input-group > .form-input:not(:last-child),
+  .input-group > .input-group-addon:not(:last-child) {
+    border-top-right-radius: var(--radius-lg);
+    border-bottom-right-radius: 0;
+    margin-bottom: -2px;
+  }
+
+  .input-group > .form-input:not(:first-child),
+  .input-group > .input-group-addon:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: var(--radius-lg);
+    margin-left: 0;
+  }
+}

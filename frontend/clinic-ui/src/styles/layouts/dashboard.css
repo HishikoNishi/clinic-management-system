@@ -1,0 +1,173 @@
+/**
+ * Dashboard Layout Styles
+ * Page-specific styles for the dashboard view
+ */
+
+/* ==================== Dashboard Container ==================== */
+
+.dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  position: relative;
+}
+
+/* ==================== Header ==================== */
+
+.dashboard-header {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.dashboard-logo {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: 0;
+  text-decoration: none;
+}
+
+.dashboard-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.dashboard-user-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Main Content ==================== */
+
+.dashboard-main {
+  padding: var(--space-8);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ==================== Welcome Section ==================== */
+
+.welcome-section {
+  margin-bottom: var(--space-8);
+}
+
+.welcome-section h2 {
+  font-size: var(--font-size-3xl);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.welcome-section p {
+  color: var(--color-text-secondary);
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+/* ==================== Stats Grid ==================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+/* Stats cards use .stat-card class from cards.css */
+.stats-grid .stat-card {
+  background-color: var(--color-bg-primary);
+  border: none;
+}
+
+/* ==================== Quick Actions ==================== */
+
+.quick-actions {
+  margin-top: var(--space-10);
+}
+
+.quick-actions h3 {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4) 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.actions-grid {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ==================== Responsive Design ==================== */
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: var(--space-4);
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+
+  .dashboard-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dashboard-main {
+    padding: var(--space-5);
+  }
+
+  .welcome-section h2 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .actions-grid {
+    flex-direction: column;
+  }
+
+  .actions-grid .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: var(--space-3);
+  }
+
+  .dashboard-main {
+    padding: var(--space-3);
+  }
+
+  .dashboard-logo {
+    font-size: var(--font-size-lg);
+  }
+
+  .welcome-section h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  .welcome-section p {
+    font-size: var(--font-size-sm);
+  }
+
+  .quick-actions h3 {
+    font-size: var(--font-size-base);
+  }
+}

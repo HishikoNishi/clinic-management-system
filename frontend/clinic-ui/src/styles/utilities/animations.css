@@ -1,0 +1,307 @@
+/**
+ * Animations & Transitions
+ * Keyframes and animation utilities
+ */
+
+/* ==================== Spin Animation (Loading) ==================== */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ==================== Fade Animation ==================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-base);
+}
+
+.animate-fade-out {
+  animation: fadeOut var(--transition-base);
+}
+
+/* ==================== Slide Animation ==================== */
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp var(--transition-base);
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--transition-base);
+}
+
+.animate-slide-out-up {
+  animation: slideOutUp var(--transition-base);
+}
+
+/* ==================== Scale Animation ==================== */
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-base);
+}
+
+/* ==================== Pulse Animation ==================== */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==================== Bounce Animation ==================== */
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* ==================== Float Animation ==================== */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+  }
+}
+
+.animate-float {
+  animation: float 20s infinite ease-in-out;
+}
+
+.animate-float-slow {
+  animation: float 25s infinite ease-in-out;
+}
+
+.animate-float-reverse {
+  animation: float 15s infinite ease-in-out reverse;
+}
+
+/* ==================== Transition Classes ==================== */
+
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+
+.transition-base {
+  transition: all var(--transition-base);
+}
+
+.transition-slow {
+  transition: all var(--transition-slow);
+}
+
+.transition-colors {
+  transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+}
+
+.transition-shadow {
+  transition: box-shadow var(--transition-base);
+}
+
+.transition-transform {
+  transition: transform var(--transition-base);
+}
+
+/* ==================== Vue Transition Classes ==================== */
+
+/* Fade Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-base);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide Transition */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all var(--transition-base);
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Scale Transition */
+.scale-enter-active,
+.scale-leave-active {
+  transition: all var(--transition-base);
+}
+
+.scale-enter-from,
+.scale-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* ==================== Transform Utilities ==================== */
+
+.transform-none {
+  transform: none;
+}
+
+.translate-y-0 {
+  transform: translateY(0);
+}
+
+.translate-y-1 {
+  transform: translateY(var(--space-1));
+}
+
+.translate-y-2 {
+  transform: translateY(var(--space-2));
+}
+
+.-translate-y-1 {
+  transform: translateY(calc(var(--space-1) * -1));
+}
+
+.-translate-y-2 {
+  transform: translateY(calc(var(--space-2) * -1));
+}
+
+.translate-x-1 {
+  transform: translateX(var(--space-1));
+}
+
+.-translate-x-1 {
+  transform: translateX(calc(var(--space-1) * -1));
+}
+
+.scale-90 {
+  transform: scale(0.9);
+}
+
+.scale-95 {
+  transform: scale(0.95);
+}
+
+.scale-100 {
+  transform: scale(1);
+}
+
+.scale-105 {
+  transform: scale(1.05);
+}
+
+.scale-110 {
+  transform: scale(1.1);
+}
+
+/* ==================== Hover & Focus States ==================== */
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-shadow:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.focus-primary:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.focus-danger:focus {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
