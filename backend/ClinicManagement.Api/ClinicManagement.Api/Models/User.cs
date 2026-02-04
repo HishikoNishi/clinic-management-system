@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace ClinicManagement.Api.Models
 {
@@ -14,5 +15,7 @@ namespace ClinicManagement.Api.Models
         public Role RoleNavigation { get; set; } = null!;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
+
+        public Doctor? Doctor { get; set; }
     }
 }

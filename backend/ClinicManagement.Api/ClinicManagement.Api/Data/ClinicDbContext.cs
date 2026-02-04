@@ -11,6 +11,7 @@ namespace ClinicManagement.Api.Data
 
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,7 +61,28 @@ namespace ClinicManagement.Api.Data
                     .HashPassword(null, "Admin@123"),
                 RoleId = adminRole.Id
             };
+            modelBuilder.Entity<Doctor>(entity =>
+            {
+                entity.HasKey(d => d.Id);
 
+                entity.Property(d => d.Code)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(d => d.Specialty)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(d => d.LicenseNumber)
+                      .HasMaxLength(50);
+
+                entity.HasOne(d => d.User)
+                      .WithOne(u => u.Doctor)
+                      .HasForeignKey<Doctor>(d => d.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(d => d.UserId).IsUnique();
+            });
             modelBuilder.Entity<User>().HasData(adminUser);
         }
     }
