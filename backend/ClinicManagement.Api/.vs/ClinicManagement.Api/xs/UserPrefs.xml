@@ -1,0 +1,54 @@
+﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Models/Gender.cs">
+    <Files>
+      <File FileName="ClinicManagement.Api/appsettings.json" />
+      <File FileName="ClinicManagement.Api/Program.cs" Line="23" Column="44" />
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="96" Column="38" />
+      <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
+      <File FileName="ClinicManagement.Api/Models/Appointment.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="17" Column="25" />
+      <File FileName="ClinicManagement.Api/Models/User.cs" />
+      <File FileName="ClinicManagement.Api/Models/Role.cs" />
+      <File FileName="ClinicManagement.Api/Models/Patient.cs" />
+      <File FileName="ClinicManagement.Api/Models/DoctorStatus.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Controllers/UserController.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/SecureController.cs" />
+      <File FileName="ClinicManagement.Api/Models/Gender.cs" Line="13" Column="1" />
+      <File FileName="ClinicManagement.Api/Services/JwtService.cs" />
+      <File FileName="ClinicManagement.Api/Services/IJwtService.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/User/AuthResponse.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/User/ChangePasswordRequest.cs" />
+      <File FileName="ClinicManagement.Api/Utils/CodeGenerator.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="ClinicManagement.Api" expanded="True">
+            <Node name="ClinicManagement.Api">
+              <Node name="Controllers" expanded="True" />
+              <Node name="Data" expanded="True" />
+              <Node name="Dtos" expanded="True">
+                <Node name="Appointments" expanded="True" />
+              </Node>
+              <Node name="Models" expanded="True">
+                <Node name="Gender.cs" selected="True" />
+              </Node>
+              <Node name="Utils" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+</Properties>
