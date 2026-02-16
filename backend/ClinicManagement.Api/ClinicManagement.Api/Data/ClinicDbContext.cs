@@ -12,6 +12,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Doctor> Doctors => Set<Doctor>();
+        public DbSet<Staff> Staffs => Set<Staff>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +84,30 @@ namespace ClinicManagement.Api.Data
 
                 entity.HasIndex(d => d.UserId).IsUnique();
             });
+
+            modelBuilder.Entity<Staff>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+
+                entity.Property(s => s.Code)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(s => s.FullName)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.Property(s => s.Position)
+                      .HasMaxLength(100);
+
+                entity.HasOne(s => s.User)
+                      .WithOne(u => u.Staff)
+                      .HasForeignKey<Staff>(s => s.UserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(s => s.UserId).IsUnique();
+            });
+
             modelBuilder.Entity<User>().HasData(adminUser);
         }
     }
