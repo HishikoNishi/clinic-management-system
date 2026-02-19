@@ -18,4 +18,12 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.10.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Dtos\Appointments\" />
+    <None Remove="Utils\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Dtos\Appointments\" />
+    <Folder Include="Utils\" />
+  </ItemGroup>
 </Project>

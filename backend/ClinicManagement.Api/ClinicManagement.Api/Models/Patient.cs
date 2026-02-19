@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ClinicManagement.Api.Models
 {
@@ -16,15 +15,11 @@ namespace ClinicManagement.Api.Models
         [Required]
         public DateTime DateOfBirth { get; set; }
 
-        /// <summary>
-        /// M / F / O
-        /// </summary>
         [Required]
-        [MaxLength(1)]
-        public string Gender { get; set; } = null!;
+        public Gender Gender { get; set; }
 
         [MaxLength(20)]
-        public string? PhoneNumber { get; set; }
+        public string? Phone { get; set; }
 
         [MaxLength(200)]
         public string? Email { get; set; }
@@ -35,16 +30,15 @@ namespace ClinicManagement.Api.Models
         [MaxLength(500)]
         public string? Note { get; set; }
 
-        /// <summary>
-        /// Soft delete
-        /// </summary>
         public bool IsDeleted { get; set; } = false;
 
-        /// <summary>
-        /// Audit fields
-        /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
+            = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+
+        // ✅ navigation
+        public ICollection<Appointment> Appointments { get; set; }
+            = new List<Appointment>();
     }
 }

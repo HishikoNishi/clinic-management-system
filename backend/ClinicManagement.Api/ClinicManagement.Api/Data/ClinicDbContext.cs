@@ -11,6 +11,11 @@ namespace ClinicManagement.Api.Data
 
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<Appointment> Appointments { get; set; } = null!;
+        public DbSet<Patient> Patients { get; set; } = null!;
+
+
+
         public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -83,6 +88,50 @@ namespace ClinicManagement.Api.Data
 
                 entity.HasIndex(d => d.UserId).IsUnique();
             });
+            modelBuilder.Entity<Appointment>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+
+                entity.Property(a => a.Reason)
+                      .HasMaxLength(500);
+
+                entity.Property(a => a.Status)
+                      .HasConversion<string>();
+
+                entity.Property(a => a.AppointmentCode)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.HasIndex(a => a.AppointmentCode)
+                      .IsUnique();
+
+                entity.HasOne(a => a.Patient)
+                      .WithMany(p => p.Appointments)
+                      .HasForeignKey(a => a.PatientId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Doctor)
+                      .WithMany()
+                      .HasForeignKey(a => a.DoctorId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+
+            modelBuilder.Entity<Patient>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.FullName)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(p => p.Gender)
+                      .HasConversion<string>()
+                      .IsRequired();
+            });
+
+
+
             modelBuilder.Entity<User>().HasData(adminUser);
         }
     }
