@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getRoles, type Role } from '@/services/roleService'
+import { getUsers, type User } from '@/services/userService'
+
 
 const name = ref('')
 const email = ref('')
 const roleId = ref('')
 const isActive = ref(true)
-
+const users = ref<User[]>([])
+const userId = ref('')
 const roles = ref<Role[]>([])
 
 onMounted(async () => {
@@ -18,7 +21,7 @@ onMounted(async () => {
 })
 
 const submitForm = () => {
-  if (!name.value || !email.value || !roleId.value) {
+  if (!name.value || !email.value || !roleId.value || !userId.value) {
     alert('Please fill all fields')
     return
   }
@@ -27,8 +30,18 @@ const submitForm = () => {
     name: name.value,
     email: email.value,
     roleId: roleId.value,
+    userId: userId.value,
     isActive: isActive.value
   })
+onMounted(async () => {
+  try {
+    roles.value = await getRoles()
+    users.value = await getUsers()
+  } catch (error) {
+    console.error('Failed to load data:', error)
+  }
+})
+
 
   alert('Staff form submitted!')
 }
@@ -80,6 +93,20 @@ const submitForm = () => {
       >
         Save
       </button>
+<!-- Assign User -->
+<div>
+  <label class="block font-medium mb-1">Assign User</label>
+  <select v-model="userId" class="border w-full p-2 rounded">
+    <option value="">Select user</option>
+    <option
+      v-for="u in users"
+      :key="u.id"
+      :value="u.id"
+    >
+      {{ u.username }}
+    </option>
+  </select>
+</div>
 
     </form>
   </div>
