@@ -1,13 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getRoles, type Role } from '@/services/roleService'
 
 const name = ref('')
 const email = ref('')
-const role = ref('')
+const roleId = ref('')
 const isActive = ref(true)
 
+const roles = ref<Role[]>([])
+
+onMounted(async () => {
+  try {
+    roles.value = await getRoles()
+  } catch (error) {
+    console.error('Failed to load roles:', error)
+  }
+})
+
 const submitForm = () => {
-  if (!name.value || !email.value || !role.value) {
+  if (!name.value || !email.value || !roleId.value) {
     alert('Please fill all fields')
     return
   }
@@ -15,11 +26,11 @@ const submitForm = () => {
   console.log({
     name: name.value,
     email: email.value,
-    role: role.value,
+    roleId: roleId.value,
     isActive: isActive.value
   })
 
-  alert('Staff created successfully!')
+  alert('Staff form submitted!')
 }
 </script>
 
@@ -29,31 +40,40 @@ const submitForm = () => {
 
     <form @submit.prevent="submitForm" class="space-y-4">
 
+      <!-- Name -->
       <div>
         <label class="block font-medium mb-1">Name</label>
         <input v-model="name" class="border w-full p-2 rounded" />
       </div>
 
+      <!-- Email -->
       <div>
         <label class="block font-medium mb-1">Email</label>
         <input v-model="email" type="email" class="border w-full p-2 rounded" />
       </div>
 
+      <!-- Role Dropdown -->
       <div>
         <label class="block font-medium mb-1">Role</label>
-        <select v-model="role" class="border w-full p-2 rounded">
+        <select v-model="roleId" class="border w-full p-2 rounded">
           <option value="">Select role</option>
-          <option value="Doctor">Doctor</option>
-          <option value="Nurse">Nurse</option>
-          <option value="Admin">Admin</option>
+          <option
+            v-for="r in roles"
+            :key="r.id"
+            :value="r.id"
+          >
+            {{ r.name }}
+          </option>
         </select>
       </div>
 
+      <!-- Status -->
       <div class="flex items-center space-x-2">
         <input type="checkbox" v-model="isActive" />
         <label>Active</label>
       </div>
 
+      <!-- Submit -->
       <button
         type="submit"
         class="bg-blue-600 text-white px-4 py-2 rounded w-full"
