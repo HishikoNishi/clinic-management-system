@@ -83,11 +83,33 @@ namespace ClinicManagement.Api.Controllers
                 fullName = patient.FullName,
                 phone = patient.Phone,
 
+                Status = appointment.Status.ToString(),
                 appointmentCode = appointment.AppointmentCode,
                 appointmentDate = appointment.AppointmentDate,
                 appointmentTime = appointment.AppointmentTime
             });
 
+        }
+        [HttpGet("{code}")]
+        public async Task<IActionResult> GetByCode(string code)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.AppointmentCode == code);
+
+            if (appointment == null) return NotFound("Không tìm thấy lịch khám");
+
+            return Ok(new AppointmentDetailDto
+            {
+                FullName = appointment.Patient.FullName,
+                Phone = appointment.Patient.Phone,
+                AppointmentCode = appointment.AppointmentCode,
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                Reason = appointment.Reason,
+                Status = appointment.Status.ToString(),
+                Address = appointment.Patient.Address
+            });
         }
 
         [HttpPost("cancel")]
