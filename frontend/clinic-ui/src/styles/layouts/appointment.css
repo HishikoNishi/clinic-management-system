@@ -1,0 +1,146 @@
+.appointment-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #e4c9ea;
+  border-radius: 16px;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.appointment-container h2 {
+  text-align: center;
+  margin-bottom: 28px;
+  color: #4a3f72;
+}
+
+.appointment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.appointment-form label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.appointment-form input,
+.appointment-form select,
+.appointment-form textarea {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.appointment-form input:focus,
+.appointment-form select:focus,
+.appointment-form textarea:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 6px rgba(108,99,255,0.4);
+}
+
+.appointment-form button {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #6c63ff, #4a90e2);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.appointment-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108,99,255,0.3);
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: -6px;
+}
+
+.appointment-form input.error-border {
+  border-color: #e74c3c;
+}
+.appointment-detail {
+  background: #2a7c7f;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.appointment-detail p {
+  margin: 8px 0;
+}
+
+.status.pending {
+  color: #856404;
+  background: #fff3cd;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.actions button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.actions button.cancel {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.actions button.cancel:hover {
+  background: #c0392b;
+}
+
+.actions button:hover {
+  opacity: 0.9;
+}
+
+.cancel-form {
+  margin-top: 20px;
+  padding: 16px;
+  background: #b3688c;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.cancel-form input {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.cancel-form button {
+  margin-top: 12px;
+    margin-left: 150px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #d24737;
+  color: #fff;
+  cursor: pointer;
+}
+
+.cancel-form button:hover {
+  background: #c0392b;
+}
