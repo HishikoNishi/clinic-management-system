@@ -81,17 +81,20 @@ namespace ClinicManagement.Api.Controllers
             await _context.SaveChangesAsync();
 
             // ✅ 6️⃣ trả mã cho guest xem
-            return Ok(new
+            return Ok(new AppointmentDetailDto
             {
-                message = "Đặt lịch thành công",
-
-                fullName = patient.FullName,
-                phone = patient.Phone,
-
+                AppointmentCode = appointment.AppointmentCode,
+                FullName = appointment.Patient.FullName,
+                Phone = appointment.Patient.Phone,
+                Email = appointment.Patient.Email,
+                DateOfBirth = appointment.Patient.DateOfBirth,
+                Gender = appointment.Patient.Gender.ToString(),
+                Address = appointment.Patient.Address,
+                Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
-                appointmentCode = appointment.AppointmentCode,
-                appointmentDate = appointment.AppointmentDate,
-                appointmentTime = appointment.AppointmentTime
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt
             });
 
         }
@@ -106,16 +109,20 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new AppointmentDetailDto
             {
+                AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
                 Phone = appointment.Patient.Phone,
-                AppointmentCode = appointment.AppointmentCode,
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
+                Email = appointment.Patient.Email,
+                DateOfBirth = appointment.Patient.DateOfBirth,
+                Gender = appointment.Patient.Gender.ToString(),
+                Address = appointment.Patient.Address,
                 Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
-                Address = appointment.Patient.Address,
-                CreatedAt = appointment.Patient.CreatedAt
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt
             });
+
         }
 
         [HttpPost("search")]
@@ -132,16 +139,20 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new AppointmentDetailDto
             {
+                AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
                 Phone = appointment.Patient.Phone,
-                AppointmentCode = appointment.AppointmentCode,
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
+                Email = appointment.Patient.Email,
+                DateOfBirth = appointment.Patient.DateOfBirth,
+                Gender = appointment.Patient.Gender.ToString(),
+                Address = appointment.Patient.Address,
                 Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
-                Address = appointment.Patient.Address,
-                CreatedAt = appointment.Patient.CreatedAt
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt
             });
+
         }
 
 
