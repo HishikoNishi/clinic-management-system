@@ -2,7 +2,13 @@
   <div class="appointment-container">
     <h2>My Appointment</h2>
 
-    <div v-if="appointment" class="appointment-detail">
+    <!-- Link để mở form tìm kiếm -->
+    <p class="find-link" @click="showSearchForm = true">
+      🔎 Find Your Appointment
+    </p>
+
+    <!-- Nếu đã có appointment -->
+    <div v-if="appointment && !showSearchForm" class="appointment-detail">
       <p><strong>Code:</strong> {{ appointment.appointmentCode }}</p>
       <p><strong>Name:</strong> {{ appointment.fullName }}</p>
       <p><strong>Phone:</strong> {{ appointment.phone }}</p>
@@ -18,15 +24,39 @@
       </div>
     </div>
 
-    <div v-else>
-      <p>Please create an appointment to see your appointment!</p>
+    <!-- Nếu chưa có appointment -->
+    <div v-else-if="!appointment && !showSearchForm">
+      <p>
+        Please create an appointment to see your appointment!
+        <span class="find-link" @click="showSearchForm = true">Find Your Appointment</span>
+      </p>
     </div>
 
+    <!-- Form tìm kiếm -->
+    <div v-if="showSearchForm" class="search-form">
+      <h3>Find Your Appointment</h3>
+      <label>Appointment Code</label>
+      <input v-model="searchCode" placeholder="Enter code" />
+
+      <label>Phone number</label>
+      <input v-model="searchPhone" placeholder="Enter phone" />
+
+      <div class="actions">
+        <button @click="searchAppointment">Search</button>
+        <button type="button" @click="closeSearch">Close</button>
+      </div>
+      <span v-if="searchError" class="error">{{ searchError }}</span>
+    </div>
+
+    <!-- Form cancel -->
     <div v-if="showCancelForm" class="cancel-form">
       <h3>Cancel Appointment</h3>
       <p>Enter your appointment code to confirm cancellation:</p>
       <input v-model="enteredCode" placeholder="Appointment Code" />
-      <button @click="confirmCancel">Confirm Cancel</button>
+      <div class="actions">
+        <button @click="confirmCancel">Confirm Cancel</button>
+        <button type="button" @click="showCancelForm = false">Close</button>
+      </div>
       <span v-if="cancelError" class="error">{{ cancelError }}</span>
     </div>
   </div>
@@ -54,6 +84,35 @@ onMounted(async () => {
 
 const goBack = () => router.push("/appointment")
 
+// Search form
+const showSearchForm = ref(false)
+const searchCode = ref("")
+const searchPhone = ref("")
+const searchError = ref("")
+
+const searchAppointment = async () => {
+  try {
+    const res = await axios.get(`https://localhost:7235/api/Appointments/${searchCode.value}`)
+    if (res.data.phone === searchPhone.value) {
+      appointment.value = res.data
+      showSearchForm.value = false
+      searchError.value = ""
+    } else {
+      searchError.value = "Phone number does not match."
+    }
+  } catch (err: any) {
+    searchError.value = "Appointment not found."
+  }
+}
+
+const closeSearch = () => {
+  showSearchForm.value = false
+  searchCode.value = ""
+  searchPhone.value = ""
+  searchError.value = ""
+}
+
+// Cancel form
 const confirmCancel = async () => {
   if (enteredCode.value === appointment.value.appointmentCode) {
     if (window.confirm("Are you sure to cancel your appointment?")) {
@@ -69,7 +128,6 @@ const confirmCancel = async () => {
         cancelError.value = ""
         alert("Your appointment has been cancelled.")
       } catch (err: any) {
-        console.error(err.response?.data || err.message)
         cancelError.value = "Failed to cancel appointment. Please try again."
       }
     }
@@ -79,4 +137,27 @@ const confirmCancel = async () => {
 }
 </script>
 
-<style src="@/styles/layouts/appointment.css"></style>
+<style scoped>
+.find-link {
+  color: #4a90e2;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 10px;
+}
+.search-form, .cancel-form {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 5px;
+}
+</style>
