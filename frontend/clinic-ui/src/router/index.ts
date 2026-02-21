@@ -22,7 +22,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Appointment',
     component: () => import('@/views/AppointmentView.vue')
   },
-   {
+  {
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')

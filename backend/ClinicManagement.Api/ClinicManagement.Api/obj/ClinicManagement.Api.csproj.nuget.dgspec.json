@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj": {}
+    "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj": {}
   },
   "projects": {
-    "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj": {
+    "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
+        "projectUniqueName": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
         "projectName": "ClinicManagement.Api",
-        "projectPath": "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
+        "projectPath": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
         "packagesPath": "/Users/nhan/.nuget/packages/",
-        "outputPath": "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/obj/",
+        "outputPath": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/nhan/.nuget/NuGet/NuGet.Config"

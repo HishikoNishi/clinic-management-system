@@ -2,7 +2,7 @@
   <div class="appointment-container">
     <h2>My Appointment</h2>
 
-    <div v-if="appointment">
+    <div v-if="appointment" class="appointment-detail">
       <p><strong>Code:</strong> {{ appointment.appointmentCode }}</p>
       <p><strong>Name:</strong> {{ appointment.fullName }}</p>
       <p><strong>Phone:</strong> {{ appointment.phone }}</p>
@@ -12,8 +12,10 @@
       <p><strong>Time:</strong> {{ appointment.appointmentTime.substring(0,5) }}</p>
       <p><strong>Reason:</strong> {{ appointment.reason }}</p>
 
-      <button @click="goBack">Back</button>
-      <button class="cancel" @click="showCancelForm = true">Cancel</button>
+      <div class="actions">
+        <button @click="goBack">Back</button>
+        <button class="cancel" @click="showCancelForm = true">Cancel</button>
+      </div>
     </div>
 
     <div v-else>
@@ -61,7 +63,6 @@ const confirmCancel = async () => {
           fullName: appointment.value.fullName,
           phone: appointment.value.phone
         }
-
         await axios.post("https://localhost:7235/api/Appointments/cancel", payload)
         appointment.value.status = "Cancelled"
         showCancelForm.value = false
@@ -76,7 +77,6 @@ const confirmCancel = async () => {
     cancelError.value = "Incorrect code. Please try again."
   }
 }
-
-
 </script>
+
 <style src="@/styles/layouts/appointment.css"></style>
