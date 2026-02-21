@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Utils;
 using ClinicManagement.Api.Dtos.Appointments;
+using ClinicManagement.Api.DTOs;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -109,7 +110,22 @@ namespace ClinicManagement.Api.Controllers
                 Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
                 Address = appointment.Patient.Address
-            });
+                      });
+            }
+
+        [HttpPost("search")]
+        public async Task<IActionResult> Search(SearchAppointmentDto dto)
+        {
+            var appointment = await _context.Appointments
+             .Include(x => x.Patient)
+             .FirstOrDefaultAsync(x =>
+                 x.AppointmentCode == dto.AppointmentCode &&
+                 x.Patient.Phone == dto.Phone);
+
+            if (appointment == null)
+                return NotFound();
+
+            return Ok(appointment);
         }
 
         [HttpPost("cancel")]
@@ -135,5 +151,6 @@ namespace ClinicManagement.Api.Controllers
 
 
     }
+        
 
 }
