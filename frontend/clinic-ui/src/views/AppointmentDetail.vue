@@ -7,22 +7,26 @@
       🔎 Find Your Appointment
     </p>
 
-    <!-- Nếu đã có appointment -->
-    <div v-if="appointment && !showSearchForm" class="appointment-detail">
-      <p><strong>Code:</strong> {{ appointment.appointmentCode }}</p>
-      <p><strong>Name:</strong> {{ appointment.fullName }}</p>
-      <p><strong>Phone:</strong> {{ appointment.phone }}</p>
-      <p><strong>Address:</strong> {{ appointment.address }}</p>
-      <p><strong>Status:</strong> {{ appointment.status }}</p>
-      <p><strong>Date:</strong> {{ new Date(appointment.appointmentDate).toLocaleDateString('vi-VN') }}</p>
-      <p><strong>Time:</strong> {{ appointment.appointmentTime.substring(0,5) }}</p>
-      <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+   <div v-if="appointment && !showSearchForm" class="appointment-detail">
+  <p><strong>Code:</strong> {{ appointment.appointmentCode }}</p>
+  <p><strong>Name:</strong> {{ appointment.fullName }}</p>
+  <p><strong>Phone:</strong> {{ appointment.phone }}</p>
+  <p><strong>Email:</strong> {{ appointment.email }}</p>
+  <p><strong>Date of Birth:</strong> {{ new Date(appointment.dateOfBirth).toLocaleDateString('vi-VN') }}</p>
+  <p><strong>Gender:</strong> {{ appointment.gender }}</p>
+  <p><strong>Address:</strong> {{ appointment.address }}</p>
+  <p><strong>Status:</strong> {{ appointment.status }}</p>
+  <p><strong>Appointment Date:</strong> {{ new Date(appointment.appointmentDate).toLocaleDateString('vi-VN') }}</p>
+  <p><strong>Appointment Time:</strong> {{ appointment.appointmentTime.substring(0,5) }}</p>
+  <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+  <p><strong>Created At:</strong> {{ new Date(appointment.createdAt).toLocaleString('vi-VN') }}</p>
 
-      <div class="actions">
-        <button @click="goBack">Back</button>
-        <button class="cancel" @click="showCancelForm = true">Cancel</button>
-      </div>
-    </div>
+  <div class="actions">
+    <button @click="goBack">Back</button>
+    <button class="cancel" @click="showCancelForm = true">Cancel</button>
+  </div>
+</div>
+
 
     <!-- Nếu chưa có appointment -->
     <div v-else-if="!appointment && !showSearchForm">
@@ -136,28 +140,3 @@ const confirmCancel = async () => {
   }
 }
 </script>
-
-<style scoped>
-.find-link {
-  color: #4a90e2;
-  cursor: pointer;
-  text-decoration: underline;
-  margin-left: 10px;
-}
-.search-form, .cancel-form {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-.error {
-  color: #e74c3c;
-  font-size: 13px;
-  margin-top: 5px;
-}
-</style>
