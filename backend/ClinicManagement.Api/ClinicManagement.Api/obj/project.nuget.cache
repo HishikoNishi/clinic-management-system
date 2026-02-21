@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "vhuc571R0k0iQ+3p62dvAT4Vidg9nyaoTkTBElsozaHeHrVrKbU06VkGStXVHYAL/mgB0AlGPaaB7pHbbkrH8w==",
+  "dgSpecHash": "vyXNMEsHwzwsz28Lu0D9LS2pmWYZHKyFqbiwR911te1Z98oTJq1JSi+rW6XsBBNSD6plVVWZnJVfdfJ4q05rkg==",
   "success": true,
-  "projectFilePath": "/Users/nhan/Documents/GitHub/project/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
+  "projectFilePath": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
   "expectedPackageFiles": [
     "/Users/nhan/.nuget/packages/humanizer.core/2.8.26/humanizer.core.2.8.26.nupkg.sha512",
     "/Users/nhan/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/6.0.0/microsoft.aspnetcore.authentication.jwtbearer.6.0.0.nupkg.sha512",
