@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "9iYC+I7k1QI=",
+  "dgSpecHash": "vyXNMEsHwzwsz28Lu0D9LS2pmWYZHKyFqbiwR911te1Z98oTJq1JSi+rW6XsBBNSD6plVVWZnJVfdfJ4q05rkg==",
   "success": true,
   "projectFilePath": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
   "expectedPackageFiles": [
@@ -54,20 +54,16 @@
     "/Users/nhan/.nuget/packages/system.security.principal.windows/4.7.0/system.security.principal.windows.4.7.0.nupkg.sha512",
     "/Users/nhan/.nuget/packages/system.text.encoding.codepages/4.7.0/system.text.encoding.codepages.4.7.0.nupkg.sha512",
     "/Users/nhan/.nuget/packages/system.windows.extensions/4.7.0/system.windows.extensions.4.7.0.nupkg.sha512",
-    "/Users/nhan/.nuget/packages/microsoft.netcore.app.ref/6.0.35/microsoft.netcore.app.ref.6.0.35.nupkg.sha512",
-    "/Users/nhan/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.35/microsoft.aspnetcore.app.ref.6.0.35.nupkg.sha512",
-    "/Users/nhan/.nuget/packages/microsoft.netcore.app.host.osx-arm64/6.0.35/microsoft.netcore.app.host.osx-arm64.6.0.35.nupkg.sha512"
+    "/Users/nhan/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.31/microsoft.aspnetcore.app.ref.6.0.31.nupkg.sha512",
+    "/Users/nhan/.nuget/packages/microsoft.netcore.app.host.osx-arm64/6.0.31/microsoft.netcore.app.host.osx-arm64.6.0.31.nupkg.sha512",
+    "/Users/nhan/.nuget/packages/microsoft.netcore.app.ref/6.0.31/microsoft.netcore.app.ref.6.0.31.nupkg.sha512"
   ],
   "logs": [
     {
-      "code": "NU1902",
+      "code": "Undefined",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'System.IdentityModel.Tokens.Jwt' 6.10.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
-      "libraryId": "System.IdentityModel.Tokens.Jwt",
-      "targetGraphs": [
-        "net6.0"
-      ]
+      "message": "Problem reading the cache file /Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/obj/project.nuget.cache : Invalid property identifier character: <. Path 'version', line 3, position 0."
     }
   ]
 }
