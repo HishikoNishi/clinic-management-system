@@ -101,8 +101,12 @@ const submit = async () => {
       const appointmentData = res.data
       localStorage.setItem("appointmentCode", appointmentData.appointmentCode)
 
+
       // Hiện thông báo và chuyển trang
-      if (window.confirm("Appointment created successfully! Go to My Appointment?")) {
+
+     
+      if (window.confirm("Appointment created successfully! Go to Your Appointment?")) {
+
         router.push("/appointmentdetail")
       }
     } catch (err: any) {
