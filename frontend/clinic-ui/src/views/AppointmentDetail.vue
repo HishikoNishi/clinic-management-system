@@ -31,8 +31,8 @@
     <!-- Nếu chưa có appointment -->
     <div v-else-if="!appointment && !showSearchForm">
       <p>
-        Please create an appointment to see your appointment!
-        <span class="find-link" @click="showSearchForm = true">Find Your Appointment</span>
+        Please create an appointment to see your appointment or if you already have appointment, lets find your appointment!
+     
       </p>
     </div>
 

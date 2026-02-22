@@ -8,6 +8,7 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.1);
   font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
+p{ color:#333}
 select {
   width: 100%;
   padding: 10px 12px;

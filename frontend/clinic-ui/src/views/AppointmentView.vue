@@ -115,7 +115,7 @@ const submit = async () => {
 const goToMyAppointment = () => {
   const appointmentCode = localStorage.getItem("appointmentCode")
   if (appointmentCode) router.push("/appointmentdetail")
-  else alert("Please create an appointment to see your appointment!")
+  else router.push("/appointmentdetail")
 }
 </script>
 <style src="@/styles/layouts/appointment.css"></style>
