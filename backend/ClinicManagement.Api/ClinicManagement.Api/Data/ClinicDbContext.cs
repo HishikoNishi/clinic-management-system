@@ -1,11 +1,13 @@
 ﻿using ClinicManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace ClinicManagement.Api.Data
 {
     public class ClinicDbContext : DbContext
     {
-        public ClinicDbContext(DbContextOptions<ClinicDbContext> options) : base(options)
+        public ClinicDbContext(DbContextOptions<ClinicDbContext> options)
+            : base(options)
         {
         }
 
@@ -13,34 +15,35 @@ namespace ClinicManagement.Api.Data
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
-
-
-
         public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Role entity
+            // ================= ROLE =================
             modelBuilder.Entity<Role>(entity =>
             {
                 entity.HasKey(r => r.Id);
                 entity.Property(r => r.Name)
                     .IsRequired()
                     .HasMaxLength(50);
+
                 entity.HasIndex(r => r.Name).IsUnique();
             });
 
-            // Configure User entity
+            // ================= USER =================
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.Id);
+
                 entity.Property(u => u.Username)
                     .IsRequired()
                     .HasMaxLength(100);
+
                 entity.Property(u => u.PasswordHash)
                     .IsRequired();
+
                 entity.HasIndex(u => u.Username).IsUnique();
 
                 entity.HasOne(u => u.RoleNavigation)
@@ -49,23 +52,7 @@ namespace ClinicManagement.Api.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Seed roles
-            var adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
-            var doctorRole = new Role { Id = Guid.NewGuid(), Name = "Doctor" };
-            var staffRole = new Role { Id = Guid.NewGuid(), Name = "Staff" };
-            var guestRole = new Role { Id = Guid.NewGuid(), Name = "Guest" };
-
-            modelBuilder.Entity<Role>().HasData(adminRole, doctorRole, staffRole, guestRole);
-
-            // Seed admin user
-            var adminUser = new User
-            {
-                Id = Guid.NewGuid(),
-                Username = "admin",
-                PasswordHash = new Microsoft.AspNetCore.Identity.PasswordHasher<User>()
-                    .HashPassword(null, "Admin@123"),
-                RoleId = adminRole.Id
-            };
+            // ================= DOCTOR =================
             modelBuilder.Entity<Doctor>(entity =>
             {
                 entity.HasKey(d => d.Id);
@@ -88,6 +75,8 @@ namespace ClinicManagement.Api.Data
 
                 entity.HasIndex(d => d.UserId).IsUnique();
             });
+
+            // ================= APPOINTMENT =================
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -102,8 +91,7 @@ namespace ClinicManagement.Api.Data
                       .IsRequired()
                       .HasMaxLength(20);
 
-                entity.HasIndex(a => a.AppointmentCode)
-                      .IsUnique();
+                entity.HasIndex(a => a.AppointmentCode).IsUnique();
 
                 entity.HasOne(a => a.Patient)
                       .WithMany(p => p.Appointments)
@@ -111,12 +99,12 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(a => a.Doctor)
-                      .WithMany()
+                      .WithMany(d => d.Appointments)
                       .HasForeignKey(a => a.DoctorId)
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-
+            // ================= PATIENT =================
             modelBuilder.Entity<Patient>(entity =>
             {
                 entity.HasKey(p => p.Id);
@@ -130,9 +118,100 @@ namespace ClinicManagement.Api.Data
                       .IsRequired();
             });
 
+            // ================= SEED DATA =================
 
+            var hasher = new PasswordHasher<User>();
 
-            modelBuilder.Entity<User>().HasData(adminUser);
+            // Roles
+            var adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
+            var doctorRole = new Role { Id = Guid.NewGuid(), Name = "Doctor" };
+            var staffRole = new Role { Id = Guid.NewGuid(), Name = "Staff" };
+            var guestRole = new Role { Id = Guid.NewGuid(), Name = "Guest" };
+
+            modelBuilder.Entity<Role>().HasData(
+                adminRole, doctorRole, staffRole, guestRole
+            );
+
+            // Users
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "admin",
+                PasswordHash = hasher.HashPassword(null, "Admin@123"),
+                RoleId = adminRole.Id
+            };
+            var staffUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "staff1",
+                PasswordHash = hasher.HashPassword(null, "Staff@123"),
+                RoleId = staffRole.Id
+            };
+            var doctorUser1 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "doctor1",
+                PasswordHash = hasher.HashPassword(null, "Doctor@123"),
+                RoleId = doctorRole.Id
+            };
+
+            var doctorUser2 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "doctor2",
+                PasswordHash = hasher.HashPassword(null, "Doctor@123"),
+                RoleId = doctorRole.Id
+            };
+
+            var doctorUser3 = new User
+            {
+                Id = Guid.NewGuid(),
+                Username = "doctor3",
+                PasswordHash = hasher.HashPassword(null, "Doctor@123"),
+                RoleId = doctorRole.Id
+            };
+
+            modelBuilder.Entity<User>().HasData(
+           adminUser,
+           staffUser,
+           doctorUser1,
+           doctorUser2,
+           doctorUser3
+       );
+
+            // Doctors
+            modelBuilder.Entity<Doctor>().HasData(
+                new Doctor
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "BS001",
+                    Specialty = "Nội tổng quát",
+                    LicenseNumber = "LIC001",
+                    Status = DoctorStatus.Active,
+                    UserId = doctorUser1.Id,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Doctor
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "BS002",
+                    Specialty = "Da liễu",
+                    LicenseNumber = "LIC002",
+                    Status = DoctorStatus.Active,
+                    UserId = doctorUser2.Id,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Doctor
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "BS003",
+                    Specialty = "Tai mũi họng",
+                    LicenseNumber = "LIC003",
+                    Status = DoctorStatus.Active,
+                    UserId = doctorUser3.Id,
+                    CreatedAt = DateTime.UtcNow
+                }
+            );
         }
     }
 }

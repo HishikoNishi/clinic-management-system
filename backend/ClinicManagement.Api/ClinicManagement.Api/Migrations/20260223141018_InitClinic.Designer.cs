@@ -4,6 +4,7 @@ using ClinicManagement.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Api.Migrations
 {
     [DbContext(typeof(ClinicDbContext))]
-    partial class ClinicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260223141018_InitClinic")]
+    partial class InitClinic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,33 +110,33 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("da4555ba-01ef-4274-970e-1315e2bfde22"),
+                            Id = new Guid("e344a26e-de2c-4adc-adbc-7a8527ab774b"),
                             Code = "BS001",
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 689, DateTimeKind.Utc).AddTicks(9390),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 309, DateTimeKind.Utc).AddTicks(1720),
                             LicenseNumber = "LIC001",
                             Specialty = "Nội tổng quát",
                             Status = 1,
-                            UserId = new Guid("d2568579-de44-4a0a-bfaf-b481d0eccfe8")
+                            UserId = new Guid("b0aed582-58f5-4964-acd0-e3045a2bdf2b")
                         },
                         new
                         {
-                            Id = new Guid("50ef0ed6-74da-40d8-86a6-29d6a4a4f2e1"),
+                            Id = new Guid("b8bc6a6b-008d-4c40-8905-73cce3488a0a"),
                             Code = "BS002",
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 689, DateTimeKind.Utc).AddTicks(9400),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 309, DateTimeKind.Utc).AddTicks(1730),
                             LicenseNumber = "LIC002",
                             Specialty = "Da liễu",
                             Status = 1,
-                            UserId = new Guid("66f6e59e-9eb0-40bc-836f-a87fe2c86e7e")
+                            UserId = new Guid("b23c8276-8b78-432e-8e2b-8b00424478c3")
                         },
                         new
                         {
-                            Id = new Guid("02c66e35-b1ab-4c70-b832-36c7e16767e4"),
+                            Id = new Guid("bda96feb-e268-4162-99ae-74b63e84247c"),
                             Code = "BS003",
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 689, DateTimeKind.Utc).AddTicks(9410),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 309, DateTimeKind.Utc).AddTicks(1730),
                             LicenseNumber = "LIC003",
                             Specialty = "Tai mũi họng",
                             Status = 1,
-                            UserId = new Guid("42ca2a8b-5852-40e0-998b-42ae7e80fd6a")
+                            UserId = new Guid("eb775b13-b4b2-407a-a7d0-b260beb596bf")
                         });
                 });
 
@@ -207,22 +209,22 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("d0be8f2f-2100-4c9d-8649-dc598c29fbb8"),
+                            Id = new Guid("4dbabcf7-4707-4f5c-a5ac-6a920a5de1a0"),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("1a749cab-5344-41f4-aa93-061051e7019b"),
+                            Id = new Guid("44e02b51-6878-4381-aed5-3966c57ff58f"),
                             Name = "Doctor"
                         },
                         new
                         {
-                            Id = new Guid("845ff739-bead-48f2-a9ab-173b09f5e2f3"),
+                            Id = new Guid("0dd796e9-3420-4f2e-8e70-335f0f158461"),
                             Name = "Staff"
                         },
                         new
                         {
-                            Id = new Guid("5311f7a0-fdf1-4cac-895a-bb3f186b694d"),
+                            Id = new Guid("bfdc9e83-db44-4374-afdc-47310b201f72"),
                             Name = "Guest"
                         });
                 });
@@ -275,62 +277,50 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("789dc153-6864-48a7-86b1-4d81848767ac"),
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 510, DateTimeKind.Utc).AddTicks(3240),
+                            Id = new Guid("4a53c617-10dc-4832-a950-32831cc00c01"),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 162, DateTimeKind.Utc).AddTicks(7670),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEO7LBSg3aNRt9D5Xv6jVIpl/caeyOBseJ7mx5KCpvrOcFf2B3OV97nzYyAM6PGNaGw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEVkjY0fRpanRMI4MdXWL7a29E87QsqLLgc703nxU4iLao6lS2QKVswWqAP00hozsw==",
                             PhoneNumber = "",
-                            RoleId = new Guid("d0be8f2f-2100-4c9d-8649-dc598c29fbb8"),
+                            RoleId = new Guid("4dbabcf7-4707-4f5c-a5ac-6a920a5de1a0"),
                             Username = "admin"
                         },
                         new
                         {
-                            Id = new Guid("34f376b3-9901-43e6-864e-3de6f566b90e"),
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 546, DateTimeKind.Utc).AddTicks(2700),
+                            Id = new Guid("b0aed582-58f5-4964-acd0-e3045a2bdf2b"),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 199, DateTimeKind.Utc).AddTicks(6210),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAELhdMv6MdphuEnG5hoRg5FjuR4AMSjUW/dIb1k0XGt5jKt26m+u3vozivCXSWK2mew==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGBhKjjVDSMi4OKLEYQ4T0EbfOqEjcKn1hvM3AHxB0A4SShhZXmCqZSnDPMLzgS8Lw==",
                             PhoneNumber = "",
-                            RoleId = new Guid("845ff739-bead-48f2-a9ab-173b09f5e2f3"),
-                            Username = "staff1"
-                        },
-                        new
-                        {
-                            Id = new Guid("d2568579-de44-4a0a-bfaf-b481d0eccfe8"),
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 582, DateTimeKind.Utc).AddTicks(2950),
-                            Email = "",
-                            FullName = "",
-                            IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEOm5W5K13sFaYQYd5S8h4wWmJm4m4gOqPGoIHCgNeUWAPAabuHATAz7/eENSC+3gsA==",
-                            PhoneNumber = "",
-                            RoleId = new Guid("1a749cab-5344-41f4-aa93-061051e7019b"),
+                            RoleId = new Guid("44e02b51-6878-4381-aed5-3966c57ff58f"),
                             Username = "doctor1"
                         },
                         new
                         {
-                            Id = new Guid("66f6e59e-9eb0-40bc-836f-a87fe2c86e7e"),
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 618, DateTimeKind.Utc).AddTicks(2150),
+                            Id = new Guid("b23c8276-8b78-432e-8e2b-8b00424478c3"),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 236, DateTimeKind.Utc).AddTicks(8050),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEOypnQ1YbS3/IZxqzwncfd2+k5Zku5Og91dRDEytl32AbpJ5bA43Ooc+hBlMj3aXBw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEN2XdQv6Erb5qxcLb9O6Q7cfizMbQ9KQeyz2ETK9vnnTi/6pY04Bl8i/kmIafAzuDA==",
                             PhoneNumber = "",
-                            RoleId = new Guid("1a749cab-5344-41f4-aa93-061051e7019b"),
+                            RoleId = new Guid("44e02b51-6878-4381-aed5-3966c57ff58f"),
                             Username = "doctor2"
                         },
                         new
                         {
-                            Id = new Guid("42ca2a8b-5852-40e0-998b-42ae7e80fd6a"),
-                            CreatedAt = new DateTime(2026, 2, 23, 14, 59, 54, 654, DateTimeKind.Utc).AddTicks(670),
+                            Id = new Guid("eb775b13-b4b2-407a-a7d0-b260beb596bf"),
+                            CreatedAt = new DateTime(2026, 2, 23, 14, 10, 18, 273, DateTimeKind.Utc).AddTicks(400),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEGekuHdO1O+UfJq4zP6ePcGBsna9krzyRh2CenLH0DHef0hsIxDHPJOo7Y+jYVXlKg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEONmQ+jw6R1LtQlpcUeOGSVFRj5TVDJChjL7eSzTeJuohZYMpY2Bkwyh2xm1UQkUFw==",
                             PhoneNumber = "",
-                            RoleId = new Guid("1a749cab-5344-41f4-aa93-061051e7019b"),
+                            RoleId = new Guid("44e02b51-6878-4381-aed5-3966c57ff58f"),
                             Username = "doctor3"
                         });
                 });

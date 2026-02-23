@@ -1,41 +1,47 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../../usr/local/share/dotnet/sdk/7.0.317/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/DoctorsController.cs">
     <Files>
-<<<<<<< Updated upstream
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="20" Column="18" />
-=======
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" />
->>>>>>> Stashed changes
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="181" Column="36" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
       <File FileName="ClinicManagement.Api/Models/Appointment.cs" />
       <File FileName="ClinicManagement.Api/Models/Patient.cs" />
       <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" />
-      <File FileName="../../../../../../../usr/local/share/dotnet/sdk/7.0.317/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets" Line="266" Column="5" />
+      <File FileName="../../../../../../../usr/local/share/dotnet/sdk/7.0.317/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets" />
+      <File FileName="ClinicManagement.Api/Models/User.cs" />
+      <File FileName="ClinicManagement.Api/Models/Role.cs" />
+      <File FileName="ClinicManagement.Api/Models/Doctor.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Models/Gender.cs" />
+      <File FileName="ClinicManagement.Api/Models/DoctorStatus.cs" />
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="145" Column="37" />
+      <File FileName="ClinicManagement.Api/Controllers/DoctorsController.cs" Line="21" Column="32" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs" />
+      <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" />
+      <File FileName="ClinicManagement.Api/appsettings.json" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="ClinicManagement.Api" expanded="True">
-            <Node name="ClinicManagement.Api" expanded="True">
-              <Node name="Controllers" expanded="True" />
-<<<<<<< Updated upstream
+            <Node name="ClinicManagement.Api">
+              <Node name="Controllers" expanded="True">
+                <Node name="DoctorsController.cs" selected="True" />
+              </Node>
+              <Node name="Data" expanded="True" />
               <Node name="Dtos" expanded="True">
                 <Node name="Appointments" expanded="True" />
               </Node>
               <Node name="Models" expanded="True" />
-=======
->>>>>>> Stashed changes
             </Node>
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>
