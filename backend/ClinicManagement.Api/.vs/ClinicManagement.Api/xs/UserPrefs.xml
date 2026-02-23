@@ -6,7 +6,11 @@
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workbench ActiveDocument="../../../../../../../usr/local/share/dotnet/sdk/7.0.317/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets">
     <Files>
+<<<<<<< Updated upstream
       <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="20" Column="18" />
+=======
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" />
+>>>>>>> Stashed changes
       <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
       <File FileName="ClinicManagement.Api/Models/Appointment.cs" />
       <File FileName="ClinicManagement.Api/Models/Patient.cs" />
@@ -17,12 +21,15 @@
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="ClinicManagement.Api" expanded="True">
-            <Node name="ClinicManagement.Api">
+            <Node name="ClinicManagement.Api" expanded="True">
               <Node name="Controllers" expanded="True" />
+<<<<<<< Updated upstream
               <Node name="Dtos" expanded="True">
                 <Node name="Appointments" expanded="True" />
               </Node>
               <Node name="Models" expanded="True" />
+=======
+>>>>>>> Stashed changes
             </Node>
           </Node>
         </State>
