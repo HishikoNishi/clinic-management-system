@@ -1,0 +1,24 @@
+/**
+ * Global Styles Index
+ * Import all stylesheets in the correct order
+ */
+
+/* 1. Bootstrap - Foundation */
+/* Note: Bootstrap is imported in main.ts */
+
+/* 2. Design System - Tokens & Base */
+@import './base/tokens.css';
+@import './base/reset.css';
+
+/* 3. Components */
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/forms.css';
+
+/* 4. Utilities */
+@import './utilities/helpers.css';
+@import './utilities/animations.css';
+
+/* 5. Page-Specific Styles (imported in component) */
+/* Login styles: @import './layouts/login.css' in Login.vue */
+/* Dashboard styles: @import './layouts/dashboard.css' in Dashboard.vue */
