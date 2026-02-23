@@ -1,6 +1,10 @@
 {
   "version": 2,
+<<<<<<< Updated upstream
   "dgSpecHash": "9iYC+I7k1QI=",
+=======
+  "dgSpecHash": "vyXNMEsHwzwsz28Lu0D9LS2pmWYZHKyFqbiwR911te1Z98oTJq1JSi+rW6XsBBNSD6plVVWZnJVfdfJ4q05rkg==",
+>>>>>>> Stashed changes
   "success": true,
   "projectFilePath": "/Users/nhan/Documents/GitHub/clinic-management-system/backend/ClinicManagement.Api/ClinicManagement.Api/ClinicManagement.Api.csproj",
   "expectedPackageFiles": [
