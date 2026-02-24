@@ -17,10 +17,8 @@ namespace ClinicManagement.Api.Data
         public DbSet<Staff> Staffs { get; set; } = null!;
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
+        public DbSet<HoaDon> Invoices { get; set; } = null!;
 
-
-
-        public DbSet<Doctor> Doctors => Set<Doctor>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -185,6 +183,14 @@ namespace ClinicManagement.Api.Data
                 entity.Property(p => p.Gender)
                       .HasConversion<string>()
                       .IsRequired();
+            });
+            modelBuilder.Entity<HoaDon>(entity =>
+            {
+                entity.HasKey(i => i.Id);
+                entity.HasOne(i => i.LichHen)
+                      .WithOne()
+                      .HasForeignKey<HoaDon>(i => i.MaLichHen)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 
