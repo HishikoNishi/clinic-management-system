@@ -21,6 +21,7 @@ namespace ClinicManagement.Api.Controllers
         {
             _context = context;
         }
+       
         [HttpPost]
         public async Task<IActionResult> Create( CreateAppointmentDto dto)
         {
@@ -177,34 +178,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok("Huỷ lịch thành công");
         }
-        [Authorize(Roles = "Staff")]
-        [HttpPost("assign-doctor")]
-        public async Task<IActionResult> AssignDoctor([FromBody] AssignDoctorDto dto)
-        {
-            var appointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
-
-            if (appointment == null)
-                return NotFound("Appointment not found");
-
-            var doctor = await _context.Doctors
-                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId);
-
-            if (doctor == null)
-                return NotFound("Doctor not found");
-
-            appointment.DoctorId = doctor.Id;
-            appointment.Status = AppointmentStatus.Confirmed;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "Assigned doctor successfully",
-                doctorCode = doctor.Code
-            });
-        }
-
+       
 
     }
         
