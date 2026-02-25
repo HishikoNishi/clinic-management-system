@@ -1,11 +1,23 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
+<<<<<<< Updated upstream
+=======
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+>>>>>>> Stashed changes
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
   <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Data/ClinicDbContext.cs">
     <Files>
       <File FileName="ClinicManagement.Api/appsettings.json" />
       <File FileName="ClinicManagement.Api/Program.cs" />
+<<<<<<< Updated upstream
       <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="130" Column="1" />
+=======
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="35" Column="25" />
+>>>>>>> Stashed changes
       <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" />
       <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
       <File FileName="ClinicManagement.Api/Models/Appointment.cs" />
@@ -30,10 +42,15 @@
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="ClinicManagement.Api" expanded="True">
+<<<<<<< Updated upstream
             <Node name="ClinicManagement.Api">
               <Node name="Data" expanded="True">
                 <Node name="ClinicDbContext.cs" selected="True" />
               </Node>
+=======
+            <Node name="ClinicManagement.Api" expanded="True">
+              <Node name="Data" expanded="True" />
+>>>>>>> Stashed changes
               <Node name="Models" expanded="True" />
               <Node name="Utils" expanded="True" />
             </Node>
@@ -42,9 +59,12 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+<<<<<<< Updated upstream
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
+=======
+>>>>>>> Stashed changes
 </Properties>
