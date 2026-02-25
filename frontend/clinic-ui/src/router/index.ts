@@ -16,6 +16,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
     meta: { requiresAuth: true }
+
   },
   {
     path: '/appointment',
@@ -26,7 +27,19 @@ const routes: RouteRecordRaw[] = [
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
+
+  },
+  {
+  path: '/staff',
+  name: 'StaffDashboard',
+  component: () => import('@/views/StaffDashboard.vue'),
+  meta: {
+    requiresAuth: true,
+    role: 'Staff'
+
+ 
   }
+}
 ]
 
 const router = createRouter({
@@ -37,10 +50,18 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
+  // ✅ check login
   if (to.meta.requiresAuth) {
     if (!authStore.token || authStore.isTokenExpired()) {
       authStore.logout()
       return { name: 'Login' }
+    }
+  }
+
+  // ✅ check ROLE
+  if (to.meta.role) {
+if (authStore.role !== to.meta.role) {
+      return { name: 'Dashboard' }
     }
   }
 })
