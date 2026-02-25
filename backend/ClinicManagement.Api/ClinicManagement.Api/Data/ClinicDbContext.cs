@@ -143,6 +143,7 @@ namespace ClinicManagement.Api.Data
 
             adminUser.PasswordHash =
                 new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
+
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -157,6 +158,12 @@ namespace ClinicManagement.Api.Data
                       .IsRequired()
                       .HasMaxLength(20);
 
+                entity.Property(a => a.AppointmentDate)
+                      .IsRequired();
+
+                entity.Property(a => a.AppointmentTime)
+                      .IsRequired();
+
                 entity.HasIndex(a => a.AppointmentCode)
                       .IsUnique();
 
@@ -166,7 +173,7 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(a => a.Doctor)
-                      .WithMany()
+                      .WithMany(d => d.Appointments)
                       .HasForeignKey(a => a.DoctorId)
                       .OnDelete(DeleteBehavior.SetNull);
             });

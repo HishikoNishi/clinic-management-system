@@ -15,7 +15,8 @@ namespace ClinicManagement.Api.Models
         // FK → User
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
-
+        public ICollection<Appointment> Appointments { get; set; }
+        = new List<Appointment>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

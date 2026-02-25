@@ -1,112 +1,151 @@
 ﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Invoices;
 using ClinicManagement.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicManagement.Api.Controllers
 {
+    [Authorize(Roles = "Staff")]
     [ApiController]
-    [Route("api/[controller]")]
-    public class NhanVienController : ControllerBase
+    [Route("api/staff")]
+    public class StaffController : ControllerBase
     {
         private readonly ClinicDbContext _context;
 
-        public NhanVienController(ClinicDbContext context)
+        public StaffController(ClinicDbContext context)
         {
             _context = context;
         }
 
-        // ✅ Xác nhận lịch hẹn
-        [HttpPut("lich-hen/{id}/xac-nhan")]
-        public async Task<IActionResult> XacNhanLichHen(Guid id)
+        // ==============================
+        // 1️⃣ Xác nhận lịch hẹn
+        // ==============================
+        [HttpPut("appointments/{id}/confirm")]
+        public async Task<IActionResult> ConfirmAppointment(Guid id)
         {
-            var lichHen = await _context.Appointments.FindAsync(id);
-            if (lichHen == null) return NotFound("Không tìm thấy lịch hẹn");
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+                return NotFound("Không tìm thấy lịch hẹn");
 
-            lichHen.Status = AppointmentStatus.Confirmed;
+            if (appointment.Status != AppointmentStatus.Pending)
+                return BadRequest("Chỉ xác nhận lịch đang ở trạng thái Pending");
+
+            appointment.Status = AppointmentStatus.Confirmed;
             await _context.SaveChangesAsync();
-            return Ok(lichHen);
+
+            return Ok("Xác nhận lịch hẹn thành công");
         }
 
-        // ✅ Phân bác sĩ cho lịch khám
-        [HttpPut("lich-hen/{id}/phan-bac-si/{doctorId}")]
-        public async Task<IActionResult> PhanBacSi(Guid id, Guid doctorId)
+        // ==============================
+        // 2️⃣ Phân bác sĩ
+        // ==============================
+        [HttpPut("appointments/{id}/assign-doctor/{doctorId}")]
+        public async Task<IActionResult> AssignDoctor(Guid id, Guid doctorId)
         {
-            var lichHen = await _context.Appointments.FindAsync(id);
-            if (lichHen == null) return NotFound("Không tìm thấy lịch hẹn");
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+                return NotFound("Không tìm thấy lịch hẹn");
 
-            lichHen.DoctorId = doctorId;
+            var doctor = await _context.Doctors.FindAsync(doctorId);
+            if (doctor == null)
+                return NotFound("Không tìm thấy bác sĩ");
+
+            appointment.DoctorId = doctorId;
+            appointment.Status = AppointmentStatus.Assigned;
+
             await _context.SaveChangesAsync();
-            return Ok(lichHen);
+            return Ok("Phân bác sĩ thành công");
         }
 
-        // ✅ Check-in bệnh nhân
-        [HttpPut("lich-hen/{id}/check-in")]
-        public async Task<IActionResult> CheckInBenhNhan(Guid id)
+        // ==============================
+        // 3️⃣ Check-in bệnh nhân
+        // ==============================
+        [HttpPut("appointments/{id}/check-in")]
+        public async Task<IActionResult> CheckIn(Guid id)
         {
-            var lichHen = await _context.Appointments.FindAsync(id);
-            if (lichHen == null) return NotFound("Không tìm thấy lịch hẹn");
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+                return NotFound("Không tìm thấy lịch hẹn");
 
-            lichHen.Status = AppointmentStatus.Confirmed; // hoặc thêm trạng thái riêng "CheckedIn"
+            if (appointment.Status != AppointmentStatus.Assigned)
+                return BadRequest("Lịch phải được phân bác sĩ trước");
+
+            appointment.Status = AppointmentStatus.CheckedIn;
             await _context.SaveChangesAsync();
-            return Ok(lichHen);
+
+            return Ok("Bệnh nhân đã check-in");
         }
 
-        // ✅ Tạo hóa đơn
-        [HttpPost("hoa-don")]
-        public async Task<IActionResult> TaoHoaDon([FromBody] TaoHoaDonDto dto)
+        // ==============================
+        // 4️⃣ Tạo hoá đơn
+        // ==============================
+        [HttpPost("invoices")]
+        public async Task<IActionResult> CreateInvoice([FromBody] TaoHoaDonDto dto)
         {
-            var lichHen = await _context.Appointments.FindAsync(dto.MaLichHen);
-            if (lichHen == null) return NotFound("Không tìm thấy lịch hẹn");
+            var appointment = await _context.Appointments.FindAsync(dto.MaLichHen);
+            if (appointment == null)
+                return NotFound("Không tìm thấy lịch hẹn");
 
-            var hoaDon = new HoaDon
+            var invoice = new HoaDon
             {
+                Id = Guid.NewGuid(),
                 MaLichHen = dto.MaLichHen,
                 SoTien = dto.SoTien,
                 NgayTao = DateTime.UtcNow,
                 DaThanhToan = false
             };
 
-            _context.Invoices.Add(hoaDon);
+            _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
-            return Ok(hoaDon);
+
+            return Ok(invoice);
         }
 
-        // ✅ Thanh toán hóa đơn
-        [HttpPut("hoa-don/thanh-toan")]
-        public async Task<IActionResult> ThanhToanHoaDon([FromBody] ThanhToanHoaDonDto dto)
+        // ==============================
+        // 5️⃣ Thanh toán hoá đơn
+        // ==============================
+        [HttpPut("invoices/{id}/pay")]
+        public async Task<IActionResult> PayInvoice(Guid id)
         {
-            var hoaDon = await _context.Invoices.FindAsync(dto.MaHoaDon);
-            if (hoaDon == null) return NotFound("Không tìm thấy hóa đơn");
+            var invoice = await _context.Invoices.FindAsync(id);
+            if (invoice == null)
+                return NotFound("Không tìm thấy hoá đơn");
 
-            if (hoaDon.DaThanhToan) return BadRequest("Hóa đơn đã được thanh toán");
+            if (invoice.DaThanhToan)
+                return BadRequest("Hoá đơn đã thanh toán");
 
-            hoaDon.DaThanhToan = true;
-            hoaDon.NgayThanhToan = DateTime.UtcNow;
+            invoice.DaThanhToan = true;
+            invoice.NgayThanhToan = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
-            return Ok(hoaDon);
+            return Ok("Thanh toán thành công");
         }
 
-        // ✅ In phiếu khám
-        [HttpGet("lich-hen/{id}/in-phieu")]
-        public async Task<IActionResult> InPhieuKham(Guid id)
+        // ==============================
+        // 6️⃣ In phiếu khám
+        // ==============================
+        [HttpGet("appointments/{id}/print")]
+        public async Task<IActionResult> PrintTicket(Guid id)
         {
-            var lichHen = await _context.Appointments
+            var appointment = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
+                .ThenInclude(d => d.User)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
-            if (lichHen == null) return NotFound("Không tìm thấy lịch hẹn");
+            if (appointment == null)
+                return NotFound("Không tìm thấy lịch hẹn");
 
             return Ok(new
             {
-                lichHen.AppointmentCode,
-                lichHen.AppointmentDate,
-                lichHen.AppointmentTime,
-                BenhNhan = lichHen.Patient?.FullName,
-                BacSi = lichHen.Doctor?.User.FullName,
-                LyDo = lichHen.Reason
+                appointment.AppointmentCode,
+                appointment.AppointmentDate,
+                appointment.AppointmentTime,
+                Patient = appointment.Patient?.FullName,
+                Doctor = appointment.Doctor?.User?.Username,
+                appointment.Reason
             });
         }
     }
