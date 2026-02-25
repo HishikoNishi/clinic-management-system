@@ -1,13 +1,15 @@
 ﻿using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
+using ClinicManagement.Api.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClinicManagement.Api.Utils;
-using ClinicManagement.Api.Dtos.Appointments;
 
 namespace ClinicManagement.Api.Controllers
 {
+    [AllowAnonymous]
     [ApiController]
     [Route("api/[controller]")]
     public class AppointmentsController : ControllerBase

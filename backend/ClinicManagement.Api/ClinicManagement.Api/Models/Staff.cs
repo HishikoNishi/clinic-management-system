@@ -5,7 +5,7 @@ namespace ClinicManagement.Api.Models
     public class Staff
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public string Code { get; set; } = string.Empty; //mã nhân viên (giúp quản lý dễ hơn).
+        public string Code { get; set; } = string.Empty; 
         public string FullName{ get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
 
