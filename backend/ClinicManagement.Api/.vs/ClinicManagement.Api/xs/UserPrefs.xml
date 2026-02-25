@@ -6,20 +6,20 @@
   <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/AppointmentsController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs">
     <Files>
       <File FileName="ClinicManagement.Api/appsettings.json" />
       <File FileName="ClinicManagement.Api/Program.cs" />
       <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" />
       <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" />
-      <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
+      <File FileName="ClinicManagement.Api/Models/Doctor.cs" Line="16" Column="25" />
       <File FileName="ClinicManagement.Api/Models/Appointment.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
       <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="1" Column="1" />
       <File FileName="ClinicManagement.Api/Models/User.cs" />
       <File FileName="ClinicManagement.Api/Models/Role.cs" />
       <File FileName="ClinicManagement.Api/Models/Patient.cs" />
-      <File FileName="ClinicManagement.Api/Models/DoctorStatus.cs" />
+      <File FileName="ClinicManagement.Api/Models/DoctorStatus.cs" Line="1" Column="1" />
       <File FileName="ClinicManagement.Api/Controllers/UserController.cs" />
       <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" />
       <File FileName="ClinicManagement.Api/Controllers/SecureController.cs" />
@@ -29,9 +29,10 @@
       <File FileName="ClinicManagement.Api/Dtos/User/AuthResponse.cs" />
       <File FileName="ClinicManagement.Api/Dtos/User/ChangePasswordRequest.cs" />
       <File FileName="ClinicManagement.Api/Utils/CodeGenerator.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentDetailDto.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentDetailDto.cs" Line="9" Column="1" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentStatusDto.cs" Line="10" Column="1" />
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs" Line="6" Column="24" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -40,6 +41,9 @@
             <Node name="ClinicManagement.Api" expanded="True">
               <Node name="Controllers" expanded="True" />
               <Node name="Data" expanded="True" />
+              <Node name="Dtos" expanded="True">
+                <Node name="Appointments" expanded="True" />
+              </Node>
               <Node name="Models" expanded="True" />
               <Node name="Utils" expanded="True" />
             </Node>
