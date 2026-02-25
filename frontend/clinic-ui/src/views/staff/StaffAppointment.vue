@@ -28,26 +28,22 @@
       </thead>
 
       <tbody>
-        <tr v-for="a in appointments" :key="a.id">
-          <td>{{ a.code }}</td>
-          <td>{{ a.patientName }}</td>
-          <td>{{ formatDate(a.appointmentDate) }}</td>
+        <tr v-for="a in appointments" :key="a.appointmentCode">
+          <td>{{ a.appointmentCode }}</td>
+          <td>{{ a.fullName }}</td>
+          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
           <td>
-            <span :class="'status ' + a.status.toLowerCase()">
-              {{ a.status }}
+            <span :class="'status ' + a.statusDetail.value.toLowerCase()">
+              {{ a.statusDetail.value }}
             </span>
           </td>
-          <td>{{ a.doctorName || 'Chưa có' }}</td>
+          <td>{{ a.statusDetail.doctorName || 'Chưa có' }}</td>
 
           <!-- ASSIGN -->
-          <td v-if="a.status === 'Pending'">
+          <td v-if="a.statusDetail.value === 'Pending'">
             <select @change="assignDoctor(a.id, $event)">
               <option value="">Chọn bác sĩ</option>
-              <option
-                v-for="d in doctors"
-                :key="d.id"
-                :value="d.id"
-              >
+              <option v-for="d in doctors" :key="d.id" :value="d.id">
                 {{ d.name }}
               </option>
             </select>
@@ -79,15 +75,13 @@ const api = axios.create({
 const appointments = ref<any[]>([])
 const doctors = ref<any[]>([])
 
-const statuses = ['Pending', 'Confirmed', 'Completed']
+const statuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('Pending')
 
 /* ================= LOAD ================= */
 
 const loadAppointments = async () => {
-  const res = await api.post('/Appointments/search', {
-    status: currentStatus.value
-  })
+  const res = await api.get(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
   appointments.value = res.data
 }
 
@@ -107,7 +101,7 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
 
-  await api.post('/Appointments/assign-doctor', {
+  await api.post('/staff/StaffAppointments/assign-doctor', {
     appointmentId,
     doctorId
   })
@@ -118,12 +112,30 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
 
 /* ================= UTIL ================= */
 
-const formatDate = (d: string) =>
-  new Date(d).toLocaleString()
+const formatDate = (d: string) => {
+  const date = new Date(d)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+const formatDateTime = (dateStr: string, timeStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const [hours, minutes] = timeStr.split(':')
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
 
 onMounted(() => {
   loadAppointments()
   loadDoctors()
 })
 </script>
+
 <style src="@/styles/layouts/staff-appointment.css"></style>
