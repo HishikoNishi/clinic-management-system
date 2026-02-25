@@ -30,7 +30,7 @@ namespace ClinicManagement.Api.Controllers
                 .Include(a => a.Doctor)
                 .Select(a => new AppointmentDetailDto
                 {
-
+                    Id = a.Id,
                     AppointmentCode = a.AppointmentCode,
                     FullName = a.Patient != null ? a.Patient.FullName : null,
                     Phone = a.Patient != null ? a.Patient.Phone : null,

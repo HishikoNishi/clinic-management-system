@@ -5,6 +5,8 @@ namespace ClinicManagement.Api.DTOs.Appointments
 {
     public class AppointmentDetailDto
     {
+        public Guid Id { get; set; }
+
         public string AppointmentCode { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
