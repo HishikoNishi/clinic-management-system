@@ -1,45 +1,55 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.ts'
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    redirect: '/login'
-  },
+  { path: '/', redirect: '/login' },
+
   {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')
   },
+
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
     meta: { requiresAuth: true }
-
   },
+
   {
     path: '/appointment',
     name: 'Appointment',
     component: () => import('@/views/AppointmentView.vue')
   },
+
   {
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
-
   },
-  {
-  path: '/staff',
-  name: 'StaffDashboard',
-  component: () => import('@/views/StaffDashboard.vue'),
-  meta: {
-    requiresAuth: true,
-    role: 'Staff'
 
- 
+  // ✅ STAFF AREA
+  {
+    path: '/staff/appointments',
+    name: 'StaffAppointment',
+    component: () => import('@/views/staff/StaffAppointment.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/patients',
+    name: 'PatientPage',
+    component: () => import('@/views/PatientPage.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/doctors',
+    name: 'DoctorPage',
+    component: () => import('@/views/DoctorPage.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
   }
-}
 ]
 
 const router = createRouter({
@@ -58,9 +68,9 @@ router.beforeEach((to) => {
     }
   }
 
-  // ✅ check ROLE
+  // ✅ check role
   if (to.meta.role) {
-if (authStore.role !== to.meta.role) {
+    if (authStore.role !== to.meta.role) {
       return { name: 'Dashboard' }
     }
   }

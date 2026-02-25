@@ -124,7 +124,7 @@ const handleLogin = async () => {
 const role = response.data.role
 
 if (role === 'Staff') {
-  router.push('/staff')
+  router.push('/staff/appointments')
 }
 else if (role === 'Doctor') {
   router.push('/dashboard')
