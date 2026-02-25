@@ -62,6 +62,7 @@ namespace ClinicManagement.Api.Controllers
                 .Where(a => a.Status == status)
                 .Select(a => new AppointmentDetailDto
                 {
+                    Id = a.Id,
                     AppointmentCode = a.AppointmentCode,
                     FullName = a.Patient != null ? a.Patient.FullName : null,
                     Phone = a.Patient != null ? a.Patient.Phone : null,
@@ -91,7 +92,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
 
-        // POST: api/staff/Appointments/assign-doctor
+
         [HttpPost("assign-doctor")]
         public async Task<IActionResult> AssignDoctor([FromBody] AssignDoctorDto dto)
         {
