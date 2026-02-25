@@ -41,12 +41,13 @@
 
           <!-- ASSIGN -->
           <td v-if="a.statusDetail.value === 'Pending'">
-            <select @change="assignDoctor(a.id, $event)">
-              <option value="">Chọn bác sĩ</option>
-              <option v-for="d in doctors" :key="d.id" :value="d.id">
-                {{ d.name }}
-              </option>
-            </select>
+        <select @change="assignDoctor(a.id, $event)">
+  <option value="">Chọn bác sĩ</option>
+  <option v-for="d in doctors" :key="d.id" :value="d.id">
+    {{ d.name }}
+  </option>
+</select>
+
           </td>
         </tr>
       </tbody>
