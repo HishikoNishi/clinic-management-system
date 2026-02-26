@@ -20,7 +20,7 @@
   <td>{{ a.status }}</td>
   <td>
     <button v-if="a.status === 'Confirmed'" @click.stop="completeAppointment(a.id)">
-      Completed
+      Completed this appointment
     </button>
   </td>
 </tr>

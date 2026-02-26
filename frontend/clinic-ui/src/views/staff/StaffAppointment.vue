@@ -28,8 +28,12 @@
       </thead>
 
       <tbody>
-<tr v-for="a in appointments" :key="a.id" @click="$router.push(`/staff/appointments/${a.id}`)">
-    <td>{{ a.appointmentCode }}</td>
+        <tr
+          v-for="a in appointments"
+          :key="a.id"
+          @click="$router.push(`/staff/appointments/${a.id}`)"
+        >
+          <td>{{ a.appointmentCode }}</td>
           <td>{{ a.fullName }}</td>
           <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
           <td>
@@ -41,14 +45,14 @@
 
           <!-- ASSIGN -->
           <td v-if="a.statusDetail.value === 'Pending'">
-            <select @change="assignDoctor(a.id, $event)">
+            <select @change="assignDoctor(a.id, $event)" @click.stop>
               <option value="">Select doctor</option>
               <option
                 v-for="d in doctors"
                 :key="d.id"
                 :value="d.id"
-                :disabled="!d.isActive"
-                :class="{ inactive: !d.isActive }"
+                :disabled="d.status !== 'Active'"
+                :class="{ inactive: d.status !== 'Active' }"
               >
                 {{ d.name }}
               </option>
@@ -58,9 +62,7 @@
       </tbody>
     </table>
 
-    <p v-if="appointments.length === 0">
-      No appointments
-    </p>
+    <p v-if="appointments.length === 0">No appointments</p>
   </div>
 </template>
 
@@ -87,7 +89,9 @@ const currentStatus = ref('Pending')
 /* ================= LOAD ================= */
 
 const loadAppointments = async () => {
-  const res = await api.get(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
+  const res = await api.get(
+    `/staff/StaffAppointments/filter?status=${currentStatus.value}`
+  )
   appointments.value = res.data
 }
 
