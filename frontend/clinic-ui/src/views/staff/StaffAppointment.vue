@@ -28,8 +28,8 @@
       </thead>
 
       <tbody>
-        <tr v-for="a in appointments" :key="a.appointmentCode">
-          <td>{{ a.appointmentCode }}</td>
+<tr v-for="a in appointments" :key="a.id" @click="$router.push(`/staff/appointments/${a.id}`)">
+    <td>{{ a.appointmentCode }}</td>
           <td>{{ a.fullName }}</td>
           <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
           <td>

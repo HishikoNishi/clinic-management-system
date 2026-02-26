@@ -13,20 +13,18 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="a in appointments" :key="a.id">
-          <td>{{ a.appointmentCode }}</td>
-          <td>{{ a.fullName }}</td>
-          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-          <td>{{ a.status }}</td>
-          <td>
-            <button
-              v-if="a.status === 'Confirmed'"
-              @click="completeAppointment(a.id)"
-            >
-              Completed
-            </button>
-          </td>
-        </tr>
+        <tr v-for="a in appointments" :key="a.id" @click="$router.push(`/doctor/appointments/${a.id}`)">
+  <td>{{ a.appointmentCode }}</td>
+  <td>{{ a.fullName }}</td>
+  <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+  <td>{{ a.status }}</td>
+  <td>
+    <button v-if="a.status === 'Confirmed'" @click.stop="completeAppointment(a.id)">
+      Completed
+    </button>
+  </td>
+</tr>
+
       </tbody>
     </table>
 
