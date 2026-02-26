@@ -100,6 +100,9 @@ namespace ClinicManagement.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code")
+                        .IsUnique();
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
@@ -175,22 +178,22 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("b8a8b0cc-b8a1-454a-a607-ec28ca3c6c1f"),
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("875ed6cc-33a2-409d-bcaf-6ffb45154d33"),
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             Name = "Doctor"
                         },
                         new
                         {
-                            Id = new Guid("45b8695a-11b5-497a-98da-0e169d7b12be"),
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Name = "Staff"
                         },
                         new
                         {
-                            Id = new Guid("e28c0d7d-5858-4403-8c57-2aa1e8a8ddf3"),
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Name = "Guest"
                         });
                 });
@@ -243,14 +246,14 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f5b9308c-6f4e-48e6-9a8c-d2ff398e0c5c"),
-                            CreatedAt = new DateTime(2026, 2, 16, 12, 56, 12, 263, DateTimeKind.Utc).AddTicks(3930),
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            CreatedAt = new DateTime(2026, 2, 26, 10, 25, 42, 788, DateTimeKind.Utc).AddTicks(8056),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEJUm6rKbiNF+lmBAE1TsYt2mbAWTjRUWqdkcH3nTP9prKesIB4yTJ3DbPTXJGsxQBw==",
+                            PasswordHash = "AQAAAAEAACcQAAAAENSSKNhDnE5vMcDVMYDINIXsjLkCRGG6a2g2Yvmf9QUL8rAZ5sAG42bOawgkiNBb/A==",
                             PhoneNumber = "",
-                            RoleId = new Guid("b8a8b0cc-b8a1-454a-a607-ec28ca3c6c1f"),
+                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Username = "admin"
                         });
                 });
@@ -258,7 +261,7 @@ namespace ClinicManagement.Api.Migrations
             modelBuilder.Entity("ClinicManagement.Api.Models.Appointment", b =>
                 {
                     b.HasOne("ClinicManagement.Api.Models.Doctor", "Doctor")
-                        .WithMany()
+                        .WithMany("Appointments")
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -293,6 +296,11 @@ namespace ClinicManagement.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("RoleNavigation");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Doctor", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Patient", b =>

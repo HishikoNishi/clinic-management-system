@@ -4,7 +4,12 @@ import { useAuthStore } from '@/stores/auth.ts'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/guest'
+  },
+  {
+    path: '/guest',
+    name: 'GuestDashboard',
+    component: () => import('@/views/GuestDashboard.vue')
   },
   {
     path: '/login',
@@ -26,6 +31,11 @@ const routes: RouteRecordRaw[] = [
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
+  },
+  {
+    path: '/patient',
+    name: 'Patient',
+    component: () => import('@/views/patients/PatientList.vue')
   }
 ]
 

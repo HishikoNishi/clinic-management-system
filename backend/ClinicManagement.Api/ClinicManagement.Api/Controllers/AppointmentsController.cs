@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Utils;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -19,6 +21,7 @@ namespace ClinicManagement.Api.Controllers
         {
             _context = context;
         }
+       
         [HttpPost]
         public async Task<IActionResult> Create( CreateAppointmentDto dto)
         {
@@ -175,8 +178,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok("Huỷ lịch thành công");
         }
-
-
+       
 
     }
         
