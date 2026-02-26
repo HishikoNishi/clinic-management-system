@@ -1,0 +1,17 @@
+﻿using System;
+
+namespace ClinicManagement.Api.Dtos.Patient
+{
+    public class UpdatePatientRequest
+    {
+        /// <summary>
+        /// Địa chỉ của bệnh nhân (optional)
+        /// </summary>
+        public string? Address { get; set; }
+
+        /// <summary>
+        /// Ghi chú về bệnh nhân (optional)
+        /// </summary>
+        public string? Note { get; set; }
+    }
+}
