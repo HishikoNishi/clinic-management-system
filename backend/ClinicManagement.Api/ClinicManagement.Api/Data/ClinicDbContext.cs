@@ -18,10 +18,6 @@ namespace ClinicManagement.Api.Data
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
 
-
-
-        public DbSet<Doctor> Doctors => Set<Doctor>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -119,7 +115,7 @@ namespace ClinicManagement.Api.Data
             });
 
             /* ================================
-             * SEED DATA (GUID CỐ ĐỊNH)
+             * SEED DATA
              * ================================ */
 
             var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -145,6 +141,12 @@ namespace ClinicManagement.Api.Data
 
             adminUser.PasswordHash =
                 new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
+
+            modelBuilder.Entity<User>().HasData(adminUser);
+
+            /* ================================
+             * APPOINTMENT
+             * ================================ */
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -159,6 +161,12 @@ namespace ClinicManagement.Api.Data
                       .IsRequired()
                       .HasMaxLength(20);
 
+                entity.Property(a => a.AppointmentDate)
+                      .IsRequired();
+
+                entity.Property(a => a.AppointmentTime)
+                      .IsRequired();
+
                 entity.HasIndex(a => a.AppointmentCode)
                       .IsUnique();
 
@@ -168,12 +176,14 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(a => a.Doctor)
-                      .WithMany()
+                      .WithMany(d => d.Appointments)
                       .HasForeignKey(a => a.DoctorId)
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-
+            /* ================================
+             * PATIENT
+             * ================================ */
             modelBuilder.Entity<Patient>(entity =>
             {
                 entity.HasKey(p => p.Id);
@@ -186,10 +196,6 @@ namespace ClinicManagement.Api.Data
                       .HasConversion<string>()
                       .IsRequired();
             });
-
-
-
-            modelBuilder.Entity<User>().HasData(adminUser);
         }
     }
 }
