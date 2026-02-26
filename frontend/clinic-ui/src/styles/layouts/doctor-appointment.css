@@ -1,0 +1,102 @@
+/* Container */
+.doctor-container {
+  padding: 24px;
+  font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #fdfbfb 0%, #f3f3f3 100%);
+  min-height: 100vh;
+}
+
+.doctor-container h2 {
+  margin-bottom: 20px;
+  color: #4a2c6d;
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: #a9aaef;
+  color: #fff;
+}
+
+th, td {
+  padding: 14px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #433434;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+tbody tr:hover {
+  background-color: #f3e8ff;
+  transition: background-color 0.2s ease;
+}
+
+/* Buttons */
+button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 20px;
+  background-color: #6f42c1;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #5a379e;
+}
+
+/* Status colors - nhạt và đồng bộ */
+.status {
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  display: inline-block;
+  text-align: center;
+  min-width: 90px;
+}
+
+.status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status.confirmed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status.completed {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status.cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Empty message */
+p {
+  margin-top: 20px;
+  font-style: italic;
+  color: #666;
+  text-align: center;
+}

@@ -1,6 +1,6 @@
 <template>
   <div class="staff-container">
-    <h2>Quản lý lịch hẹn</h2>
+    <h2>Appointment Management</h2>
 
     <!-- FILTER STATUS -->
     <div class="filter">
@@ -18,11 +18,11 @@
     <table>
       <thead>
         <tr>
-          <th>Mã</th>
-          <th>Bệnh nhân</th>
-          <th>Ngày khám</th>
-          <th>Trạng thái</th>
-          <th>Bác sĩ</th>
+          <th>Code</th>
+          <th>Patient</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Doctor</th>
           <th v-if="currentStatus === 'Pending'">Assign</th>
         </tr>
       </thead>
@@ -37,24 +37,29 @@
               {{ a.statusDetail.value }}
             </span>
           </td>
-          <td>{{ a.statusDetail.doctorName || 'Chưa có' }}</td>
+          <td>{{ a.statusDetail.doctorName || 'Not assigned' }}</td>
 
           <!-- ASSIGN -->
           <td v-if="a.statusDetail.value === 'Pending'">
-        <select @change="assignDoctor(a.id, $event)">
-  <option value="">Chọn bác sĩ</option>
-  <option v-for="d in doctors" :key="d.id" :value="d.id">
-    {{ d.name }}
-  </option>
-</select>
-
+            <select @change="assignDoctor(a.id, $event)">
+              <option value="">Select doctor</option>
+              <option
+                v-for="d in doctors"
+                :key="d.id"
+                :value="d.id"
+                :disabled="!d.isActive"
+                :class="{ inactive: !d.isActive }"
+              >
+                {{ d.name }}
+              </option>
+            </select>
           </td>
         </tr>
       </tbody>
     </table>
 
     <p v-if="appointments.length === 0">
-      Không có lịch hẹn
+      No appointments
     </p>
   </div>
 </template>
@@ -87,7 +92,7 @@ const loadAppointments = async () => {
 }
 
 const loadDoctors = async () => {
-  const res = await api.get('/Doctors')
+  const res = await api.get('/staff/StaffDoctors')
   doctors.value = res.data
 }
 
@@ -107,21 +112,11 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
     doctorId
   })
 
-  alert('Đã phân bác sĩ ✅')
+  alert('Doctor assigned ✅')
   loadAppointments()
 }
 
 /* ================= UTIL ================= */
-
-const formatDate = (d: string) => {
-  const date = new Date(d)
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${day}/${month}/${year} ${hours}:${minutes}`
-}
 
 const formatDateTime = (dateStr: string, timeStr: string) => {
   if (!dateStr) return ''

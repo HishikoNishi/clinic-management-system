@@ -1,103 +1,132 @@
 .staff-container {
-  padding: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 32px;
+  font-family: "Poppins", "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #fdfbfb 0%, #f7f7f7 100%);
+  min-height: 100vh;
 }
 
+/* Tiêu đề */
 .staff-container h2 {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   color: #4a2c6d;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 28px;
+  text-align: center;
+  letter-spacing: 0.5px;
 }
 
 /* Filter buttons */
 .filter {
-  margin-bottom: 15px;
+  margin-bottom: 24px;
+  text-align: center;
 }
 
 .filter button {
-  padding: 8px 16px;
-  margin-right: 10px;
+  padding: 10px 20px;
+  margin: 0 8px;
   border: none;
-  background: #e9ecef;
+  background: #f0f0f0;
   cursor: pointer;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  border-radius: 25px;
+  transition: all 0.3s ease;
   font-weight: 500;
+  font-size: 15px;
 }
 
 .filter button.active {
   background: #6f42c1;
   color: #fff;
+  box-shadow: 0 4px 10px rgba(111, 66, 193, 0.4);
 }
 
 .filter button:hover {
-  background: #d6d6d6;
+  background: #e0e0e0;
 }
 
 /* Table */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin-top: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
 }
 
 table th,
 table td {
-  border: 1px solid #ddd;
-  padding: 12px;
+  padding: 16px;
   text-align: left;
+  font-size: 14px;
+  color: #333;
 }
 
 table th {
-  background-color: #f3e8ff;
-  color: #4a2c6d;
+  background-color: #6f42c1;
+  color: #fff;
   font-weight: 600;
+  font-size: 15px;
+}
+
+table tr:nth-child(even) {
+  background-color: #fafafa;
 }
 
 table tr:hover {
-  background-color: #9f7d9e;
+  background-color: #f3e8ff;
+  transition: background-color 0.2s ease;
 }
 
-/* Status labels */
+/* Status labels - nhạt */
 .status {
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
   font-weight: 600;
-  font-size: 0.9em;
+  font-size: 0.85em;
   display: inline-block;
+  text-align: center;
+  min-width: 100px;
 }
 
 .status.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: #fff8d9;
+  color: #8a6d3b;
 }
 
 .status.confirmed {
-  background: #d4edda;
-  color: #155724;
+  background: #e6f7e6;
+  color: #2f6627;
 }
 
 .status.completed {
-  background: #cce5ff;
-  color: #004085;
+  background: #e6f0ff;
+  color: #2c3e50;
 }
 
 .status.cancelled {
-  background: #f8d7da;
+  background: #fde2e2;
   color: #721c24;
 }
 
 /* Assign select */
 select {
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 6px;
   background: #fff;
   transition: border-color 0.2s;
+  font-size: 14px;
 }
 
 select:focus {
   border-color: #6f42c1;
   outline: none;
+  box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
+}
+
+/* Option inactive */
+select option.inactive {
+  color: #999;
+  background-color: #f5f5f5;
 }

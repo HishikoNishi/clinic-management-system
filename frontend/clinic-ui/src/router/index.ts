@@ -49,6 +49,13 @@ const routes: RouteRecordRaw[] = [
     name: 'DoctorPage',
     component: () => import('@/views/DoctorPage.vue'),
     meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/doctorappointment',
+    name: 'DoctorAppointment',
+    component: () => import('@/views/DoctorAppointments.vue'),
+    meta: { requiresAuth: true, role: 'Doctor' }
   }
 ]
 

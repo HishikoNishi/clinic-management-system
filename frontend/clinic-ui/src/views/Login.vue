@@ -127,7 +127,7 @@ if (role === 'Staff') {
   router.push('/staff/appointments')
 }
 else if (role === 'Doctor') {
-  router.push('/dashboard')
+  router.push('/doctorappointment')
 }
 else if (role === 'Admin') {
   router.push('/dashboard')
