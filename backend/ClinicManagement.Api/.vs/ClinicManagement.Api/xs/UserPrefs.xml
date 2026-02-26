@@ -1,125 +1,33 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
-<<<<<<< Updated upstream
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-<<<<<<< Updated upstream
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Data/ClinicDbContext.cs">
     <Files>
-      <File FileName="ClinicManagement.Api/appsettings.json" />
-      <File FileName="ClinicManagement.Api/Program.cs" />
-      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" />
-      <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" />
-      <File FileName="ClinicManagement.Api/Models/Doctor.cs" Line="16" Column="25" />
-      <File FileName="ClinicManagement.Api/Models/Appointment.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="1" Column="1" />
-=======
-<<<<<<< Updated upstream
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Models/Gender.cs">
-    <Files>
-      <File FileName="ClinicManagement.Api/appsettings.json" />
-      <File FileName="ClinicManagement.Api/Program.cs" Line="23" Column="44" />
-      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="96" Column="38" />
-      <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" Line="1" Column="1" />
-      <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
-      <File FileName="ClinicManagement.Api/Models/Appointment.cs" Line="1" Column="1" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" Line="1" Column="1" />
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="17" Column="25" />
-=======
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/DoctorAppointmentsController.cs">
-    <Files>
-      <File FileName="ClinicManagement.Api/appsettings.json" />
-      <File FileName="ClinicManagement.Api/Program.cs" Line="12" Column="1" />
-      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" />
-      <File FileName="ClinicManagement.Api/Models/AppointmentStatus.cs" />
-      <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
-      <File FileName="ClinicManagement.Api/Models/Appointment.cs" Line="36" Column="25" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="148" Column="17" />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-      <File FileName="ClinicManagement.Api/Models/User.cs" />
-      <File FileName="ClinicManagement.Api/Models/Role.cs" />
-      <File FileName="ClinicManagement.Api/Models/Patient.cs" Line="26" Column="1" />
-      <File FileName="ClinicManagement.Api/Models/DoctorStatus.cs" />
-      <File FileName="ClinicManagement.Api/Controllers/UserController.cs" Line="1" Column="1" />
       <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" Line="1" Column="1" />
-      <File FileName="ClinicManagement.Api/Controllers/SecureController.cs" />
-      <File FileName="ClinicManagement.Api/Models/Gender.cs" />
-      <File FileName="ClinicManagement.Api/Services/JwtService.cs" />
-      <File FileName="ClinicManagement.Api/Services/IJwtService.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/User/AuthResponse.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/User/ChangePasswordRequest.cs" />
-      <File FileName="ClinicManagement.Api/Utils/CodeGenerator.cs" />
-<<<<<<< Updated upstream
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" Line="1" Column="1" />
-<<<<<<< Updated upstream
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentDetailDto.cs" Line="9" Column="1" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentStatusDto.cs" Line="10" Column="1" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs" Line="6" Column="24" />
-=======
-=======
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" />
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="2" Column="35" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentDetailDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentStatusDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Appointments/AssignDoctorDto.cs" Line="6" Column="24" />
-      <File FileName="ClinicManagement.Api/Controllers/DoctorAppointmentsController.cs" Line="52" Column="12" />
-      <File FileName="ClinicManagement.Api/Controllers/StaffAppointmentsController.cs" Line="87" Column="22" />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-=======
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/AppointmentsController.cs">
-    <Files>
-      <File FileName="ClinicManagement.Api/Controllers/DoctorsController.cs" Line="97" Column="10" />
-      <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" Line="1" Column="1" />
-      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="1" Column="1" />
->>>>>>> Stashed changes
+      <File FileName="ClinicManagement.Api/Dtos/Appointments/CreateAppointmentDto.cs" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-<<<<<<< Updated upstream
           <Node name="ClinicManagement.Api" expanded="True">
             <Node name="ClinicManagement.Api" expanded="True">
               <Node name="Controllers" expanded="True" />
-<<<<<<< Updated upstream
-=======
-          <Node name="ClinicManagement.Api">
-            <Node name="ClinicManagement.Api">
-              <Node name="Controllers">
-                <Node name="DoctorAppointmentsController.cs" selected="True" />
-              </Node>
->>>>>>> Stashed changes
               <Node name="Data" expanded="True" />
               <Node name="Dtos" expanded="True">
                 <Node name="Appointments" expanded="True" />
               </Node>
-              <Node name="Models" expanded="True" />
-              <Node name="Utils" expanded="True" />
-=======
->>>>>>> Stashed changes
             </Node>
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-<<<<<<< Updated upstream
-=======
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
->>>>>>> Stashed changes
+  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>
