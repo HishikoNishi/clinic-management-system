@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Api.Migrations
 {
     [DbContext(typeof(ClinicDbContext))]
-    [Migration("20260204092729_AddDoctorEntity")]
-    partial class AddDoctorEntity
+    [Migration("20260226145303_InitClinicDb")]
+    partial class InitClinicDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,52 @@ namespace ClinicManagement.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AppointmentCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("AppointmentTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DoctorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PatientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentCode")
+                        .IsUnique();
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("Appointments");
+                });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Doctor", b =>
                 {
@@ -56,10 +102,61 @@ namespace ClinicManagement.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Code")
+                        .IsUnique();
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Doctors");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Patient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Role", b =>
@@ -83,22 +180,22 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f620ba28-e59a-4da6-8284-e5b283fbd5f7"),
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("52c5d73d-2d26-4738-9c85-b6d4328ddeb3"),
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             Name = "Doctor"
                         },
                         new
                         {
-                            Id = new Guid("9a8b8bd1-a8d9-40a4-8347-f84949c12050"),
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Name = "Staff"
                         },
                         new
                         {
-                            Id = new Guid("9d92991e-cb3c-4f6c-b95c-1a1fec0fe4d7"),
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Name = "Guest"
                         });
                 });
@@ -151,16 +248,34 @@ namespace ClinicManagement.Api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("7fa98efa-1930-4e42-bdc3-160a7ffebadc"),
-                            CreatedAt = new DateTime(2026, 2, 4, 9, 27, 29, 146, DateTimeKind.Utc).AddTicks(5857),
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            CreatedAt = new DateTime(2026, 2, 26, 14, 53, 3, 379, DateTimeKind.Utc).AddTicks(1540),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAEAACcQAAAAEIAJ9S6TEUSouSxSFX98LW+OpY7uIzqTOjYljmWk6LVWynl3lIBjx7xRuWnMyc97yQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAqCdbO8ofJXzJEKeujtl7grhhgDR/zpwVbFu3t9VgBJa+Nzfcm21MYdRvcyxbPvAA==",
                             PhoneNumber = "",
-                            RoleId = new Guid("f620ba28-e59a-4da6-8284-e5b283fbd5f7"),
+                            RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Appointment", b =>
+                {
+                    b.HasOne("ClinicManagement.Api.Models.Doctor", "Doctor")
+                        .WithMany("Appointments")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ClinicManagement.Api.Models.Patient", "Patient")
+                        .WithMany("Appointments")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Doctor", b =>
@@ -183,6 +298,16 @@ namespace ClinicManagement.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("RoleNavigation");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Doctor", b =>
+                {
+                    b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Patient", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Role", b =>
