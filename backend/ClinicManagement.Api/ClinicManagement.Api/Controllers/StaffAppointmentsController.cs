@@ -128,5 +128,50 @@ namespace ClinicManagement.Api.Controllers
                 doctorCode = doctor.Code
             });
         }
+        // GET: api/staff/StaffAppointments/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
+        {
+            var appointment = await _context.Appointments
+     .Include(a => a.Patient)
+     .Include(a => a.Doctor).ThenInclude(d => d.User)
+     .FirstOrDefaultAsync(a => a.Id == id);
+
+
+            if (appointment == null) return NotFound();
+
+            var dto = new AppointmentDetailDto
+            {
+                Id = appointment.Id,
+                AppointmentCode = appointment.AppointmentCode,
+                FullName = appointment.Patient?.FullName ?? string.Empty,
+                Phone = appointment.Patient?.Phone ?? string.Empty,
+                Email = appointment.Patient?.Email,
+                DateOfBirth = appointment.Patient?.DateOfBirth ?? DateTime.MinValue,
+                Gender = appointment.Patient?.Gender.ToString() ?? string.Empty,
+                Address = appointment.Patient?.Address,
+                Reason = appointment.Reason,
+                Status = appointment.Status.ToString(),
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt,
+                StatusDetail = new AppointmentStatusDto
+                {
+                    Value = appointment.Status.ToString(),
+                    DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                      ? appointment.Doctor?.User?.Username
+                      : null,
+                    DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                      ? appointment.Doctor?.Code
+                      : null
+                }
+            };
+
+
+
+            return Ok(dto);
+        }
+
+
     }
 }

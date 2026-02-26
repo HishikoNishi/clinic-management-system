@@ -30,7 +30,7 @@ namespace ClinicManagement.Api.Controllers
                     name = d.User.Username,
                     d.Code,
                     d.Specialty,
-                    d.Status
+                    Status = d.Status.ToString(),
                 })
                 .ToListAsync();
 

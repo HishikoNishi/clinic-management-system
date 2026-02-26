@@ -21,6 +21,56 @@ namespace ClinicManagement.Api.Controllers
         {
             _context = context;
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
+        {
+            // Lấy userId từ token
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out Guid userId))
+                return Unauthorized("Invalid user id in token");
+
+            // Tìm doctor theo userId
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (doctor == null) return Unauthorized("Doctor not found");
+
+            // Lấy appointment thuộc về doctor này
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor).ThenInclude(d => d.User)
+                .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
+
+            if (appointment == null) return NotFound();
+
+            var dto = new AppointmentDetailDto
+            {
+                Id = appointment.Id,
+                AppointmentCode = appointment.AppointmentCode,
+                FullName = appointment.Patient?.FullName ?? string.Empty,
+                Phone = appointment.Patient?.Phone ?? string.Empty,
+                Email = appointment.Patient?.Email,
+                DateOfBirth = appointment.Patient?.DateOfBirth ?? DateTime.MinValue,
+                Gender = appointment.Patient?.Gender.ToString() ?? string.Empty,
+                Address = appointment.Patient?.Address,
+                Reason = appointment.Reason,
+                Status = appointment.Status.ToString(),
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt,
+                StatusDetail = new AppointmentStatusDto
+                {
+                    Value = appointment.Status.ToString(),
+                    DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                                 ? appointment.Doctor?.User?.Username
+                                 : null,
+                    DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                                 ? appointment.Doctor?.Code
+                                 : null
+                }
+            };
+
+            return Ok(dto);
+        }
+
 
         // GET: api/doctor/Appointments
         [HttpGet]
