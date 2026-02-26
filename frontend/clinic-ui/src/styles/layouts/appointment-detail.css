@@ -1,68 +1,84 @@
 .appointment-detail {
-  max-width: 600px;
-  margin: 30px auto;
-  font-family: 'Segoe UI', sans-serif;
+  max-width: 700px;
+  margin: 40px auto;
+  font-family: "Poppins", "Roboto", "Segoe UI", sans-serif;
   color: #333;
+  background: linear-gradient(135deg, #fdfbfb 0%, #f7f7f7 100%);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 8px 20px rgba(111, 66, 193, 0.15);
 }
 
-h2 {
+/* Tiêu đề */
+.appointment-detail h2 {
   text-align: center;
-  margin-bottom: 20px;
-  color: #cab3db; /* Indigo */
+  margin-bottom: 24px;
+  color: #4a2c6d;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.5px;
 }
 
+/* Nội dung chi tiết */
 .detail-card {
-  background: #fdfdff;
-  border-radius: 10px;
+  background: #fff;
+  border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 10px rgba(75,0,130,0.15);
+  box-shadow: 0 4px 12px rgba(111,66,193,0.1);
 }
 
 .detail-row {
-  margin: 12px 0;
+  margin: 14px 0;
   font-size: 15px;
+  color: #2c3e50;
 }
 
 .label {
   font-weight: 600;
-  color: #2e1342; /* Indigo */
+  color: #4a2c6d;
   margin-right: 8px;
 }
 
+/* Status */
 .status {
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
 }
 
 .status.confirmed {
-  background-color: #6a5acd; /* SlateBlue */
-  color: #fff;
+  background-color: #e6f7e6;
+  color: #2f6627;
 }
 
 .status.pending {
-  background-color: #9370db; /* MediumPurple */
-  color: #fff;
+  background-color: #fff8d9;
+  color: #8a6d3b;
 }
 
 .status.completed {
-  background-color: #20b2aa; /* LightSeaGreen */
-  color: #fff;
+  background-color: #e6f0ff;
+  color: #2c3e50;
 }
 
 .status.cancelled {
-  background-color: #8b0000; /* DarkRed */
-  color: #fff;
+  background-color: #fde2e2;
+  color: #721c24;
 }
 
+/* Nút quay lại */
 .back-btn {
   display: block;
   margin: 30px auto 0;
   padding: 12px 28px;
-  background:#a89cc0;
+  background: linear-gradient(135deg, #6f42c1, #4a90e2);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -71,12 +87,12 @@ h2 {
 
 .back-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(32,178,170,0.4);
+  box-shadow: 0 6px 16px rgba(111,66,193,0.3);
 }
 
+/* Error */
 .error {
-  color: #8b0000;
+  color: #e74c3c;
   text-align: center;
   font-weight: 600;
 }
-

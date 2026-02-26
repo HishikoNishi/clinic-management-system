@@ -72,7 +72,7 @@ const handlePhoneInput = () => {
 }
 
 const validatePhone = () => {
-  errors.phone = form.phone.length !== 10 ? "Please enter right your phone number" : ""
+  errors.phone = form.phone.length !== 10 ? "Please enter a valid phone number" : ""
 }
 
 const validateEmail = () => {
@@ -101,12 +101,7 @@ const submit = async () => {
       const appointmentData = res.data
       localStorage.setItem("appointmentCode", appointmentData.appointmentCode)
 
-
-      // Hiện thông báo và chuyển trang
-
-     
       if (window.confirm("Appointment created successfully! Go to Your Appointment?")) {
-
         router.push("/appointmentdetail")
       }
     } catch (err: any) {
@@ -115,11 +110,9 @@ const submit = async () => {
   }
 }
 
-
 const goToMyAppointment = () => {
-  const appointmentCode = localStorage.getItem("appointmentCode")
-  if (appointmentCode) router.push("/appointmentdetail")
-  else router.push("/appointmentdetail")
+  router.push("/appointmentdetail")
 }
 </script>
+
 <style src="@/styles/layouts/appointment.css"></style>
