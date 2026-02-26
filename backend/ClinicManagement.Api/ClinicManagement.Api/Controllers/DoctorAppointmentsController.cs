@@ -84,9 +84,8 @@ namespace ClinicManagement.Api.Controllers
 
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
-
             if (appointment == null)
-                return Forbid(); if (appointment == null) return NotFound();
+                return NotFound("Appointment not found or not assigned to this doctor");
 
             appointment.Status = AppointmentStatus.Completed;
             await _context.SaveChangesAsync();

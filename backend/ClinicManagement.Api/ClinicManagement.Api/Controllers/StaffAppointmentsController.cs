@@ -43,7 +43,16 @@ namespace ClinicManagement.Api.Controllers
                     AppointmentDate = a.AppointmentDate,
                     AppointmentTime = a.AppointmentTime,
                     CreatedAt = a.CreatedAt,
-  
+                    StatusDetail = new AppointmentStatusDto
+                    {
+                        Value = a.Status.ToString(),
+                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+                                     ? a.Doctor.User.Username   // lấy username từ User
+                                     : null,
+                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+                                     ? a.Doctor.Code
+                                     : null
+                    }
 
                 })
                 .ToListAsync();

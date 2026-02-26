@@ -1,4 +1,5 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
+<<<<<<< Updated upstream
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
@@ -74,6 +75,18 @@
       <File FileName="ClinicManagement.Api/Controllers/StaffAppointmentsController.cs" Line="87" Column="22" />
 >>>>>>> Stashed changes
 >>>>>>> Stashed changes
+=======
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/AppointmentsController.cs">
+    <Files>
+      <File FileName="ClinicManagement.Api/Controllers/DoctorsController.cs" Line="97" Column="10" />
+      <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="1" Column="1" />
+>>>>>>> Stashed changes
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -82,6 +95,7 @@
           <Node name="ClinicManagement.Api" expanded="True">
             <Node name="ClinicManagement.Api" expanded="True">
               <Node name="Controllers" expanded="True" />
+<<<<<<< Updated upstream
 =======
           <Node name="ClinicManagement.Api">
             <Node name="ClinicManagement.Api">
@@ -95,10 +109,17 @@
               </Node>
               <Node name="Models" expanded="True" />
               <Node name="Utils" expanded="True" />
+=======
+>>>>>>> Stashed changes
             </Node>
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+<<<<<<< Updated upstream
+=======
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+>>>>>>> Stashed changes
 </Properties>

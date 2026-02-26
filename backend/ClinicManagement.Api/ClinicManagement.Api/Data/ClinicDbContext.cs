@@ -1,6 +1,7 @@
 ﻿using ClinicManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System;
 
 namespace ClinicManagement.Api.Data
 {
@@ -119,96 +120,100 @@ namespace ClinicManagement.Api.Data
             });
 
             // ================= SEED DATA =================
-
             var hasher = new PasswordHasher<User>();
 
-            // Roles
-            var adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
-            var doctorRole = new Role { Id = Guid.NewGuid(), Name = "Doctor" };
-            var staffRole = new Role { Id = Guid.NewGuid(), Name = "Staff" };
-            var guestRole = new Role { Id = Guid.NewGuid(), Name = "Guest" };
+            // Fixed GUIDs cho Role
+            var adminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var staffRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var guestRoleId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
             modelBuilder.Entity<Role>().HasData(
-                adminRole, doctorRole, staffRole, guestRole
+                new Role { Id = adminRoleId, Name = "Admin" },
+                new Role { Id = doctorRoleId, Name = "Doctor" },
+                new Role { Id = staffRoleId, Name = "Staff" },
+                new Role { Id = guestRoleId, Name = "Guest" }
             );
 
-            // Users
+            // Fixed GUIDs cho User
+            var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var staffUserId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+            var doctorUser1Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+            var doctorUser2Id = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+            var doctorUser3Id = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+
             var adminUser = new User
             {
-                Id = Guid.NewGuid(),
+                Id = adminUserId,
                 Username = "admin",
                 PasswordHash = hasher.HashPassword(null, "Admin@123"),
-                RoleId = adminRole.Id
+                RoleId = adminRoleId
             };
+
             var staffUser = new User
             {
-                Id = Guid.NewGuid(),
+                Id = staffUserId,
                 Username = "staff1",
                 PasswordHash = hasher.HashPassword(null, "Staff@123"),
-                RoleId = staffRole.Id
+                RoleId = staffRoleId
             };
+
             var doctorUser1 = new User
             {
-                Id = Guid.NewGuid(),
+                Id = doctorUser1Id,
                 Username = "doctor1",
                 PasswordHash = hasher.HashPassword(null, "Doctor@123"),
-                RoleId = doctorRole.Id
+                RoleId = doctorRoleId
             };
 
             var doctorUser2 = new User
             {
-                Id = Guid.NewGuid(),
+                Id = doctorUser2Id,
                 Username = "doctor2",
                 PasswordHash = hasher.HashPassword(null, "Doctor@123"),
-                RoleId = doctorRole.Id
+                RoleId = doctorRoleId
             };
 
             var doctorUser3 = new User
             {
-                Id = Guid.NewGuid(),
+                Id = doctorUser3Id,
                 Username = "doctor3",
                 PasswordHash = hasher.HashPassword(null, "Doctor@123"),
-                RoleId = doctorRole.Id
+                RoleId = doctorRoleId
             };
 
-            modelBuilder.Entity<User>().HasData(
-           adminUser,
-           staffUser,
-           doctorUser1,
-           doctorUser2,
-           doctorUser3
-       );
+            modelBuilder.Entity<User>().HasData(adminUser, staffUser, doctorUser1, doctorUser2, doctorUser3);
 
-            // Doctors
+            // Doctors (GUID cố định)
             modelBuilder.Entity<Doctor>().HasData(
                 new Doctor
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Parse("99999999-0000-0000-0000-000000000001"),
                     Code = "BS001",
                     Specialty = "Nội tổng quát",
                     LicenseNumber = "LIC001",
                     Status = DoctorStatus.Active,
-                    UserId = doctorUser1.Id,
+                    UserId = doctorUser1Id,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Doctor
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Parse("99999999-0000-0000-0000-000000000002"),
                     Code = "BS002",
                     Specialty = "Da liễu",
                     LicenseNumber = "LIC002",
                     Status = DoctorStatus.Active,
-                    UserId = doctorUser2.Id,
+                    UserId = doctorUser2Id,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Doctor
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Parse("99999999-0000-0000-0000-000000000003"),
                     Code = "BS003",
                     Specialty = "Tai mũi họng",
                     LicenseNumber = "LIC003",
                     Status = DoctorStatus.Active,
-                    UserId = doctorUser3.Id,
+                    UserId = doctorUser3Id,
                     CreatedAt = DateTime.UtcNow
                 }
             );
