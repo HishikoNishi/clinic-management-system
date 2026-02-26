@@ -66,6 +66,7 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> CheckIn(Guid id)
         {
             var appointment = await _context.Appointments.FindAsync(id);
+
             if (appointment == null)
                 return NotFound("Không tìm thấy lịch hẹn");
 
@@ -82,19 +83,19 @@ namespace ClinicManagement.Api.Controllers
         // 4️⃣ Tạo hoá đơn
         // ==============================
         [HttpPost("invoices")]
-        public async Task<IActionResult> CreateInvoice([FromBody] TaoHoaDonDto dto)
+        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto dto)
         {
-            var appointment = await _context.Appointments.FindAsync(dto.MaLichHen);
+            var appointment = await _context.Appointments.FindAsync(dto.AppointmentId);
             if (appointment == null)
                 return NotFound("Không tìm thấy lịch hẹn");
 
-            var invoice = new HoaDon
+            var invoice = new Invoice
             {
                 Id = Guid.NewGuid(),
-                MaLichHen = dto.MaLichHen,
-                SoTien = dto.SoTien,
-                NgayTao = DateTime.UtcNow,
-                DaThanhToan = false
+                AppointmentId = dto.AppointmentId,
+                Amount = dto.Amount,
+                CreatedAt = DateTime.UtcNow,
+                IsPaid = false
             };
 
             _context.Invoices.Add(invoice);
@@ -113,11 +114,11 @@ namespace ClinicManagement.Api.Controllers
             if (invoice == null)
                 return NotFound("Không tìm thấy hoá đơn");
 
-            if (invoice.DaThanhToan)
+            if (invoice.IsPaid)
                 return BadRequest("Hoá đơn đã thanh toán");
 
-            invoice.DaThanhToan = true;
-            invoice.NgayThanhToan = DateTime.UtcNow;
+            invoice.IsPaid = true;
+            invoice.PaymentDate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return Ok("Thanh toán thành công");
