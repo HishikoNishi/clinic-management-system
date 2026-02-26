@@ -1,0 +1,301 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Dtos.Patient;
+using ClinicManagement.Api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace ClinicManagement.Api.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PatientsController : ControllerBase
+    {
+        private readonly ClinicDbContext _context;
+
+        public PatientsController(ClinicDbContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// GET /api/patients
+        /// Admin, Staff: Xem tất cả bệnh nhân
+        /// </summary>
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllPatients([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                // Validation
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 100) pageSize = 100; // Max 100 items per page
+
+                var totalCount = await _context.Patients
+                    .Where(p => !p.IsDeleted)
+                    .CountAsync();
+
+                var patients = await _context.Patients
+                    .Where(p => !p.IsDeleted)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new PatientDto
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender.ToString(),
+                        Phone = p.Phone,
+                        Email = p.Email,
+                        Address = p.Address,
+                        Note = p.Note,
+                        CreatedAt = p.CreatedAt,
+                        UpdatedAt = p.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = patients,
+                    pagination = new
+                    {
+                        page = page,
+                        pageSize = pageSize,
+                        totalCount = totalCount,
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi khi lấy danh sách bệnh nhân",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// GET /api/patients/{id}
+        /// Admin, Staff, Doctor: Xem chi tiết bệnh nhân
+        /// </summary>
+        [Authorize(Roles = "Admin,Staff,Doctor")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPatientById(Guid id)
+        {
+            try
+            {
+                var patient = await _context.Patients
+                    .Where(p => p.Id == id && !p.IsDeleted)
+                    .Select(p => new PatientDto
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender.ToString(),
+                        Phone = p.Phone,
+                        Email = p.Email,
+                        Address = p.Address,
+                        Note = p.Note,
+                        CreatedAt = p.CreatedAt,
+                        UpdatedAt = p.UpdatedAt
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (patient == null)
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Bệnh nhân không tồn tại"
+                    });
+
+                return Ok(new
+                {
+                    success = true,
+                    data = patient
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi khi lấy thông tin bệnh nhân",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// GET /api/patients/my
+        /// Doctor: Chỉ xem bệnh nhân có lịch khám với mình
+        /// </summary>
+        [Authorize(Roles = "Doctor")]
+        [HttpGet("my/appointments")]
+        public async Task<IActionResult> GetMyPatients([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                // Lấy thông tin bác sĩ hiện tại từ JWT claim
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdString, out var userId))
+                    return Unauthorized(new
+                    {
+                        success = false,
+                        message = "Không xác định được thông tin bác sĩ"
+                    });
+
+                // Kiểm tra bác sĩ có tồn tại
+                var doctor = await _context.Doctors
+                    .FirstOrDefaultAsync(d => d.UserId == userId);
+
+                if (doctor == null)
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Bác sĩ không tồn tại"
+                    });
+
+                // Validation
+                if (page < 1) page = 1;
+                if (pageSize < 1) pageSize = 10;
+                if (pageSize > 100) pageSize = 100;
+
+                // Lấy danh sách bệnh nhân có lịch khám với bác sĩ này
+                var totalCount = await _context.Appointments
+                    .Where(a => a.DoctorId == doctor.Id)
+                    .Select(a => a.PatientId)
+                    .Distinct()
+                    .CountAsync();
+
+                var patients = await _context.Appointments
+                    .Where(a => a.DoctorId == doctor.Id)
+                    .Select(a => a.Patient)
+                    .Distinct()
+                    .Where(p => !p.IsDeleted)
+                    .OrderByDescending(p => p.UpdatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new PatientDto
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName,
+                        DateOfBirth = p.DateOfBirth,
+                        Gender = p.Gender.ToString(),
+                        Phone = p.Phone,
+                        Email = p.Email,
+                        Address = p.Address,
+                        Note = p.Note,
+                        CreatedAt = p.CreatedAt,
+                        UpdatedAt = p.UpdatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = patients,
+                    pagination = new
+                    {
+                        page = page,
+                        pageSize = pageSize,
+                        totalCount = totalCount,
+                        totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi khi lấy danh sách bệnh nhân của bác sĩ",
+                    error = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// PUT /api/patients/{id}
+        /// Staff: Cập nhật thông tin hành chính (địa chỉ, ghi chú...)
+        /// </summary>
+        [Authorize(Roles = "Staff")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePatient(Guid id, [FromBody] UpdatePatientRequest request)
+        {
+            try
+            {
+                // Validation
+                if (string.IsNullOrWhiteSpace(request?.Address) && request.Address != null)
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Địa chỉ không được để trống"
+                    });
+
+                var patient = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+
+                if (patient == null)
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "Bệnh nhân không tồn tại"
+                    });
+
+                // Update thông tin hành chính
+                if (!string.IsNullOrWhiteSpace(request.Address))
+                    patient.Address = request.Address;
+
+                if (!string.IsNullOrWhiteSpace(request.Note))
+                    patient.Note = request.Note;
+
+                patient.UpdatedAt = DateTime.UtcNow;
+
+                _context.Patients.Update(patient);
+                await _context.SaveChangesAsync();
+
+                var updatedPatientDto = new PatientDto
+                {
+                    Id = patient.Id,
+                    FullName = patient.FullName,
+                    DateOfBirth = patient.DateOfBirth,
+                    Gender = patient.Gender.ToString(),
+                    Phone = patient.Phone,
+                    Email = patient.Email,
+                    Address = patient.Address,
+                    Note = patient.Note,
+                    CreatedAt = patient.CreatedAt,
+                    UpdatedAt = patient.UpdatedAt
+                };
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật thông tin bệnh nhân thành công",
+                    data = updatedPatientDto
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi khi cập nhật thông tin bệnh nhân",
+                    error = ex.Message
+                });
+            }
+        }
+    }
+}

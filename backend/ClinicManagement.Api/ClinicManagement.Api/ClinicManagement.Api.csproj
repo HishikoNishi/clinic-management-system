@@ -20,10 +20,8 @@
 
   <ItemGroup>
     <None Remove="Dtos\Appointments\" />
-    <None Remove="Utils\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Dtos\Appointments\" />
-    <Folder Include="Utils\" />
   </ItemGroup>
 </Project>

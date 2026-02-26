@@ -19,6 +19,7 @@ namespace ClinicManagement.Api.DTOs.Appointments
         public Gender Gender { get; set; }
 
         public string? Email { get; set; }
+        public string? Address { get; set; }
 
         [Required]
         public DateTime AppointmentDate { get; set; }
