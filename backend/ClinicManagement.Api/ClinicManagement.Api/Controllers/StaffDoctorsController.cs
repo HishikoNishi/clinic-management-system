@@ -1,5 +1,4 @@
-﻿using System.Data;
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +7,18 @@ using Microsoft.EntityFrameworkCore;
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class DoctorsController : ControllerBase
+    [Route("api/staff/[controller]")]
+    [Authorize(Roles = "Staff")]
+    public class StaffDoctorsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
 
-        public DoctorsController(ClinicDbContext context)
+        public StaffDoctorsController(ClinicDbContext context)
         {
             _context = context;
         }
 
-        // ✅ 1. STAFF tìm danh sách bác sĩ
-        [Authorize(Roles = "Staff")]
+        // STAFF tìm danh sách bác sĩ
         [HttpGet]
         public async Task<IActionResult> GetDoctors()
         {
@@ -28,17 +27,17 @@ namespace ClinicManagement.Api.Controllers
                 .Select(d => new
                 {
                     d.Id,
-                    name = d.User.Username, 
+                    name = d.User.Username,
                     d.Code,
                     d.Specialty,
-                    d.Status
+                    Status = d.Status.ToString(),
                 })
                 .ToListAsync();
 
             return Ok(doctors);
         }
 
-        [Authorize(Roles = "Staff")]
+        //  STAFF xem bệnh nhân của bác sĩ
         [HttpGet("{id}/patients")]
         public async Task<IActionResult> GetDoctorPatients(Guid id)
         {
@@ -55,7 +54,6 @@ namespace ClinicManagement.Api.Controllers
             {
                 doctorName = doctor.User.Username,
                 doctor.Specialty,
-
                 patients = doctor.Appointments
                     .Where(a =>
                         a.Status == AppointmentStatus.Confirmed ||
@@ -75,7 +73,8 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(result);
         }
-        [Authorize(Roles = "Staff")]
+        /*
+        // STAFF xem danh sách lịch hẹn chưa gán bác sĩ
         [HttpGet("unassigned")]
         public async Task<IActionResult> GetUnassigned()
         {
@@ -95,5 +94,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(appointments);
         }
+        */
+
     }
 }

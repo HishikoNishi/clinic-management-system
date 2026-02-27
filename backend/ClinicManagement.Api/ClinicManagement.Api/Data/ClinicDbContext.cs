@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 using ClinicManagement.Api.Models;
+=======
+﻿using ClinicManagement.Api.Models;
+>>>>>>> origin/feature/appointment-api-Nhan
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +18,10 @@ namespace ClinicManagement.Api.Data
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Doctor> Doctors { get; set; } = null!;
+<<<<<<< HEAD
         public DbSet<Staff> Staffs { get; set; } = null!;
+=======
+>>>>>>> origin/feature/appointment-api-Nhan
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
 
@@ -86,6 +93,7 @@ namespace ClinicManagement.Api.Data
                 entity.HasIndex(d => d.UserId).IsUnique();
             });
 
+<<<<<<< HEAD
             /* ================================
              * STAFF
              * ================================ */
@@ -113,15 +121,25 @@ namespace ClinicManagement.Api.Data
 
                 entity.HasIndex(s => s.UserId).IsUnique();
             });
+=======
+           
+>>>>>>> origin/feature/appointment-api-Nhan
 
             /* ================================
              * SEED DATA
              * ================================ */
 
+<<<<<<< HEAD
             var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
             var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
             var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
             var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
+=======
+            var adminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var staffRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var guestRoleId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+>>>>>>> origin/feature/appointment-api-Nhan
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = adminRoleId, Name = "Admin" },
@@ -172,7 +190,7 @@ namespace ClinicManagement.Api.Data
 
                 entity.HasOne(a => a.Patient)
                       .WithMany(p => p.Appointments)
-                      .HasForeignKey(a => a.PatientId)
+.HasForeignKey(a => a.PatientId)
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(a => a.Doctor)
