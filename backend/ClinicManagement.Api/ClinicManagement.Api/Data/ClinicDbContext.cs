@@ -20,8 +20,8 @@ namespace ClinicManagement.Api.Data
 
 
 
-        public DbSet<Doctor> Doctors => Set<Doctor>();
-
+        
+            
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
