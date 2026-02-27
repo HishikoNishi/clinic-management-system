@@ -52,6 +52,17 @@ namespace ClinicManagement.Api.Data
                 entity.Property(u => u.PasswordHash)
                       .IsRequired();
 
+                entity.Property(u => u.Email)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(u => u.FullName)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(u => u.PhoneNumber)
+                      .HasMaxLength(15);
+
                 entity.HasIndex(u => u.Username).IsUnique();
 
                 entity.HasOne(u => u.RoleNavigation)
@@ -117,33 +128,8 @@ namespace ClinicManagement.Api.Data
             });
 
             /* ================================
-             * SEED DATA (GUID CỐ ĐỊNH)
+             * APPOINTMENT
              * ================================ */
-
-            var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
-            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-            var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
-            var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
-
-            modelBuilder.Entity<Role>().HasData(
-                new Role { Id = adminRoleId, Name = "Admin" },
-                new Role { Id = doctorRoleId, Name = "Doctor" },
-                new Role { Id = staffRoleId, Name = "Staff" },
-                new Role { Id = guestRoleId, Name = "Guest" }
-            );
-
-            var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-
-            var adminUser = new User
-            {
-                Id = adminUserId,
-                Username = "admin",
-                RoleId = adminRoleId
-            };
-
-            adminUser.PasswordHash =
-                new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
-
             modelBuilder.Entity<Appointment>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -200,6 +186,35 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
+
+
+            /* ================================
+             * SEED DATA (GUID CỐ ĐỊNH)
+             * ================================ */
+
+            var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = adminRoleId, Name = "Admin" },
+                new Role { Id = doctorRoleId, Name = "Doctor" },
+                new Role { Id = staffRoleId, Name = "Staff" },
+                new Role { Id = guestRoleId, Name = "Guest" }
+            );
+
+            var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+            var adminUser = new User
+            {
+                Id = adminUserId,
+                Username = "admin",
+                RoleId = adminRoleId
+            };
+
+            adminUser.PasswordHash =
+                new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
 
 
             modelBuilder.Entity<User>().HasData(adminUser);

@@ -27,9 +27,5 @@ namespace ClinicManagement.Api.Models
         public ICollection<Appointment> Appointments { get; set; }
         = new List<Appointment>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-
-        public ICollection<Appointment> Appointments { get; set; }
-            = new List<Appointment>();
     }
 }
