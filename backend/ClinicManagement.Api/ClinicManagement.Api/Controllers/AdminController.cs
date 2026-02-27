@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.User;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Repositories;
@@ -9,19 +6,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ClinicManagement.Api.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepo;
         private readonly ClinicDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher = new();
 
-        public UserController(IUserRepository userRepo, ClinicDbContext context)
+        public AdminController(IUserRepository userRepo, ClinicDbContext context)
         {
             _userRepo = userRepo;
             _context = context;
@@ -50,8 +51,9 @@ namespace ClinicManagement.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(Guid id)
         {
-            // Users can only view their own profile unless they are admin
-            if (!User.IsInRole("Admin") && !User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value.Equals(id.ToString()) == true)
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!User.IsInRole("Admin") && userId != id.ToString())
             {
                 return Forbid();
             }
