@@ -10,6 +10,7 @@ Thumbs.db
 *.sln.docstates
 .vscode/
 .idea/
+.vs/
 
 ########################################
 # ASP.NET Core / Visual Studio
@@ -17,14 +18,6 @@ Thumbs.db
 **/bin/
 **/obj/
 *.log
-
-# Rider
-.idea/
-
-# Visual Studio Code
-.vscode/
-
-# Dotnet tools
 .dotnet/
 
 ########################################
@@ -35,25 +28,20 @@ Thumbs.db
 secrets.json
 
 ########################################
-# Node / Vue
+# Node / Frontend
 ########################################
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
 dist/
 dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
 ########################################
 # Environment files
 ########################################
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
 
 ########################################
 # Build outputs
@@ -69,6 +57,9 @@ coverage/
 *.coverage
 
 ########################################
-# Others
+# Logs
 ########################################
 logs/
+
+# OPTIONAL (dev only)
+# **/Migrations/

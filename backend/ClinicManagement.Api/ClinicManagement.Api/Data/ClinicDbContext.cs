@@ -17,6 +17,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Staff> Staffs { get; set; } = null!;
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
+        public DbSet<Invoice> Invoices { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +51,17 @@ namespace ClinicManagement.Api.Data
                 entity.Property(u => u.PasswordHash)
                       .IsRequired();
 
+                entity.Property(u => u.Email)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(u => u.FullName)
+                      .IsRequired()
+                      .HasMaxLength(150);
+
+                entity.Property(u => u.PhoneNumber)
+                      .HasMaxLength(15);
+
                 entity.HasIndex(u => u.Username).IsUnique();
 
                 entity.HasOne(u => u.RoleNavigation)
@@ -68,6 +80,10 @@ namespace ClinicManagement.Api.Data
                 entity.Property(d => d.Code)
                       .IsRequired()
                       .HasMaxLength(20);
+
+                entity.Property(d => d.FullName)
+                      .IsRequired()
+                      .HasMaxLength(30);
 
                 entity.Property(d => d.Specialty)
                       .IsRequired()
@@ -115,36 +131,6 @@ namespace ClinicManagement.Api.Data
             });
 
             /* ================================
-             * SEED DATA
-             * ================================ */
-
-            var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
-            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-            var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
-            var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
-
-            modelBuilder.Entity<Role>().HasData(
-                new Role { Id = adminRoleId, Name = "Admin" },
-                new Role { Id = doctorRoleId, Name = "Doctor" },
-                new Role { Id = staffRoleId, Name = "Staff" },
-                new Role { Id = guestRoleId, Name = "Guest" }
-            );
-
-            var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-
-            var adminUser = new User
-            {
-                Id = adminUserId,
-                Username = "admin",
-                RoleId = adminRoleId
-            };
-
-            adminUser.PasswordHash =
-                new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
-
-            modelBuilder.Entity<User>().HasData(adminUser);
-
-            /* ================================
              * APPOINTMENT
              * ================================ */
             modelBuilder.Entity<Appointment>(entity =>
@@ -181,9 +167,7 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-            /* ================================
-             * PATIENT
-             * ================================ */
+
             modelBuilder.Entity<Patient>(entity =>
             {
                 entity.HasKey(p => p.Id);
@@ -196,6 +180,47 @@ namespace ClinicManagement.Api.Data
                       .HasConversion<string>()
                       .IsRequired();
             });
+            modelBuilder.Entity<Invoice>(entity =>
+            {
+                entity.HasKey(i => i.Id);
+                entity.HasOne(i => i.Appointment)
+                      .WithOne()
+                      .HasForeignKey<Invoice>(i => i.AppointmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+
+            /* ================================
+             * SEED DATA (GUID CỐ ĐỊNH)
+             * ================================ */
+
+            var adminRoleId  = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = adminRoleId, Name = "Admin" },
+                new Role { Id = doctorRoleId, Name = "Doctor" },
+                new Role { Id = staffRoleId, Name = "Staff" },
+                new Role { Id = guestRoleId, Name = "Guest" }
+            );
+
+            var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+            var adminUser = new User
+            {
+                Id = adminUserId,
+                Username = "admin",
+                RoleId = adminRoleId
+            };
+
+            adminUser.PasswordHash =
+                new PasswordHasher<User>().HashPassword(adminUser, "Admin@123");
+
+
+            modelBuilder.Entity<User>().HasData(adminUser);
         }
     }
 }
