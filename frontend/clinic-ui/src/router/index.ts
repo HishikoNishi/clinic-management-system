@@ -32,11 +32,6 @@ const routes: RouteRecordRaw[] = [
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
   },
-  {
-    path: '/patient',
-    name: 'Patient',
-    component: () => import('@/views/patients/PatientList.vue')
-  }
 ]
 
 const router = createRouter({

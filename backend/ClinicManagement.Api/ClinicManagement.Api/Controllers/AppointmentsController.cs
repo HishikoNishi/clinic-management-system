@@ -1,5 +1,6 @@
 ﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
+using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Utils;
@@ -91,7 +92,34 @@ namespace ClinicManagement.Api.Controllers
             });
 
         }
+        [HttpPost("search")]
+        public async Task<IActionResult> Search(SearchAppointmentDto dto)
+        {
+            var appointment = await _context.Appointments
+                .Include(x => x.Patient)
+                .FirstOrDefaultAsync(x =>
+                    x.AppointmentCode == dto.AppointmentCode &&
+                    x.Patient.Phone == dto.Phone);
 
+            if (appointment == null)
+                return NotFound();
+
+            return Ok(new AppointmentDetailDto
+            {
+                AppointmentCode = appointment.AppointmentCode,
+                FullName = appointment.Patient.FullName,
+                Phone = appointment.Patient.Phone,
+                Email = appointment.Patient.Email,
+                DateOfBirth = appointment.Patient.DateOfBirth,
+                Gender = appointment.Patient.Gender.ToString(),
+                Address = appointment.Patient.Address,
+                Reason = appointment.Reason,
+                Status = appointment.Status.ToString(),
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt
+            });
+        }
         [HttpPost("cancel")]
         public async Task<IActionResult> Cancel(CancelAppointmentDto dto)
         {
