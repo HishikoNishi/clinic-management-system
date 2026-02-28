@@ -5,17 +5,14 @@ namespace ClinicManagement.Api.Dtos.Doctor
     public class CreateDoctorDto
     {
         [Required]
-        [MaxLength(100)]
-        public string Username { get; set; } = null!;
-
-        [Required]
-        [MinLength(6)]
-        public string Password { get; set; } = null!;
+        public Guid UserId { get; set; }
 
         [Required]
         [MaxLength(20)]
         public string Code { get; set; } = null!;
-
+        [Required]
+        [MaxLength(30)]
+        public string FullName { get; set; } = null!;
         [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = null!;

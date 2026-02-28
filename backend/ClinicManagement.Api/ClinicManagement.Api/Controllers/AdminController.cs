@@ -74,7 +74,7 @@ namespace ClinicManagement.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+        public async Task<IActionResult> CreateUser([FromBody] CreateAccountRequest request)
         {
             var existing = await _userRepo.GetByUsernameAsync(request.Username);
             if (existing != null)

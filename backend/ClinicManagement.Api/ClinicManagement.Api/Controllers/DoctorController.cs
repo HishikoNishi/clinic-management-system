@@ -14,12 +14,10 @@ namespace ClinicManagement.Api.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly ClinicDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
 
         public DoctorController(ClinicDbContext context)
         {
             _context = context;
-            _passwordHasher = new PasswordHasher<User>();
         }
 
         /* ================= GET ALL ================= */
@@ -71,58 +69,37 @@ namespace ClinicManagement.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
-                return BadRequest("Username already exists.");
+            // Kiểm tra User có tồn tại không
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null)
+                return BadRequest(new { message = "User not found." });
 
+            // Kiểm tra User đã có Doctor profile chưa
+            if (await _context.Doctors.AnyAsync(d => d.UserId == dto.UserId))
+                return BadRequest(new { message = "This user already has a doctor profile." });
+
+            // Kiểm tra Code có trùng không
             if (await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
-                return BadRequest("Doctor code already exists.");
-
-            var doctorRole = await _context.Roles
-                .FirstOrDefaultAsync(r => r.Name == "Doctor");
-
-            if (doctorRole == null)
-                return BadRequest("Doctor role not found.");
-
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Username = dto.Username,
-                RoleId = doctorRole.Id,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
+                return BadRequest(new { message = "Doctor code already exists." });
 
             var doctor = new Doctor
             {
                 Id = Guid.NewGuid(),
                 Code = dto.Code,
+                FullName = dto.FullName,
                 Specialty = dto.Specialty,
-                LicenseNumber = dto.LicenseNumber,
+                LicenseNumber = dto.LicenseNumber ?? string.Empty,
                 Status = DoctorStatus.Active,
-                UserId = user.Id,
+                UserId = dto.UserId,
                 CreatedAt = DateTime.UtcNow
             };
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                await _context.Users.AddAsync(user);
-                await _context.Doctors.AddAsync(doctor);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            await _context.Doctors.AddAsync(doctor);
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Get), new { id = doctor.Id }, new
             {
-                message = "Doctor created successfully",
+                message = "Doctor profile created successfully",
                 doctorId = doctor.Id
             });
         }
@@ -134,48 +111,36 @@ namespace ClinicManagement.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var doctor = await _context.Doctors
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
-
+            var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null)
                 return NotFound();
 
             if (doctor.Code != dto.Code &&
                 await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
-                return BadRequest("Doctor code already exists.");
-
-            if (doctor.User.Username != dto.Username &&
-                await _context.Users.AnyAsync(u => u.Username == dto.Username))
-                return BadRequest("Username already exists.");
+                return BadRequest(new { message = "Doctor code already exists." });
 
             doctor.Code = dto.Code;
+            doctor.FullName = dto.FullName;
             doctor.Specialty = dto.Specialty;
-            doctor.LicenseNumber = dto.LicenseNumber;
-            doctor.User.Username = dto.Username;
+            doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor updated successfully" });
+            return Ok(new { message = "Doctor profile updated successfully." });
         }
 
         /* ================= DELETE ================= */
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var doctor = await _context.Doctors
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.Id == id);
-
+            var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null)
                 return NotFound();
 
             _context.Doctors.Remove(doctor);
-            _context.Users.Remove(doctor.User);
-
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor deleted successfully" });
+            return Ok(new { message = "Doctor profile deleted successfully." });
         }
     }
 }

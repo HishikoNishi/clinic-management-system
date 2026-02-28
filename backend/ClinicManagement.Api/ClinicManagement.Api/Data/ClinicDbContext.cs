@@ -81,6 +81,10 @@ namespace ClinicManagement.Api.Data
                       .IsRequired()
                       .HasMaxLength(20);
 
+                entity.Property(d => d.FullName)
+                      .IsRequired()
+                      .HasMaxLength(30);
+
                 entity.Property(d => d.Specialty)
                       .IsRequired()
                       .HasMaxLength(100);

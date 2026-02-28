@@ -9,13 +9,14 @@ namespace ClinicManagement.Api.Dtos.Doctor
         public string Code { get; set; } = null!;
 
         [Required]
+        [MaxLength(30)]
+        public string FullName { get; set; } = null!;
+
+        [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = null!;
 
         [MaxLength(50)]
         public string? LicenseNumber { get; set; }
-
-        [Required]
-        public string Username { get; set; } = null!;
     }
 }

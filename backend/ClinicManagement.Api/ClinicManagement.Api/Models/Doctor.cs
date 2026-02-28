@@ -13,6 +13,10 @@ namespace ClinicManagement.Api.Models
         public string Code { get; set; } = string.Empty;
 
         [Required]
+        [MaxLength(30)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = string.Empty;
 
