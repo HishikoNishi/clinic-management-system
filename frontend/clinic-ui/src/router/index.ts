@@ -7,7 +7,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/guest'
   },
   {
-    path: '/guest',
+    path: '/home',
     name: 'GuestDashboard',
     component: () => import('@/views/GuestDashboard.vue')
   },
