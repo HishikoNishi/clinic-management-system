@@ -121,7 +121,7 @@ namespace ClinicManagement.Api.Controllers
             }
 
             return CreatedAtAction(nameof(Get), new { id = doctor.Id }, new
-            {
+            {   
                 message = "Doctor created successfully",
                 doctorId = doctor.Id
             });
@@ -145,14 +145,12 @@ namespace ClinicManagement.Api.Controllers
                 await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
                 return BadRequest("Doctor code already exists.");
 
-            if (doctor.User.Username != dto.Username &&
-                await _context.Users.AnyAsync(u => u.Username == dto.Username))
-                return BadRequest("Username already exists.");
+            
 
             doctor.Code = dto.Code;
             doctor.Specialty = dto.Specialty;
             doctor.LicenseNumber = dto.LicenseNumber;
-            doctor.User.Username = dto.Username;
+          
 
             await _context.SaveChangesAsync();
 
