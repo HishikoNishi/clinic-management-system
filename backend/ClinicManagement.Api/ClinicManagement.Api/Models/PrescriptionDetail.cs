@@ -11,9 +11,9 @@ namespace ClinicManagement.Api.Models
 
         public string MedicineName { get; set; }
 
-        public string Dosage { get; set; }
-
         public int Quantity { get; set; }
+
+        public string Dosage { get; set; }
 
         public Prescription? Prescription { get; set; }
     }

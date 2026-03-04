@@ -19,6 +19,8 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.Converters
             .Add(new JsonStringEnumConverter());
+
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -108,6 +110,7 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader());
 });
 builder.Services.AddScoped<MedicalRecordService>();
+builder.Services.AddScoped<PrescriptionService>();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();

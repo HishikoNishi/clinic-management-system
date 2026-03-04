@@ -190,6 +190,21 @@ namespace ClinicManagement.Api.Data
                       .HasForeignKey<Invoice>(i => i.AppointmentId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+            /* ================================
+           * Prescription
+           * ================================ */
+
+             modelBuilder.Entity<Prescription>()
+                      .HasOne(p => p.MedicalRecord)
+                      .WithMany()
+                      .HasForeignKey(p => p.MedicalRecordId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PrescriptionDetail>()
+                .HasOne(d => d.Prescription)
+                .WithMany(p => p.Details)
+                .HasForeignKey(d => d.PrescriptionId);
+
 
 
 
