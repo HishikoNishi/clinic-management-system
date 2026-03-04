@@ -107,7 +107,7 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
-
+builder.Services.AddScoped<MedicalRecordService>();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();
