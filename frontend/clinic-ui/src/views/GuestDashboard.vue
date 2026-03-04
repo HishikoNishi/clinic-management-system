@@ -1,20 +1,5 @@
 <template>
   <div class="guest-dashboard">
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="navbar-container">
-        <div class="navbar-brand">
-          <i class="bi bi-hospital"></i>
-          <span>Clinic Management</span>
-        </div>
-        <div class="navbar-links">
-          <a href="#services" class="nav-link">Services</a>
-          <a href="#booking" class="nav-link">Book Appointment</a>
-          <a href="#search" class="nav-link">Search</a>
-        </div>
-      </div>
-    </nav>
-
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-background">
@@ -360,56 +345,6 @@
         </form>
       </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h4>Clinic Management</h4>
-            <p>Your trusted healthcare provider</p>
-          </div>
-
-          <div class="footer-section">
-            <h4>Contact</h4>
-            <p>
-              <i class="bi bi-telephone me-2"></i>
-              +84 (0) 123 456 789
-            </p>
-            <p>
-              <i class="bi bi-envelope me-2"></i>
-              info@clinic.com
-            </p>
-          </div>
-
-          <div class="footer-section">
-            <h4>Hours</h4>
-            <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
-            <p>Saturday: 9:00 AM - 4:00 PM</p>
-            <p>Sunday: Closed</p>
-          </div>
-
-          <div class="footer-section">
-            <h4>Follow Us</h4>
-            <div class="social-links">
-              <a href="#" class="social-link">
-                <i class="bi bi-facebook"></i>
-              </a>
-              <a href="#" class="social-link">
-                <i class="bi bi-twitter"></i>
-              </a>
-              <a href="#" class="social-link">
-                <i class="bi bi-instagram"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="footer-bottom">
-          <p>&copy; 2026 Clinic Management. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 

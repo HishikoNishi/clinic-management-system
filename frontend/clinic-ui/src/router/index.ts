@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth.ts'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/guest'
+    redirect: '/home'
   },
   {
     path: '/home',
@@ -19,7 +19,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
+    component: () => import('@/views/AdminDashboard.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -31,8 +31,7 @@ const routes: RouteRecordRaw[] = [
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
-  },
-]
+  },]
 
 const router = createRouter({
   history: createWebHistory(),
