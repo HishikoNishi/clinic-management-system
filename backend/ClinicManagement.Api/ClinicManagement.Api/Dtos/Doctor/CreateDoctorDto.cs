@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagement.Api.Dtos.Doctor
+public class CreateDoctorDto
 {
+<<<<<<< HEAD
     public class CreateDoctorDto
     {
         [Required]
@@ -16,8 +17,19 @@ namespace ClinicManagement.Api.Dtos.Doctor
         [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = null!;
+=======
+    [Required]
+    public string Username { get; set; } = null!;
 
-        [MaxLength(50)]
-        public string? LicenseNumber { get; set; }
-    }
+    [Required]
+    public string Password { get; set; } = null!;
+
+    [Required]
+    public string Code { get; set; } = null!;
+
+    [Required]
+    public string Specialty { get; set; } = null!;
+>>>>>>> origin/feature/doctor-frontend-MinhThu
+
+    public string? LicenseNumber { get; set; }
 }

@@ -98,8 +98,13 @@ namespace ClinicManagement.Api.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Get), new { id = doctor.Id }, new
+<<<<<<< HEAD
             {
                 message = "Doctor profile created successfully",
+=======
+            {   
+                message = "Doctor created successfully",
+>>>>>>> origin/feature/doctor-frontend-MinhThu
                 doctorId = doctor.Id
             });
         }
@@ -117,12 +122,23 @@ namespace ClinicManagement.Api.Controllers
 
             if (doctor.Code != dto.Code &&
                 await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
+<<<<<<< HEAD
                 return BadRequest(new { message = "Doctor code already exists." });
+=======
+                return BadRequest("Doctor code already exists.");
+
+            
+>>>>>>> origin/feature/doctor-frontend-MinhThu
 
             doctor.Code = dto.Code;
             doctor.FullName = dto.FullName;
             doctor.Specialty = dto.Specialty;
+<<<<<<< HEAD
             doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
+=======
+            doctor.LicenseNumber = dto.LicenseNumber;
+          
+>>>>>>> origin/feature/doctor-frontend-MinhThu
 
             await _context.SaveChangesAsync();
 

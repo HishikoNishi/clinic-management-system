@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagement.Api.Dtos.Doctor
+public class UpdateDoctorDto
 {
-    public class UpdateDoctorDto
-    {
-        [Required]
-        [MaxLength(20)]
-        public string Code { get; set; } = null!;
+    [Required]
+    public string Code { get; set; } = null!;
 
+<<<<<<< HEAD
         [Required]
         [MaxLength(30)]
         public string FullName { get; set; } = null!;
@@ -20,3 +18,10 @@ namespace ClinicManagement.Api.Dtos.Doctor
         public string? LicenseNumber { get; set; }
     }
 }
+=======
+    [Required]
+    public string Specialty { get; set; } = null!;
+
+    public string? LicenseNumber { get; set; }
+}
+>>>>>>> origin/feature/doctor-frontend-MinhThu
