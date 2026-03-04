@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\data\\clinicdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\data\\clinicdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\prescriptiondetail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\prescriptiondetail.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\prescription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -154,7 +154,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 627,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 13,
           "Children": [
             {
               "$type": "Bookmark",
@@ -194,7 +194,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "20260304134402_AddPrescription.cs",
               "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Migrations\\20260304134402_AddPrescription.cs",
@@ -207,13 +207,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "PrescriptionDetail.cs",
               "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\PrescriptionDetail.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\PrescriptionDetail.cs",
               "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\PrescriptionDetail.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\PrescriptionDetail.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-04T13:39:46.348Z",
               "EditorCaption": ""
@@ -233,19 +233,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "MedicalRecordController.cs",
-              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
-              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-04T02:30:28.985Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 4,
               "Title": "MedicalRecordService.cs",
               "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\MedicalRecordService.cs",
@@ -259,15 +246,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "ClinicDbContext.cs",
               "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Data\\ClinicDbContext.cs",
               "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Data\\ClinicDbContext.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwBAAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAQwBAAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T09:58:37.266Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "MedicalRecordController.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
+              "RelativeDocumentMoniker": "ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
+              "RelativeToolTip": "ClinicManagement.Api\\Controllers\\MedicalRecordController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-04T02:30:28.985Z",
               "EditorCaption": ""
             },
             {
