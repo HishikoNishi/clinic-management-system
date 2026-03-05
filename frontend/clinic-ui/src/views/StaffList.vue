@@ -1,5 +1,6 @@
 <template>
   <div class="staff-container">
+
     <div class="header">
       <h1>Staff Management</h1>
       <router-link to="/staff/create" class="btn-create">
@@ -7,37 +8,45 @@
       </router-link>
     </div>
 
-    <div class="table-wrapper">
+    <div class="table-card">
       <table>
         <thead>
           <tr>
             <th>Code</th>
             <th>Full Name</th>
-            <th>Email</th>
-            <th>Phone</th>
+            <th>Role</th>
+            <th>Username</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th class="center">Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr v-for="staff in staffs" :key="staff.id">
-            <td>{{ staff.code }}</td>
-            <td>{{ staff.fullName }}</td>
-            <td>{{ staff.email }}</td>
-            <td>{{ staff.phone }}</td>
+          <tr v-for="s in staffs" :key="s.id">
+            <td>{{ s.code }}</td>
+            <td>{{ s.fullName }}</td>
+            <td>{{ s.role }}</td>
+            <td>{{ s.username }}</td>
+
             <td>
               <span
-                :class="staff.isActive ? 'status-active' : 'status-inactive'"
+                class="status-badge"
+                :class="s.isActive ? 'active' : 'inactive'"
               >
-                {{ staff.isActive ? "Active" : "Inactive" }}
+                {{ s.isActive ? "Active" : "Inactive" }}
               </span>
             </td>
-            <td class="actions">
-              <button @click="goEdit(staff.id)" class="btn-edit">
+
+            <td class="center actions">
+              <button class="btn-edit" @click="goEdit(s.id)">
                 Edit
               </button>
-              <button @click="handleDelete(staff.id)" class="btn-delete">
+
+              <button class="btn-toggle" @click="toggleStatus(s)">
+                Toggle
+              </button>
+
+              <button class="btn-delete" @click="handleDelete(s.id)">
                 Delete
               </button>
             </td>
@@ -51,32 +60,45 @@
         </tbody>
       </table>
     </div>
+
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import { getStaffs, deleteStaff } from "@/services/staffService"
+import {
+  getStaffs,
+  deleteStaff,
+  updateStaff
+} from "@/services/staffService"
 
-const staffs = ref([])
+const staffs = ref<any[]>([])
 const router = useRouter()
 
 const loadStaffs = async () => {
-  try {
-    const res = await getStaffs()
-    staffs.value = res.data
-  } catch (err) {
-    console.error(err)
-  }
+  const res = await getStaffs()
+  staffs.value = res.data
 }
 
-const goEdit = (id) => {
+const goEdit = (id: string) => {
   router.push(`/staff/edit/${id}`)
 }
 
-const handleDelete = async (id) => {
-  if (!confirm("Are you sure to delete this staff?")) return
+const toggleStatus = async (staff: any) => {
+  await updateStaff(staff.id, {
+    userId: staff.userId,
+    code: staff.code,
+    fullName: staff.fullName,
+    role: staff.role,
+    isActive: !staff.isActive
+  })
+
+  loadStaffs()
+}
+
+const handleDelete = async (id: string) => {
+  if (!confirm("Delete this staff?")) return
   await deleteStaff(id)
   loadStaffs()
 }
@@ -97,23 +119,29 @@ onMounted(loadStaffs)
 }
 
 .header h1 {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
 }
 
 .btn-create {
   background: #6c4cf1;
   color: white;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   text-decoration: none;
+  font-weight: 500;
+  transition: 0.2s;
 }
 
-.table-wrapper {
+.btn-create:hover {
+  background: #5a3de0;
+}
+
+.table-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
 
 table {
@@ -127,20 +155,49 @@ thead {
 
 th,
 td {
-  padding: 14px;
+  padding: 14px 16px;
   text-align: left;
+  font-size: 14px;
 }
 
 tbody tr {
   border-top: 1px solid #eee;
+  transition: 0.2s;
+}
+
+tbody tr:hover {
+  background: #faf9ff;
+}
+
+.center {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.active {
+  background: #eafaf1;
+  color: #27ae60;
+}
+
+.inactive {
+  background: #fdecea;
+  color: #e74c3c;
 }
 
 .actions button {
-  margin-right: 8px;
-  padding: 6px 12px;
+  margin: 0 4px;
+  padding: 6px 10px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
 }
 
 .btn-edit {
@@ -148,23 +205,31 @@ tbody tr {
   color: white;
 }
 
+.btn-edit:hover {
+  background: #2980b9;
+}
+
+.btn-toggle {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-toggle:hover {
+  background: #d68910;
+}
+
 .btn-delete {
   background: #e74c3c;
   color: white;
 }
 
-.status-active {
-  color: #2ecc71;
-  font-weight: 600;
-}
-
-.status-inactive {
-  color: #e74c3c;
-  font-weight: 600;
+.btn-delete:hover {
+  background: #c0392b;
 }
 
 .empty {
   text-align: center;
-  padding: 20px;
+  padding: 25px;
+  color: #888;
 }
 </style>

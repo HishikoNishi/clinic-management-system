@@ -32,12 +32,18 @@ const routes: RouteRecordRaw[] = [
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
   },
-  {
-    path: '/staff',
-    name: 'StaffList',
-    component: () => import('@/views/staff/StaffList.vue'),
-    meta: { requiresAuth: true }
-  }
+{
+  path: "/staff",
+  component: () => import("@/views/StaffList.vue")
+},
+{
+  path: "/staff/create",
+  component: () => import("@/views/StaffForm.vue")
+},
+{
+  path: "/staff/edit/:id",
+  component: () => import("@/views/StaffForm.vue")
+}
 ]
 
 const router = createRouter({

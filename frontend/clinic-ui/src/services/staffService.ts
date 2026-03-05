@@ -1,19 +1,29 @@
-import axios from "axios"
+import api from "./api"
 
-const API_URL = "https://localhost:7235/api/Staffs"
+export const getStaffs = () => api.get("/Staffs")
 
-const api = axios.create({
-  baseURL: API_URL,
-})
+export const getStaffById = (id: string) =>
+  api.get(`/Staffs/${id}`)
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token")
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+export const createStaff = (data: {
+  userId: string
+  code: string
+  fullName: string
+  role: string
+}) =>
+  api.post("/Staffs", data)
+
+export const updateStaff = (
+  id: string,
+  data: {
+    userId: string
+    code: string
+    fullName: string
+    role: string
+    isActive: boolean
   }
-  return config
-})
+) =>
+  api.put(`/Staffs/${id}`, data)
 
-export const getStaffs = () => api.get("")
-
-export const deleteStaff = (id: number) => api.delete(`/${id}`)
+export const deleteStaff = (id: string) =>
+  api.delete(`/Staffs/${id}`)

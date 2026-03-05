@@ -61,6 +61,10 @@
             <i class="bi bi-file-earmark-text"></i>
             Medical Records
           </button>
+          <button class="action-btn staff" @click="$router.push('/staff')">
+          <i class="bi bi-people"></i>
+            Staff Management
+          </button>
         </div>
       </div>
     </main>
