@@ -8,7 +8,11 @@ const authStore = useAuthStore()
 const isNavOpen = ref(false)
 
 // Check if user is logged in and get their role
-const isLoggedIn = computed(() => !!authStore.token && !authStore.isTokenExpired())
+const isLoggedIn = computed(() => {
+  if (!authStore.token) return false
+  if (!authStore.expiresAt) return true
+  return new Date(authStore.expiresAt) > new Date()
+})
 const userRole = computed(() => authStore.role)
 
 // Guest navigation items (scroll anchors)
@@ -126,12 +130,13 @@ const navigateTo = (path: string, isAnchor: boolean) => {
           </button>
         </div>
 
-        <!-- User Info and Logout (only for logged-in users) -->
-        <div v-if="isLoggedIn && userRole !== 'Guest'" class="d-flex gap-2 align-items-center mt-3 mt-lg-0 ms-lg-3">
+        <!-- User Info + Logout -->
+        <div v-if="isLoggedIn" class="d-flex gap-2 align-items-center mt-3 mt-lg-0 ms-lg-3">
           <span class="navbar-text text-light d-none d-lg-inline">
             <i class="bi bi-person-circle me-1"></i>
-            <span class="text-capitalize">{{ userRole }}</span>
+            {{ userRole || 'User' }}
           </span>
+
           <button
             @click="handleLogout"
             class="btn btn-outline-light btn-sm"
