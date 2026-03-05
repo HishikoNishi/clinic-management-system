@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.ts'
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -32,6 +32,12 @@ const routes: RouteRecordRaw[] = [
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
   },
+  {
+    path: '/staff',
+    name: 'StaffList',
+    component: () => import('@/views/staff/StaffList.vue'),
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = createRouter({

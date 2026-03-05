@@ -1,122 +1,118 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\",
+  "WorkspaceRootPath": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\data\\clinicdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\data\\clinicdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\data\\clinicdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\clinicmanagement.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\staff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\clinicmanagement.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\clinicmanagement.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\doctorstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\doctorstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\doctorstatus.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\controllers\\securecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\controllers\\securecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\controllers\\securecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\patient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\models\\patient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\models\\patient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\services\\ijwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\services\\ijwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\services\\ijwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\repositories\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\inmemoryuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\inmemoryuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\repositories\\inmemoryuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\efuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\repositories\\efuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\repositories\\efuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\updateuserstatusrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\updateuserstatusrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\updateuserstatusrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\changepasswordrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\changepasswordrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\changepasswordrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\updateprofilerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\updateprofilerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\updateprofilerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\createuserrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\createuserrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\createuserrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\users\\os\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|c:\\h\u1ECDc de\\clinic-management-system\\backend\\clinicmanagement.api\\clinicmanagement.api\\dtos\\user\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0676A508-D306-454C-B591-66EE835AFF21}|ClinicManagement.Api\\ClinicManagement.Api.csproj|solutionrelative:clinicmanagement.api\\dtos\\user\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\UserController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -126,7 +122,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 627,
-          "SelectedChildIndex": 16,
+          "SelectedChildIndex": 12,
           "Children": [
             {
               "$type": "Bookmark",
@@ -166,102 +162,60 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "20260216134803_InitialCreate.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-16T13:48:03.156Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "20260216134722_AddStaffModel.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-16T13:47:23.052Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 8,
               "Title": "20260216130628_InitialCreate.cs",
               "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
               "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216130628_InitialCreate.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-16T13:06:28.478Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-16T13:06:28.478Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "ClinicManagement.Api",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\ClinicManagement.Api.csproj",
+              "Title": "ClinicManagement.Api.csproj",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\ClinicManagement.Api.csproj",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\ClinicManagement.Api.csproj",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\ClinicManagement.Api.csproj",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\ClinicManagement.Api.csproj",
               "RelativeToolTip": "ClinicManagement.Api\\ClinicManagement.Api.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-02-16T13:05:48.105Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-16T13:05:48.105Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "Staff.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Staff.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Staff.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\Staff.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Staff.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Staff.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\Staff.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-16T12:08:24.426Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-16T12:08:24.426Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "ClinicDbContext.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Data\\ClinicDbContext.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Data\\ClinicDbContext.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Data\\ClinicDbContext.cs",
-              "ViewState": "AgIAADYAAAAAAAAAAAAmwFgAAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAMMAAAAAAAAAAAAmwEQAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T09:58:37.266Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\appsettings.json",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\appsettings.json",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\appsettings.json",
-              "RelativeToolTip": "ClinicManagement.Api\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAoAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-01-27T08:52:10.084Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\User.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\User.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\User.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\User.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\User.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\User.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -270,11 +224,61 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Program.cs",
+              "RelativeDocumentMoniker": "ClinicManagement.Api\\Program.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Program.cs",
+              "RelativeToolTip": "ClinicManagement.Api\\Program.cs",
+              "ViewState": "AgIAAGYAAAAAAAAAAAAuwHYAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T09:06:52.04Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "ClinicManagement.Api\\appsettings.json",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\appsettings.json",
+              "RelativeToolTip": "ClinicManagement.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAACFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-27T08:52:10.084Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "20260216134722_AddStaffModel.cs",
+              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
+              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134722_AddStaffModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T13:47:23.052Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "20260216134803_InitialCreate.cs",
+              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
+              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Migrations\\20260216134803_InitialCreate.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-16T13:48:03.156Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "SecureController.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\SecureController.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\SecureController.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Controllers\\SecureController.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\SecureController.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\SecureController.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Controllers\\SecureController.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAAAAwBEAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -282,36 +286,35 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 28,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\UserController.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\UserController.cs",
               "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\UserController.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Controllers\\UserController.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\UserController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-27T09:50:43.425Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "Doctor.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Doctor.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Doctor.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\Doctor.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Doctor.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Doctor.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\Doctor.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-04T08:32:03.133Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-02-04T08:32:03.133Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 17,
               "Title": "IUserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\IUserRepository.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\IUserRepository.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Repositories\\IUserRepository.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\IUserRepository.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\IUserRepository.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Repositories\\IUserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -321,9 +324,9 @@
               "$type": "Document",
               "DocumentIndex": 11,
               "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\AuthController.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Controllers\\AuthController.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Controllers\\AuthController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -333,9 +336,9 @@
               "$type": "Document",
               "DocumentIndex": 12,
               "Title": "DoctorStatus.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\DoctorStatus.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\DoctorStatus.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\DoctorStatus.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\DoctorStatus.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\DoctorStatus.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\DoctorStatus.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -343,24 +346,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Program.cs",
-              "RelativeDocumentMoniker": "ClinicManagement.Api\\Program.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Program.cs",
-              "RelativeToolTip": "ClinicManagement.Api\\Program.cs",
-              "ViewState": "AgIAADAAAAAAAAAAAAAAADgAAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-27T09:06:52.04Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 16,
               "Title": "JwtService.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\JwtService.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\JwtService.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Services\\JwtService.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\JwtService.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\JwtService.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Services\\JwtService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -368,11 +358,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 15,
               "Title": "IJwtService.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\IJwtService.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\IJwtService.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Services\\IJwtService.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\IJwtService.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Services\\IJwtService.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Services\\IJwtService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -380,11 +370,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 14,
               "Title": "Patient.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Patient.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Patient.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\Patient.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Patient.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Patient.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\Patient.cs",
               "ViewState": "AgIAAAgAAAAAAAAAAAAAwAUAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -392,11 +382,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 18,
               "Title": "InMemoryUserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Repositories\\InMemoryUserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAIBJwDkAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -404,11 +394,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 19,
               "Title": "EFUserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Repositories\\EFUserRepository.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAYwDgAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -418,9 +408,9 @@
               "$type": "Document",
               "DocumentIndex": 10,
               "Title": "Role.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Role.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Role.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Models\\Role.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Role.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Models\\Role.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Models\\Role.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -428,11 +418,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 20,
               "Title": "UpdateUserStatusRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\UpdateUserStatusRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -440,11 +430,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 24,
               "Title": "UserDto.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\UserDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -452,11 +442,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 22,
               "Title": "UpdateProfileRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\UpdateProfileRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -464,11 +454,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 23,
               "Title": "CreateUserRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\CreateUserRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -476,11 +466,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 21,
               "Title": "ChangePasswordRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\ChangePasswordRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -488,11 +478,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 25,
               "Title": "AuthResponse.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\AuthResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -500,11 +490,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 26,
               "Title": "LoginRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\LoginRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -512,11 +502,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 27,
               "Title": "RegisterRequest.cs",
-              "DocumentMoniker": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
+              "DocumentMoniker": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
               "RelativeDocumentMoniker": "ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
-              "ToolTip": "C:\\Users\\OS\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
+              "ToolTip": "C:\\H\u1ECDc de\\clinic-management-system\\backend\\ClinicManagement.Api\\ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
               "RelativeToolTip": "ClinicManagement.Api\\Dtos\\User\\RegisterRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
