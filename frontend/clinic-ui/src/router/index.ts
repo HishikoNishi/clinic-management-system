@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.ts'
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/guest'
+    redirect: '/home'
   },
   {
-    path: '/guest',
+    path: '/home',
     name: 'GuestDashboard',
     component: () => import('@/views/GuestDashboard.vue')
   },
@@ -19,7 +19,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/Dashboard.vue'),
+    component: () => import('@/views/AdminDashboard.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -32,7 +32,14 @@ const routes: RouteRecordRaw[] = [
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
   },
+  {
+    path: '/doctors',
+    name: 'Doctors',
+    component: () => import('@/views/DoctorList.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -42,11 +49,14 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  if (to.meta.requiresAuth) {
-    if (!authStore.token || authStore.isTokenExpired()) {
-      authStore.logout()
-      return { name: 'Login' }
-    }
+  // Nếu route cần đăng nhập mà chưa có token
+  if (to.meta.requiresAuth && !authStore.token) {
+    return { name: 'Login' }
+  }
+
+  // Nếu đã login mà cố vào login lại
+  if (to.name === 'Login' && authStore.token) {
+    return { name: 'Dashboard' }
   }
 })
 

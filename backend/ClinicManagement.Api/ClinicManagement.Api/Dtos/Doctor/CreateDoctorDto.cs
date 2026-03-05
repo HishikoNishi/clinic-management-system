@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagement.Api.Dtos.Doctor
+public class CreateDoctorDto
 {
-    public class CreateDoctorDto
-    {
+
         [Required]
         public Guid UserId { get; set; }
 
@@ -16,8 +15,5 @@ namespace ClinicManagement.Api.Dtos.Doctor
         [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = null!;
-
-        [MaxLength(50)]
         public string? LicenseNumber { get; set; }
-    }
 }
