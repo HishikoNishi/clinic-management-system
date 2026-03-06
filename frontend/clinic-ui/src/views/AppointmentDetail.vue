@@ -140,4 +140,3 @@ const confirmCancel = async () => {
   }
 }
 </script>
-<style src="@/styles/layouts/appointment.css"></style>

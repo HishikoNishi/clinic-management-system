@@ -1,21 +1,5 @@
 <template>
   <div class="dashboard min-vh-100">
-
-    <!-- HEADER -->
-    <header class="dashboard-header">
-      <span class="dashboard-logo">Clinic Management</span>
-
-      <div class="dashboard-header-right">
-        <span class="dashboard-user-name">
-          {{ authStore.user?.name || 'User' }}
-        </span>
-        <button class="btn btn-outline-danger btn-sm" @click="handleLogout">
-          <i class="bi bi-box-arrow-right me-1"></i>
-          Logout
-        </button>
-      </div>
-    </header>
-
     <!-- MAIN -->
     <main class="dashboard-main">
 

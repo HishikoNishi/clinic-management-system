@@ -115,26 +115,13 @@ const handleLogin = async () => {
     })
 
     authStore.login({
-  token: response.data.token,
-  role: response.data.role,
-  expiresAt: response.data.expiresAt
-})
+      token: response.data.token,
+      role: response.data.role,
+      expiresAt: response.data.expiresAt
+    })
 
-// ✅ redirect theo role
-const role = response.data.role
+    router.push('/dashboard')
 
-if (role === 'Staff') {
-  router.push('/staff/appointments')
-}
-else if (role === 'Doctor') {
-  router.push('/doctorappointment')
-}
-else if (role === 'Admin') {
-  router.push('/dashboard')
-}
-else {
-  router.push('/login')
-}
   } catch (error) {
     console.error('Login error:', error)
     errorMessage.value = error.response?.data?.message || 'Invalid username or password. Please try again.'
