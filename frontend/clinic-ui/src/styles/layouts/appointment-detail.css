@@ -1,0 +1,100 @@
+.appointment-detail {
+  max-width: 700px;
+  margin: 40px auto;
+  font-family: "Poppins", "Roboto", "Segoe UI", sans-serif;
+  color: var(--color-text-main);
+  background: var(--color-bg-main);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 6px 20px var(--color-shadow);
+}
+
+/* Tiêu đề */
+.appointment-detail h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--color-text-main);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+/* Nội dung chi tiết */
+.detail-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 6px 20px var(--color-shadow);
+}
+
+.detail-row {
+  margin: 14px 0;
+  font-size: 15px;
+  color: var(--color-text-main);
+}
+
+.label {
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-right: 8px;
+}
+
+/* Status */
+.status {
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
+}
+
+.status.confirmed {
+  background-color: var(--color-success-bg);
+  color: var(--color-text-main);
+}
+
+.status.pending {
+  background-color: var(--color-warning-bg);
+  color: var(--color-text-main);
+}
+
+.status.completed {
+  background-color: var(--color-info-bg);
+  color: var(--color-text-main);
+}
+
+.status.cancelled {
+  background-color: var(--color-danger-bg);
+  color: var(--color-text-main);
+}
+
+/* Nút quay lại */
+.back-btn {
+  display: block;
+  margin: 30px auto 0;
+  padding: 12px 28px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-primary);
+}
+
+/* Error */
+.error {
+  color: var(--color-danger);
+  text-align: center;
+  font-weight: 600;
+}

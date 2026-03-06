@@ -81,8 +81,8 @@
   font-size: var(--font-size-base);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
-  background-color: var(--color-bg-secondary);
-  border: 2px solid var(--color-gray-200);
+  background-color: var(--color-bg-soft);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   transition: all var(--transition-base);
 }
@@ -98,8 +98,8 @@
 .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  background-color: var(--color-bg-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  background-color: var(--color-bg-card);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
 /* Disabled State */
@@ -175,9 +175,9 @@
   margin-right: var(--space-2);
   cursor: pointer;
   appearance: none;
-  border: 2px solid var(--color-gray-300);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-bg-card);
   transition: all var(--transition-base);
   accent-color: var(--color-primary);
 }
@@ -195,7 +195,7 @@
 .form-checkbox:focus,
 .form-radio:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
   border-color: var(--color-primary);
 }
 
@@ -349,8 +349,8 @@
   color: var(--color-text-primary);
   text-align: center;
   white-space: nowrap;
-  background-color: var(--color-bg-secondary);
-  border: 2px solid var(--color-gray-200);
+  background-color: var(--color-bg-soft);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
 }
 
