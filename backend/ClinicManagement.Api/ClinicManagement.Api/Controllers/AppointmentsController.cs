@@ -4,11 +4,9 @@ using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Utils;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
@@ -21,9 +19,9 @@ namespace ClinicManagement.Api.Controllers
         {
             _context = context;
         }
-       
+
         [HttpPost]
-        public async Task<IActionResult> Create( CreateAppointmentDto dto)
+        public async Task<IActionResult> Create(CreateAppointmentDto dto)
         {
             // 1️⃣ tìm patient theo SĐT + Tên (tránh trùng người)
             var patient = await _context.Patients
@@ -158,7 +156,6 @@ namespace ClinicManagement.Api.Controllers
 
         }
 
-
         [HttpPost("cancel")]
         public async Task<IActionResult> Cancel(CancelAppointmentDto dto)
         {
@@ -178,9 +175,9 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok("Huỷ lịch thành công");
         }
-       
+
 
     }
-        
+
 
 }

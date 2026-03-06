@@ -17,5 +17,6 @@ namespace ClinicManagement.Api.Models
         public bool IsActive { get; set; } = true;
 
         public Doctor? Doctor { get; set; }
+        public Staff? Staff { get; set; }
     }
 }

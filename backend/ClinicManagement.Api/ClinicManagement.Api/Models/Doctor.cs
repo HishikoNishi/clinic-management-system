@@ -13,6 +13,10 @@ namespace ClinicManagement.Api.Models
         public string Code { get; set; } = string.Empty;
 
         [Required]
+        [MaxLength(30)]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
         [MaxLength(100)]
         public string Specialty { get; set; } = string.Empty;
 
@@ -24,11 +28,8 @@ namespace ClinicManagement.Api.Models
         // ✅ FK → User 
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-
         public ICollection<Appointment> Appointments { get; set; }
-            = new List<Appointment>();
+        = new List<Appointment>();
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
