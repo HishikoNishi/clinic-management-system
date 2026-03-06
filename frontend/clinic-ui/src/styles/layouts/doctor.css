@@ -1,7 +1,7 @@
 /* ===== PAGE ===== */
 .doctor-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  background: var(--color-bg-main);
   padding: 50px;
   font-family: "Inter", sans-serif;
 }
@@ -9,11 +9,11 @@
 /* ===== HEADER ===== */
 .page-header h2 {
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text-main);
 }
 
 .page-header p {
-  color: #64748b;
+  color: var(--color-text-muted);
   margin-bottom: 0;
 }
 
@@ -26,35 +26,37 @@
 }
 
 .btn-primary-modern {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: var(--color-primary);
   border: none;
-  color: white;
+  color: var(--color-text-inverse);
 }
 
 .btn-primary-modern:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-primary);
 }
 
 /* ===== CARD ===== */
 .doctor-card {
-  background: #ffffff;
-  border-radius: 22px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 20px var(--color-shadow);
   transition: all 0.35s ease;
   height: 100%;
 }
 
 .doctor-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-xl);
 }
 
 .doctor-name {
   font-size: 18px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-main);
 }
 
 /* ===== BADGE ===== */
@@ -64,8 +66,8 @@
   padding: 6px 14px;
   border-radius: 50px;
   font-size: 13px;
-  background: #eef2ff;
-  color: #4338ca;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
 
 /* ===== ACTION BUTTONS ===== */
@@ -84,7 +86,7 @@
 .modal-backdrop-custom {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--color-bg-overlay);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
@@ -93,11 +95,11 @@
 }
 
 .modal-modern {
-  background: white;
+  background: var(--color-bg-card);
   width: 400px;
   border-radius: 25px;
   padding: 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-2xl);
   animation: fadeInScale 0.25s ease;
 }
 
@@ -115,24 +117,27 @@
 .modal-modern h5 {
   font-weight: 600;
   margin-bottom: 20px;
-  color: #1e293b;
+  color: var(--color-text-main);
 }
 
 .modal-modern input {
   border-radius: 12px;
   padding: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-soft);
+  color: var(--color-text-main);
 }
 
 .modal-modern input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--color-primary);
+  background: var(--color-bg-card);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
 /* ===== EMPTY STATE ===== */
 .empty-state {
   text-align: center;
   padding: 80px 0;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 16px;
 }
