@@ -16,21 +16,65 @@ const routes: RouteRecordRaw[] = [
     name: 'Login',
     component: () => import('@/views/Login.vue')
   },
+
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/AdminDashboard.vue'),
     meta: { requiresAuth: true }
   },
+
   {
     path: '/appointment',
     name: 'Appointment',
     component: () => import('@/views/AppointmentView.vue')
   },
+
   {
     path: '/appointmentdetail',
     name: 'AppointmentDetail',
     component: () => import('@/views/AppointmentDetail.vue')
+  },
+
+  // ✅ STAFF AREA
+  {
+    path: '/staff/appointments',
+    name: 'StaffAppointment',
+    component: () => import('@/views/staff/StaffAppointment.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },  
+  {
+    path: '/staff/appointments/:id',
+    name: 'StaffAppointmentDetail',
+    component: () => import('@/views/staff/StaffAppointmentDetail.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/patients',
+    name: 'PatientPage',
+    component: () => import('@/views/PatientPage.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/doctors',
+    name: 'DoctorPage',
+    component: () => import('@/views/DoctorPage.vue'),
+    meta: { requiresAuth: true, role: 'Staff' }
+  },
+
+  {
+    path: '/doctorappointment',
+    name: 'DoctorAppointment',
+    component: () => import('@/views/DoctorAppointments.vue'),
+    meta: { requiresAuth: true, role: 'Doctor' }
+  },
+  {
+  path: '/doctor/appointments/:id',
+  name: 'DoctorAppointmentDetail',
+  component: () => import('@/views/DoctorAppointmentDetail.vue'),
+  meta: { requiresRole: 'Doctor' }
   },
   {
     path: '/doctors',
@@ -49,14 +93,18 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  // Nếu route cần đăng nhập mà chưa có token
-  if (to.meta.requiresAuth && !authStore.token) {
-    return { name: 'Login' }
+  if (to.meta.requiresAuth) {
+    if (!authStore.token) {
+      authStore.logout()
+      return { name: 'Login' }
+    }
   }
 
-  // Nếu đã login mà cố vào login lại
-  if (to.name === 'Login' && authStore.token) {
-    return { name: 'Dashboard' }
+  // ✅ check role
+  if (to.meta.role) {
+    if (authStore.role !== to.meta.role) {
+      return { name: 'Dashboard' }
+    }
   }
 })
 

@@ -1,0 +1,98 @@
+.appointment-detail {
+  max-width: 700px;
+  margin: 40px auto;
+  font-family: "Poppins", "Roboto", "Segoe UI", sans-serif;
+  color: #333;
+  background: linear-gradient(135deg, #fdfbfb 0%, #f7f7f7 100%);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 8px 20px rgba(111, 66, 193, 0.15);
+}
+
+/* Tiêu đề */
+.appointment-detail h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #4a2c6d;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+/* Nội dung chi tiết */
+.detail-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(111,66,193,0.1);
+}
+
+.detail-row {
+  margin: 14px 0;
+  font-size: 15px;
+  color: #2c3e50;
+}
+
+.label {
+  font-weight: 600;
+  color: #4a2c6d;
+  margin-right: 8px;
+}
+
+/* Status */
+.status {
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
+}
+
+.status.confirmed {
+  background-color: #e6f7e6;
+  color: #2f6627;
+}
+
+.status.pending {
+  background-color: #fff8d9;
+  color: #8a6d3b;
+}
+
+.status.completed {
+  background-color: #e6f0ff;
+  color: #2c3e50;
+}
+
+.status.cancelled {
+  background-color: #fde2e2;
+  color: #721c24;
+}
+
+/* Nút quay lại */
+.back-btn {
+  display: block;
+  margin: 30px auto 0;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #6f42c1, #4a90e2);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(111,66,193,0.3);
+}
+
+/* Error */
+.error {
+  color: #e74c3c;
+  text-align: center;
+  font-weight: 600;
+}
