@@ -297,10 +297,17 @@
               </div>
             </div>
 
-            <button @click="resetSearch" class="btn btn-secondary">
-              <i class="bi bi-search me-2"></i>
-              Search Another
-            </button>
+            <div class="result-actions">
+              <button @click="cancelAppointment" class="btn btn-danger">
+                <i class="bi bi-x-circle me-2"></i>
+                Cancel Appointment
+              </button>
+
+              <button @click="resetSearch" class="btn btn-secondary">
+                <i class="bi bi-search me-2"></i>
+                Search Another
+              </button>
+            </div>
           </div>
         </div>
 
@@ -327,7 +334,7 @@
                 type="tel"
                 class="form-input"
                 required
-                placeholder="Enter your phone number"
+                placeholder="Enter your phone number" 
               />
             </div>
           </div>
@@ -352,7 +359,8 @@
 import { ref, reactive } from 'vue'
 import api from '@/services/api'
 import '@/styles/layouts/guest-dashboard.css'
-
+const cancelLoading = ref(false)
+const cancelError = ref('')
 // Services data
 const services = reactive([
   {
@@ -597,5 +605,35 @@ const getStatusClass = (status: string): string => {
 const scrollToBooking = () => {
   const element = document.getElementById('booking')
   element?.scrollIntoView({ behavior: 'smooth' })
+}
+
+const cancelAppointment = async () => {
+  if (!searchResult.value) return
+
+  const confirmCancel = confirm("Are you sure you want to cancel this appointment?")
+  if (!confirmCancel) return
+
+  try {
+    cancelLoading.value = true
+    cancelError.value = ''
+
+    await api.post('/appointments/cancel', {
+      appointmentCode: searchResult.value.appointmentCode,
+      fullName: searchResult.value.fullName,
+      phone: searchResult.value.phone
+    })
+
+    searchResult.value.status = "Cancelled"
+
+    alert("Appointment cancelled successfully")
+
+  } catch (error: any) {
+    cancelError.value =
+      error.response?.data || "Failed to cancel appointment"
+
+    console.error(error)
+  } finally {
+    cancelLoading.value = false
+  }
 }
 </script>

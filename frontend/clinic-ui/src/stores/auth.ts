@@ -7,12 +7,15 @@ export const useAuthStore = defineStore('auth', {
     expiresAt: localStorage.getItem('expiresAt') as string | null
   }),
 
+  getters: {
+    isLoggedIn: (state) => {
+      if (!state.token || !state.expiresAt) return false
+      return new Date(state.expiresAt).getTime() > Date.now()
+    }
+  },
+
   actions: {
-    login(payload: {
-      token: string
-      role: string
-      expiresAt: string
-    }) {
+    login(payload: { token: string; role: string; expiresAt: string }) {
       this.token = payload.token
       this.role = payload.role
       this.expiresAt = payload.expiresAt
@@ -22,17 +25,14 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('expiresAt', payload.expiresAt)
     },
 
-    isTokenExpired() {
-      if (!this.expiresAt) return true
-      return new Date(this.expiresAt).getTime() < Date.now()
-    },
-
     logout() {
       this.token = null
       this.role = null
       this.expiresAt = null
-      localStorage.clear()
+
+      localStorage.removeItem('token')
+      localStorage.removeItem('role')
+      localStorage.removeItem('expiresAt')
     }
   }
 })
-
