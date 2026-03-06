@@ -21,13 +21,33 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
-        // GET: api/staff/Appointments
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointments()
+        // GET: api/staff/Appointments/search?name={name}&phone={phone}&date={date}&code={code}
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> SearchAppointments(
+            [FromQuery] string? name,
+            [FromQuery] string? phone,
+            [FromQuery] DateTime? date,
+            [FromQuery] string? code)
         {
-            var appointments = await _context.Appointments
+            var query = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
+                .ThenInclude(d => d.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+                query = query.Where(a => a.Patient.FullName.Contains(name));
+
+            if (!string.IsNullOrEmpty(phone))
+                query = query.Where(a => a.Patient.Phone.Contains(phone));
+
+            if (date.HasValue)
+                query = query.Where(a => a.AppointmentDate.Date == date.Value.Date);
+
+            if (!string.IsNullOrEmpty(code))
+                query = query.Where(a => a.AppointmentCode.Contains(code));
+
+            var appointments = await query
                 .Select(a => new AppointmentDetailDto
                 {
                     Id = a.Id,
@@ -47,13 +67,12 @@ namespace ClinicManagement.Api.Controllers
                     {
                         Value = a.Status.ToString(),
                         DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.User.Username   // lấy username từ User
+                                     ? a.Doctor.User.Username
                                      : null,
                         DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
                                      ? a.Doctor.Code
                                      : null
                     }
-
                 })
                 .ToListAsync();
 
