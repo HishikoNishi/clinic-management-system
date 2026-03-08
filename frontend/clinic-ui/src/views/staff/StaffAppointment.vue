@@ -2,6 +2,27 @@
   <div class="staff-container">
     <h2>Appointment Management</h2>
 
+    <!-- SEARCH BAR -->
+    <div class="search-bar">
+      <input v-model="searchCode" placeholder="Search by code..." />
+      <input v-model="searchName" placeholder="Search by patient name..." />
+      <input v-model="searchPhone" placeholder="Search by phone..." />
+      <input type="date" v-model="searchDate" />
+
+      <!-- Chọn bác sĩ -->
+      <select v-model="selectedDoctor" @change="loadAppointments">
+        <option value="">All doctors</option>
+        <option v-for="d in doctors" :key="d.id" :value="d.id">
+   {{ d.name }}
+
+        </option>
+      </select>
+
+      <!-- Nút kính lúp -->
+      <button class="search-btn" @click="loadAppointments">🔍</button>
+      <button class="clear-btn" @click="clearFilters">Clear</button>
+    </div>
+
     <!-- FILTER STATUS -->
     <div class="filter">
       <button
@@ -26,10 +47,9 @@
           <th v-if="currentStatus === 'Pending'">Assign</th>
         </tr>
       </thead>
-
       <tbody>
         <tr
-          v-for="a in appointments"
+          v-for="a in filteredAppointments"
           :key="a.id"
           @click="$router.push(`/staff/appointments/${a.id}`)"
         >
@@ -42,19 +62,11 @@
             </span>
           </td>
           <td>{{ a.statusDetail.doctorName || 'Not assigned' }}</td>
-
-          <!-- ASSIGN -->
           <td v-if="a.statusDetail.value === 'Pending'">
             <select @change="assignDoctor(a.id, $event)" @click.stop>
               <option value="">Select doctor</option>
-              <option
-                v-for="d in doctors"
-                :key="d.id"
-                :value="d.id"
-                :disabled="d.status !== 'Active'"
-                :class="{ inactive: d.status !== 'Active' }"
-              >
-                {{ d.name }}
+              <option v-for="d in doctors" :key="d.id" :value="d.id">
+                {{ d.username }}
               </option>
             </select>
           </td>
@@ -68,39 +80,67 @@
 
 <script setup lang="ts">
 import axios from 'axios'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-  headers: {
-    Authorization: `Bearer ${auth.token}`
-  }
-})
+const searchCode = ref('')
+const searchName = ref('')
+const searchPhone = ref('')
+const searchDate = ref('')
+const selectedDoctor = ref('')
 
 const appointments = ref<any[]>([])
 const doctors = ref<any[]>([])
 
-const statuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled']
-const currentStatus = ref('Pending')
+const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
+const currentStatus = ref('All')
 
-/* ================= LOAD ================= */
+const filteredAppointments = computed(() => {
+  return appointments.value.filter(a => {
+    const matchCode = !searchCode.value || a.appointmentCode?.toLowerCase().includes(searchCode.value.toLowerCase())
+    const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
+    const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
+    const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
+    return matchCode && matchName && matchPhone && matchDate
+  })
+})
+
+const api = axios.create({
+  baseURL: 'https://localhost:7235/api',
+  headers: { Authorization: `Bearer ${auth.token}` }
+})
 
 const loadAppointments = async () => {
-  const res = await api.get(
-    `/staff/StaffAppointments/filter?status=${currentStatus.value}`
-  )
-  appointments.value = res.data
+  let res
+
+  if (selectedDoctor.value) {
+    // lấy tất cả lịch của bác sĩ
+    res = await api.get(`/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`)
+    let data = res.data
+
+    // nếu status khác All thì lọc tiếp theo status
+    if (currentStatus.value !== 'All') {
+      data = data.filter(a => a.statusDetail.value === currentStatus.value)
+    }
+
+    appointments.value = data
+  } else {
+    // không chọn doctor
+    if (currentStatus.value === 'All') {
+      res = await api.get(`/staff/StaffAppointments/search`)
+    } else {
+      res = await api.get(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
+    }
+    appointments.value = res.data
+  }
 }
 
 const loadDoctors = async () => {
   const res = await api.get('/staff/StaffDoctors')
   doctors.value = res.data
 }
-
-/* ================= ACTION ================= */
 
 const changeStatus = (s: string) => {
   currentStatus.value = s
@@ -110,26 +150,25 @@ const changeStatus = (s: string) => {
 const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
-
-  await api.post('/staff/StaffAppointments/assign-doctor', {
-    appointmentId,
-    doctorId
-  })
-
+  await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
   alert('Doctor assigned ✅')
   loadAppointments()
 }
 
-/* ================= UTIL ================= */
+const clearFilters = () => {
+  searchCode.value = ''
+  searchName.value = ''
+  searchPhone.value = ''
+  searchDate.value = ''
+  selectedDoctor.value = ''
+  loadAppointments()
+}
 
 const formatDateTime = (dateStr: string, timeStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   const [hours, minutes] = timeStr.split(':')
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const year = date.getFullYear()
-  return `${day}/${month}/${year} ${hours}:${minutes}`
+  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${hours}:${minutes}`
 }
 
 onMounted(() => {
