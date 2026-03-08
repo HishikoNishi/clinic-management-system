@@ -1,19 +1,61 @@
-
 .staff-container {
-  padding: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   padding: 32px;
   font-family: "Poppins", "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: var(--color-bg-main);
   min-height: 100vh;
 }
 
+/* Thanh tìm kiếm */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.search-bar input,
+.search-bar select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: #f9fff9; /* xanh lá nhạt */
+  font-size: 14px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.search-bar button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.search-btn {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+.search-btn:hover {
+  background: #2ecc71; /* xanh lá nhạt hover */
+}
+
+.clear-btn {
+  background: var(--color-bg-soft);
+  color: var(--color-text-main);
+}
+
+.clear-btn:hover {
+  background: #f0f0f0;
+}
+
 /* Tiêu đề */
 .staff-container h2 {
-  margin-bottom: 20px;
   margin-bottom: 24px;
   color: var(--color-text-main);
-  font-weight: 600;
   font-weight: 700;
   font-size: 28px;
   text-align: center;
@@ -22,45 +64,38 @@
 
 /* Filter buttons */
 .filter {
-  margin-bottom: 15px;
   margin-bottom: 24px;
   text-align: center;
 }
 
 .filter button {
-  padding: 8px 16px;
-  margin-right: 10px;
   padding: 10px 20px;
   margin: 0 8px;
-  border: none;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-soft);
   cursor: pointer;
-  border-radius: 20px;
-  transition: all 0.2s ease;
   border-radius: 25px;
   transition: all 0.3s ease;
   font-weight: 500;
   font-size: 15px;
   color: var(--color-text-main);
-  border: 1px solid var(--color-border);
 }
 
 .filter button.active {
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  box-shadow: var(--shadow-primary);
+  background: #2ecc71; /* xanh lá nhạt */
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
   border-color: transparent;
 }
 
 .filter button:hover {
-  background: var(--color-bg-card);
+  background: var(--color-primary-light);
 }
 
 /* Table */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   margin-top: 16px;
   box-shadow: 0 6px 20px var(--color-shadow);
   border-radius: 12px;
@@ -72,16 +107,15 @@ table {
 table th,
 table td {
   border: 1px solid var(--color-border);
-  padding: 12px;
-  padding: 16px;
+  padding: 14px;
   text-align: left;
   font-size: 14px;
   color: var(--color-text-main);
 }
 
 table th {
-  background-color: var(--color-primary);
-  color: var(--color-text-inverse);
+  background-color: #2ecc71; /* xanh lá nhạt */
+  color: #fff;
   font-weight: 600;
   font-size: 15px;
 }
@@ -91,19 +125,15 @@ table tr:nth-child(even) {
 }
 
 table tr:hover {
-  background-color: var(--color-primary-light);
+  background-color: #eafbea; /* xanh lá nhạt hover */
   transition: background-color 0.2s ease;
 }
 
 /* Status labels */
-/* Status labels - nhạt */
 .status {
-  padding: 4px 10px;
-  border-radius: 12px;
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 0.9em;
   font-size: 0.85em;
   display: inline-block;
   text-align: center;
@@ -111,28 +141,27 @@ table tr:hover {
 }
 
 .status.pending {
-  background: var(--color-warning-bg);
-  color: var(--color-text-main);
+  background: #fff3cd;
+  color: #856404;
 }
 
 .status.confirmed {
-  background: var(--color-success-bg);
-  color: var(--color-text-main);
+  background: #d4edda;
+  color: #155724;
 }
 
 .status.completed {
-  background: var(--color-info-bg);
-  color: var(--color-text-main);
+  background: #cce5ff;
+  color: #004085;
 }
 
 .status.cancelled {
-  background: var(--color-danger-bg);
-  color: var(--color-text-main);
+  background: #f8d7da;
+  color: #721c24;
 }
 
 /* Assign select */
 select {
-  padding: 6px 10px;
   padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
@@ -143,17 +172,18 @@ select {
 }
 
 select:focus {
-  border-color: var(--color-primary);
+  border-color: #2ecc71;
   outline: none;
   background: var(--color-bg-card);
   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
-/* Option inactive */
 select option.inactive {
   color: var(--color-text-muted);
   background-color: var(--color-bg-soft);
 }
-p{
+
+p {
   color: var(--color-text-muted);
 }
+
