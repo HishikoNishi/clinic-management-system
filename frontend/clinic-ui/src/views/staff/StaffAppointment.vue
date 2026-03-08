@@ -36,43 +36,46 @@
     </div>
 
     <!-- TABLE -->
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Patient</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Doctor</th>
-          <th v-if="currentStatus === 'Pending'">Assign</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="a in filteredAppointments"
-          :key="a.id"
-          @click="$router.push(`/staff/appointments/${a.id}`)"
-        >
-          <td>{{ a.appointmentCode }}</td>
-          <td>{{ a.fullName }}</td>
-          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-          <td>
-            <span :class="'status ' + a.statusDetail.value.toLowerCase()">
-              {{ a.statusDetail.value }}
-            </span>
-          </td>
-          <td>{{ a.statusDetail.doctorName || 'Not assigned' }}</td>
-          <td v-if="a.statusDetail.value === 'Pending'">
-            <select @change="assignDoctor(a.id, $event)" @click.stop>
-              <option value="">Select doctor</option>
-              <option v-for="d in doctors" :key="d.id" :value="d.id">
-                {{ d.username }}
-              </option>
-            </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <table>
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Patient</th>
+      <th>Phone</th> <!-- thêm cột -->
+      <th>Date</th>
+      <th>Status</th>
+      <th>Doctor</th>
+      <th v-if="currentStatus === 'Pending'">Assign</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr
+      v-for="a in filteredAppointments"
+      :key="a.id"
+      @click="$router.push(`/staff/appointments/${a.id}`)"
+    >
+      <td>{{ a.appointmentCode }}</td>
+      <td>{{ a.fullName }}</td>
+      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
+      <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+      <td>
+        <span :class="'status ' + a.statusDetail.value.toLowerCase()">
+          {{ a.statusDetail.value }}
+        </span>
+      </td>
+      <td>{{ a.statusDetail.doctorName || 'Not assigned' }}</td>
+      <td v-if="a.statusDetail.value === 'Pending'">
+        <select @change="assignDoctor(a.id, $event)" @click.stop>
+          <option value="">Select doctor</option>
+          <option v-for="d in doctors" :key="d.id" :value="d.id">
+            {{ d.username }}
+          </option>
+        </select>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 
     <p v-if="appointments.length === 0">No appointments</p>
   </div>
