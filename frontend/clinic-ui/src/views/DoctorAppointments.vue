@@ -26,44 +26,41 @@
     </div>
 
     <!-- TABLE -->
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Patient</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+   <table>
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Patient</th>
+      <th>Phone</th> <!-- thêm cột -->
+      <th>Date</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr
+      v-for="a in filteredAppointments"
+      :key="a.id"
+      @click="$router.push(`/doctor/appointments/${a.id}`)"
+    >
+      <td>{{ a.appointmentCode }}</td>
+      <td>{{ a.fullName }}</td>
+      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
+      <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+      <td>
+        <span :class="'status ' + a.status.toLowerCase()">
+          {{ a.status }}
+        </span>
+      </td>
+      <td>
+        <button v-if="a.status === 'Confirmed'" @click.stop="completeAppointment(a.id)">
+          Completed this appointment
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-      <tbody>
-        <tr
-          v-for="a in filteredAppointments"
-          :key="a.id"
-          @click="$router.push(`/doctor/appointments/${a.id}`)"
-        >
-          <td>{{ a.appointmentCode }}</td>
-          <td>{{ a.fullName }}</td>
-          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-
-          <td>
-            <span :class="'status ' + a.status.toLowerCase()">
-              {{ a.status }}
-            </span>
-          </td>
-
-          <td>
-            <button
-              v-if="a.status === 'Confirmed'"
-              @click.stop="completeAppointment(a.id)"
-            >
-              Completed this appointment
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
 
     <p v-if="filteredAppointments.length === 0">No appointments</p>
   </div>
