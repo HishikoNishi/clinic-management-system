@@ -14,6 +14,7 @@ const editingId = ref<string | null>(null)
 const form = reactive<CreateDoctorDto>({
   username: '',
   password: '',
+  fullName: '',
   code: '',
   specialty: '',
   licenseNumber: ''
@@ -31,6 +32,7 @@ function openCreate() {
   editingId.value = null
   form.username = ''
   form.password = ''
+  form.fullName = ''
   form.code = ''
   form.specialty = ''
   form.licenseNumber = ''
@@ -153,7 +155,7 @@ onMounted(loadDoctors)
           <input v-model="form.username" placeholder="Username" />
           <input v-model="form.password" type="password" placeholder="Password" />
         </div>
-
+        <input v-model="form.fullName" placeholder="Full Name" />
         <input v-model="form.code" placeholder="Code" />
         <input v-model="form.specialty" placeholder="Specialty" />
         <input v-model="form.licenseNumber" placeholder="License Number" />

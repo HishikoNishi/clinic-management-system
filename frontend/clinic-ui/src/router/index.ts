@@ -20,8 +20,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/AdminDashboard.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/admin/AdminDashboard.vue'),
+    meta: { requiresAuth: true, role: 'Admin' }
   },
 
   {
@@ -51,39 +51,24 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/patients',
-    name: 'PatientPage',
-    component: () => import('@/views/PatientPage.vue'),
-    meta: { requiresAuth: true, role: 'Staff' }
-  },
-
-  {
-    path: '/doctors',
-    name: 'DoctorPage',
-    component: () => import('@/views/DoctorPage.vue'),
-    meta: { requiresAuth: true, role: 'Staff' }
-  },
-
-  {
     path: '/doctorappointment',
     name: 'DoctorAppointment',
-    component: () => import('@/views/DoctorAppointments.vue'),
+    component: () => import('@/views/doctor/DoctorAppointments.vue'),
     meta: { requiresAuth: true, role: 'Doctor' }
   },
   {
   path: '/doctor/appointments/:id',
   name: 'DoctorAppointmentDetail',
-  component: () => import('@/views/DoctorAppointmentDetail.vue'),
+  component: () => import('@/views/doctor/DoctorAppointmentDetail.vue'),
   meta: { requiresRole: 'Doctor' }
   },
   {
     path: '/doctors',
     name: 'Doctors',
-    component: () => import('@/views/DoctorList.vue'),
+    component: () => import('@/views/admin/DoctorList.vue'),
     meta: { requiresAuth: true }
   },
 ]
-
 
 const router = createRouter({
   history: createWebHistory(),
