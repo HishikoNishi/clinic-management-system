@@ -1,16 +1,59 @@
-
 .staff-container {
-  padding: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   padding: 32px;
   font-family: "Poppins", "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: var(--color-bg-main);
   min-height: 100vh;
 }
 
+/* Thanh tìm kiếm */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.search-bar input,
+.search-bar select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: #f9fff9;
+  font-size: 14px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.search-bar button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.search-btn {
+  background:#59d478d3;
+  color: #fff;
+}
+
+.search-btn:hover {
+  background:#9fd4b5;
+}
+
+.clear-btn {
+  background: linear-gradient(45deg, #f0f0f0, #dcdcdc);
+  color: var(--color-text-main);
+}
+
+.clear-btn:hover {
+  background: #baead3;
+}
+
 /* Tiêu đề */
 .staff-container h2 {
-  margin-bottom: 20px;
   margin-bottom: 24px;
   color: var(--color-text-main);
   font-weight: 600;
@@ -22,21 +65,16 @@
 
 /* Filter buttons */
 .filter {
-  margin-bottom: 15px;
   margin-bottom: 24px;
   text-align: center;
 }
 
 .filter button {
-  padding: 8px 16px;
-  margin-right: 10px;
   padding: 10px 20px;
   margin: 0 8px;
   border: none;
   background: var(--color-bg-soft);
   cursor: pointer;
-  border-radius: 20px;
-  transition: all 0.2s ease;
   border-radius: 25px;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -64,7 +102,11 @@ table {
   margin-top: 16px;
   box-shadow: 0 6px 20px var(--color-shadow);
   border-radius: 12px;
+  box-shadow: 0 6px 20px var(--color-shadow);
+  border-radius: 12px;
   overflow: hidden;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
 }
@@ -77,6 +119,7 @@ table td {
   text-align: left;
   font-size: 14px;
   color: var(--color-text-main);
+  color: var(--color-text-main);
 }
 
 table th {
@@ -88,6 +131,7 @@ table th {
 
 table tr:nth-child(even) {
   background-color: var(--color-bg-soft);
+  background-color: var(--color-bg-soft);
 }
 
 table tr:hover {
@@ -95,15 +139,11 @@ table tr:hover {
   transition: background-color 0.2s ease;
 }
 
-/* Status labels */
-/* Status labels - nhạt */
+/* Status labels với nhiều màu pastel */
 .status {
-  padding: 4px 10px;
-  border-radius: 12px;
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 0.9em;
   font-size: 0.85em;
   display: inline-block;
   text-align: center;
@@ -132,10 +172,12 @@ table tr:hover {
 
 /* Assign select */
 select {
-  padding: 6px 10px;
   padding: 8px 12px;
   border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
+  background: var(--color-bg-soft);
+  color: var(--color-text-main);
   background: var(--color-bg-soft);
   color: var(--color-text-main);
   transition: border-color 0.2s;
@@ -149,8 +191,9 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
-/* Option inactive */
 select option.inactive {
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-soft);
   color: var(--color-text-muted);
   background-color: var(--color-bg-soft);
 }
