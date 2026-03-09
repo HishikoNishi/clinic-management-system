@@ -10,7 +10,7 @@ namespace ClinicManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    
     public class DoctorController : ControllerBase
     {
         private readonly ClinicDbContext _context;
@@ -22,6 +22,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET ALL ================= */
         [HttpGet]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> GetAll()
         {
             var doctors = await _context.Doctors
@@ -32,6 +33,7 @@ namespace ClinicManagement.Api.Controllers
                     Code = d.Code,
                     Specialty = d.Specialty,
                     LicenseNumber = d.LicenseNumber,
+                    FullName = d.FullName,
                     Username = d.User.Username,
                     Status = d.Status.ToString()
                 })
@@ -39,7 +41,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
-
+        [Authorize(Roles = "Admin")]
         /* ================= GET BY ID ================= */
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
@@ -61,7 +63,7 @@ namespace ClinicManagement.Api.Controllers
                 Status = doctor.Status.ToString()
             });
         }
-
+        [Authorize(Roles = "Admin")]
         /* ================= CREATE ================= */
         [HttpPost]
         public async Task<IActionResult> Create(CreateDoctorDto dto)
@@ -103,7 +105,7 @@ namespace ClinicManagement.Api.Controllers
                 doctorId = doctor.Id
             });
         }
-
+        [Authorize(Roles = "Admin")]
         /* ================= UPDATE ================= */
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, UpdateDoctorDto dto)
@@ -128,7 +130,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Doctor profile updated successfully." });
         }
-
+        [Authorize(Roles = "Admin")]
         /* ================= DELETE ================= */
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)

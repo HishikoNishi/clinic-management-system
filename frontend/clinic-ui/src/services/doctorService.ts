@@ -11,6 +11,7 @@ export interface Doctor {
 export interface CreateDoctorDto {
   username: string
   password: string
+  fullName: string
   code: string
   specialty: string
   licenseNumber?: string

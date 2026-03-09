@@ -88,13 +88,26 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 
+interface Appointment {
+  id: string
+  appointmentCode: string
+  fullName: string
+  phone: string
+  appointmentDate: string
+  appointmentTime: string
+  statusDetail: {
+    value: string
+    doctorName: string
+  }
+}
+
 const searchCode = ref('')
 const searchName = ref('')
 const searchPhone = ref('')
 const searchDate = ref('')
 const selectedDoctor = ref('')
 
-const appointments = ref<any[]>([])
+const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
 
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
@@ -119,29 +132,32 @@ const loadAppointments = async () => {
   let res
 
   if (selectedDoctor.value) {
-    // lấy tất cả lịch của bác sĩ
-    res = await api.get(`/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`)
-    let data = res.data
+    res = await api.get<Appointment[]>(
+      `/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`
+    )
 
-    // nếu status khác All thì lọc tiếp theo status
+    let data: Appointment[] = res.data
+
     if (currentStatus.value !== 'All') {
       data = data.filter(a => a.statusDetail.value === currentStatus.value)
     }
 
     appointments.value = data
   } else {
-    // không chọn doctor
     if (currentStatus.value === 'All') {
-      res = await api.get(`/staff/StaffAppointments/search`)
+      res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
     } else {
-      res = await api.get(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
+      res = await api.get<Appointment[]>(
+        `/staff/StaffAppointments/filter?status=${currentStatus.value}`
+      )
     }
+
     appointments.value = res.data
   }
 }
 
 const loadDoctors = async () => {
-  const res = await api.get('/staff/StaffDoctors')
+  const res = await api.get('/Doctor')
   doctors.value = res.data
 }
 
