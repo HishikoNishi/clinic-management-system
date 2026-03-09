@@ -1,5 +1,4 @@
 ﻿using ClinicManagement.Api.Data;
-using ClinicManagement.Api.Dtos.Staff;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +29,8 @@ namespace ClinicManagement.Api.Controllers
                     Id = s.Id,
                     Code = s.Code,
                     FullName = s.FullName,
-                    Position = s.Position,
+                    Role = s.Role,
+                    IsActive = s.IsActive,
                     Username = s.User.Username,
                     CreatedAt = s.CreatedAt
                 })
@@ -55,7 +55,8 @@ namespace ClinicManagement.Api.Controllers
                 Id = staff.Id,
                 Code = staff.Code,
                 FullName = staff.FullName,
-                Position = staff.Position,
+                Role = staff.Role,
+                IsActive = staff.IsActive,
                 Username = staff.User.Username,
                 CreatedAt = staff.CreatedAt
             });
@@ -86,8 +87,9 @@ namespace ClinicManagement.Api.Controllers
                 Id = Guid.NewGuid(),
                 Code = dto.Code,
                 FullName = dto.FullName,
-                Position = dto.Position ?? string.Empty,
+                Role = dto.Role,
                 UserId = dto.UserId,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -118,7 +120,9 @@ namespace ClinicManagement.Api.Controllers
 
             staff.Code = dto.Code;
             staff.FullName = dto.FullName;
-            staff.Position = dto.Position ?? string.Empty;
+            staff.Role = dto.Role;
+            staff.UserId = dto.UserId;
+            staff.IsActive = dto.IsActive;
             staff.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
