@@ -1,20 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ClinicManagement.Api.Models;
 
-namespace ClinicManagement.Api.Models
+public class PrescriptionDetail
 {
-    public class PrescriptionDetail
-    {
-        [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
 
-        public Guid PrescriptionId { get; set; }
+    public Guid PrescriptionId { get; set; }
 
-        public string MedicineName { get; set; }
+    public string MedicineName { get; set; }
 
-        public int Quantity { get; set; }
+    public string Dosage { get; set; }
 
-        public string Dosage { get; set; }
+    public string Frequency { get; set; }
 
-        public Prescription? Prescription { get; set; }
-    }
+    public int Duration { get; set; }
+
+    public Prescription Prescription { get; set; }
 }

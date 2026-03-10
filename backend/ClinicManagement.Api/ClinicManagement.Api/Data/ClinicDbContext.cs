@@ -202,7 +202,7 @@ namespace ClinicManagement.Api.Data
 
             modelBuilder.Entity<PrescriptionDetail>()
                 .HasOne(d => d.Prescription)
-                .WithMany(p => p.Details)
+                .WithMany(p => p.PrescriptionDetails)
                 .HasForeignKey(d => d.PrescriptionId);
 
 

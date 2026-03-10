@@ -5,7 +5,7 @@ namespace ClinicManagement.Api.Models
     public class Prescription
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
 
         public Guid MedicalRecordId { get; set; }
 
@@ -13,8 +13,10 @@ namespace ClinicManagement.Api.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public MedicalRecord? MedicalRecord { get; set; }
+        // navigation tới MedicalRecord
+        public MedicalRecord MedicalRecord { get; set; }
 
-        public ICollection<PrescriptionDetail>? Details { get; set; }
+        // navigation tới PrescriptionDetails
+        public List<PrescriptionDetail> PrescriptionDetails { get; set; } = new();
     }
 }
