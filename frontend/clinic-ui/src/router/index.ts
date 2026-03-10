@@ -23,6 +23,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/admin/AdminDashboard.vue'),
     meta: { requiresAuth: true, role: 'Admin' }
   },
+  {
+    path: '/admin/users/create',
+    name: 'CreateUser',
+    component: () => import('@/views/admin/CreateUserView.vue'),
+    meta: { requiresAuth: true, role: 'Admin' }
+  },
 
   {
     path: '/appointment',
@@ -68,6 +74,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/admin/DoctorList.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: "/staff",
+    component: () => import("@/views/admin/StaffList.vue")
+  },
+  {
+    path: "/staff/create",
+    component: () => import("@/views/admin/StaffForm.vue")
+  },
+  {
+    path: "/staff/edit/:id",
+    component: () => import("@/views/admin/StaffForm.vue")
+  }
 ]
 
 const router = createRouter({

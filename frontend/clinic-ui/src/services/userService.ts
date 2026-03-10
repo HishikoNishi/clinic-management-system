@@ -5,4 +5,4 @@ export interface UserDto {
   username: string
 }
 
-export const getUsers = () => api.get<UserDto[]>("/Users")
+export const getUsers = () => api.get<UserDto[]>("/Admin")
