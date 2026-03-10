@@ -10,6 +10,7 @@ public class CreateStaffDto
 
     [Required]
     public string FullName { get; set; } = null!;
+    public bool IsActive { get; set; } = true;
 
     [Required]
     public string Role { get; set; } = null!;

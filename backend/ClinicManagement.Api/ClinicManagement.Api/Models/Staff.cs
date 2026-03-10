@@ -12,10 +12,8 @@ namespace ClinicManagement.Api.Models
         // GIỮ LẠI Position (theo leader)
         public string? Position { get; set; }
 
-        // SCRUM-161
         public string Role { get; set; } = "Staff";
 
-        // SCRUM-163
         public bool IsActive { get; set; } = true;
 
         public Guid UserId { get; set; }
