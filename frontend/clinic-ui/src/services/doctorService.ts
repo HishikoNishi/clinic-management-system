@@ -9,8 +9,7 @@ export interface Doctor {
 }
 
 export interface CreateDoctorDto {
-  username: string
-  password: string
+  userId: string
   fullName: string
   code: string
   specialty: string

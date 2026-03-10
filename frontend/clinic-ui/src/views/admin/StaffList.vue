@@ -2,9 +2,9 @@
   <div class="staff-container">
 
     <div class="header">
-      <h1>Staff Management</h1>
+      <h1>Quản lý nhân viên</h1>
       <router-link to="/staff/create" class="btn-create">
-        + Create Staff
+        + Tạo nhân viên
       </router-link>
     </div>
 
@@ -12,12 +12,12 @@
       <table>
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Full Name</th>
-            <th>Role</th>
-            <th>Username</th>
-            <th>Status</th>
-            <th class="center">Actions</th>
+            <th>Mã</th>
+            <th>Họ và tên</th>
+            <th>Vị trí</th>
+            <th>Tên đăng nhập</th>
+            <th>Trạng thái</th>
+            <th class="center">Hành động</th>
           </tr>
         </thead>
 
@@ -33,28 +33,24 @@
                 class="status-badge"
                 :class="s.isActive ? 'active' : 'inactive'"
               >
-                {{ s.isActive ? "Active" : "Inactive" }}
+                {{ s.isActive ? "Hoạt động" : "Không hoạt động" }}
               </span>
             </td>
 
             <td class="center actions">
               <button class="btn-edit" @click="goEdit(s.id)">
-                Edit
-              </button>
-
-              <button class="btn-toggle" @click="toggleStatus(s)">
-                Toggle
+                Chỉnh sửa
               </button>
 
               <button class="btn-delete" @click="handleDelete(s.id)">
-                Delete
+                Xóa
               </button>
             </td>
           </tr>
 
           <tr v-if="staffs.length === 0">
             <td colspan="6" class="empty">
-              No staff found
+              Không tìm thấy nhân viên
             </td>
           </tr>
         </tbody>
@@ -98,7 +94,7 @@ const toggleStatus = async (staff: any) => {
 }
 
 const handleDelete = async (id: string) => {
-  if (!confirm("Delete this staff?")) return
+  if (!confirm("Xóa nhân viên này?")) return
   await deleteStaff(id)
   loadStaffs()
 }

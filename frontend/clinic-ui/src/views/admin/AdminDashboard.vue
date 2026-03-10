@@ -5,8 +5,8 @@
 
       <!-- Welcome -->
     <section class="welcome-section">
-      <h2>Welcome back!</h2>
-      <p>Here's an overview of your clinic today.</p>
+      <h2>Chào mừng trở lại!</h2>
+      <p>Dưới đây là tổng quan về phòng khám của bạn ngày hôm nay.</p>
     </section>
 
       <!-- STATS -->
@@ -29,25 +29,25 @@
 
       <!-- QUICK ACTIONS -->
       <div>
-        <h5 class="fw-bold mb-3">Quick Actions</h5>
+        <h5 class="fw-bold mb-3">Hành động nhanh</h5>
         <div class="d-flex gap-3 flex-wrap">
           <button class="btn btn-primary d-flex align-items-center gap-2">
             <i class="bi bi-plus-circle"></i>
-            New Patient
+            Bệnh nhân mới
           </button>
 
           <button class="btn btn-warning d-flex align-items-center gap-2">
             <i class="bi bi-calendar-event"></i>
-            Schedule Appointment
+            Đặt lịch hẹn
           </button>
 
           <button class="btn btn-success d-flex align-items-center gap-2">
             <i class="bi bi-file-earmark-text"></i>
-            Medical Records
+            Hồ sơ bệnh án
           </button>
           <button class="action-btn staff" @click="$router.push('/staff')">
           <i class="bi bi-people"></i>
-            Staff Management
+            Quản lý nhân viên
           </button>
         </div>
       </div>
@@ -66,25 +66,25 @@ const authStore = useAuthStore()
 
 const stats = [
   {
-    label: 'Total Patients',
+    label: 'Tổng số bệnh nhân',
     value: 124,
     icon: 'bi bi-people',
     bg: 'bg-primary-subtle text-primary'
   },
   {
-    label: "Today's Appointments",
+    label: "Lịch khám hôm nay",
     value: 18,
     icon: 'bi bi-calendar-event',
     bg: 'bg-success-subtle text-success'
   },
   {
-    label: 'Active Doctors',
+    label: 'Bác sĩ hoạt động',
     value: 8,
     icon: 'bi bi-heart-pulse',
     bg: 'bg-warning-subtle text-warning'
   },
   {
-    label: 'Monthly Revenue',
+    label: 'Doanh thu hàng tháng',
     value: '$12,450',
     icon: 'bi bi-currency-dollar',
     bg: 'bg-info-subtle text-info'

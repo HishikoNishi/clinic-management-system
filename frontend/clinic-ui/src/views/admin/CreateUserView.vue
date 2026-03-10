@@ -2,7 +2,7 @@
   <div class="create-user-page">
     <div class="create-user-card card">
       <div class="card-header">
-        <h2>Create New User</h2>
+        <h2>Tạo người dùng mới</h2>
       </div>
       <div class="card-body">
         <div v-if="successMessage" class="create-user-alert create-user-alert--success">
@@ -17,7 +17,7 @@
 
         <form class="form" @submit.prevent="createUser">
           <div class="form-group">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="username">Tên đăng nhập</label>
             <input
               id="username"
               class="form-input"
@@ -29,7 +29,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="password">Password</label>
+            <label class="form-label" for="password">Mật khẩu</label>
             <input
               id="password"
               class="form-input"
@@ -41,16 +41,15 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="role">Role</label>
+            <label class="form-label" for="role">Vị trí</label>
             <select
               id="role"
               class="form-select"
               v-model="form.role"
               required
             >
-              <option value="Admin">Admin</option>
-              <option value="Doctor">Doctor</option>
-              <option value="Staff">Staff</option>
+              <option value="Doctor">Bác sĩ</option>
+              <option value="Staff">Nhân viên</option>
             </select>
           </div>
 
@@ -60,8 +59,8 @@
               class="btn btn-primary"
               :disabled="loading"
             >
-              <span v-if="!loading">Create Account</span>
-              <span v-else>Creating…</span>
+              <span v-if="!loading">Tạo tài khoản</span>
+              <span v-else>Đang tạo…</span>
             </button>
           </div>
         </form>
@@ -96,7 +95,7 @@ const createUser = async () => {
       role: form.role
     })
 
-    successMessage.value = 'User created successfully.'
+    successMessage.value = 'Người dùng đã được tạo thành công.'
     form.username = ''
     form.password = ''
     form.role = 'Admin'
@@ -106,7 +105,7 @@ const createUser = async () => {
       error?.response?.data?.message ||
       error?.response?.data ||
       error?.message ||
-      'Unable to create user. Please try again.'
+      'Không thể tạo người dùng. Vui lòng thử lại.'
 
     errorMessage.value = serverMessage
   } finally {

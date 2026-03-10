@@ -17,18 +17,18 @@ const userRole = computed(() => authStore.role)
 
 // Guest navigation items (scroll anchors)
 const guestNavigationItems = computed(() => [
-  { label: 'Services', path: '#services', icon: 'heart', isAnchor: true },
-  { label: 'Book Appointment', path: '#booking', icon: 'calendar-check', isAnchor: true },
-  { label: 'Search', path: '#search', icon: 'search', isAnchor: true }
+  { label: 'Dịch vụ', path: '#services', icon: 'heart', isAnchor: true },
+  { label: 'Đặt lịch hẹn', path: '#booking', icon: 'calendar-check', isAnchor: true },
+  { label: 'Tìm kiếm', path: '#search', icon: 'search', isAnchor: true }
 ])
 
 // Admin/staff/doctor navigation items (route paths)
 const adminNavigationItems = computed(() => [
-  { label: 'Dashboard', path: '/dashboard', icon: 'speedometer2', isAnchor: false },
-  { label: 'Appointments', path: '/appointments', icon: 'calendar-event', isAnchor: false },
+  { label: 'Bảng điều khiển', path: '/dashboard', icon: 'speedometer2', isAnchor: false },
+  { label: 'Lịch khám', path: '/appointments', icon: 'calendar-event', isAnchor: false },
   ...(userRole.value === 'Admin' ? [
-    { label: 'Patients', path: '/patients', icon: 'people', isAnchor: false },
-    { label: 'Doctors', path: '/doctors', icon: 'person-workspace', isAnchor: false }
+    { label: 'Bệnh nhân', path: '/patients', icon: 'people', isAnchor: false },
+    { label: 'Bác sĩ', path: '/doctors', icon: 'person-workspace', isAnchor: false }
   ] : [])
 ])
 
@@ -66,12 +66,12 @@ const navigateTo = (path: string, isAnchor: boolean) => {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <!-- Brand -->
       <router-link to="/" class="navbar-brand d-flex align-items-center gap-2">
         <i class="bi bi-hospital"></i>
-        <span class="fw-bold">Clinic Management</span>
+        <span class="fw-bold">Quản lý phòng khám</span>
       </router-link>
 
       <!-- Toggler Button for Mobile -->
@@ -126,7 +126,7 @@ const navigateTo = (path: string, isAnchor: boolean) => {
             type="button"
           >
             <i class="bi bi-box-arrow-in-right me-1"></i>
-            Login
+            Đăng nhập
           </button>
         </div>
 
@@ -134,7 +134,7 @@ const navigateTo = (path: string, isAnchor: boolean) => {
         <div v-if="isLoggedIn" class="d-flex gap-2 align-items-center mt-3 mt-lg-0 ms-lg-3">
           <span class="navbar-text text-light d-none d-lg-inline">
             <i class="bi bi-person-circle me-1"></i>
-            {{ userRole || 'User' }}
+            {{ userRole || 'Người dùng' }}
           </span>
 
           <button
@@ -143,7 +143,7 @@ const navigateTo = (path: string, isAnchor: boolean) => {
             type="button"
           >
             <i class="bi bi-box-arrow-right me-1"></i>
-            Logout
+            Đăng xuất
           </button>
         </div>
       </div>

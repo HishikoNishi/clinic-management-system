@@ -8,12 +8,12 @@
         <div class="shape shape-3"></div>
       </div>
       <div class="hero-content">
-        <h1 class="hero-title">Welcome to Our Clinic</h1>
+        <h1 class="hero-title">Chào mừng đến Phòng khám của chúng tôi</h1>
         <p class="hero-subtitle">
-          Quality healthcare services available for you and your family
+          Dịch vụ chăm sóc sức khỏe chất lượng có sẵn cho bạn và gia đình
         </p>
         <button @click="scrollToBooking" class="btn btn-primary">
-          <i class="bi bi-calendar-check me-2"></i>Book an Appointment
+          <i class="bi bi-calendar-check me-2"></i>Đặt lịch hẹn
         </button>
       </div>
     </section>
@@ -21,9 +21,9 @@
     <!-- Services Section -->
     <section id="services" class="services-section">
       <div class="container">
-        <h2 class="section-title">Our Services</h2>
+        <h2 class="section-title">Dịch vụ của chúng tôi</h2>
         <p class="section-subtitle">
-          We provide comprehensive healthcare services
+          Chúng tôi cung cấp các dịch vụ chăm sóc sức khỏe toàn diện
         </p>
 
         <div class="services-grid">
@@ -41,26 +41,26 @@
     <!-- Booking Section -->
     <section id="booking" class="booking-section">
       <div class="container">
-        <h2 class="section-title">Book Your Appointment</h2>
+        <h2 class="section-title">Đặt lịch khám của bạn</h2>
         <p class="section-subtitle">
-          Fill in the form below to schedule your appointment
+          Điền vào form dưới đây để lên lịch khám
         </p>
 
         <!-- Success Alert -->
         <div v-if="bookingSuccess" class="alert alert-success">
           <i class="bi bi-check-circle me-2"></i>
           <div>
-            <strong>Appointment Booked Successfully!</strong>
+            <strong>Lịch khám đã được đặt thành công!</strong>
             <p class="mt-2">
-              <strong>Appointment Code:</strong>
+              <strong>Mã lịch khám:</strong>
               <span class="appointment-code">{{ bookingResponse.appointmentCode }}</span>
             </p>
             <p>
-              <strong>Status:</strong>
+              <strong>Trạng thái:</strong>
               <span class="badge badge-info">{{ bookingResponse.status }}</span>
             </p>
             <p>
-              <strong>Date & Time:</strong>
+              <strong>Ngày & Giờ:</strong>
               {{ formatDateTime(bookingResponse.appointmentDate, bookingResponse.appointmentTime) }}
             </p>
           </div>
@@ -70,7 +70,7 @@
         <div v-if="bookingError" class="alert alert-danger">
           <i class="bi bi-exclamation-circle me-2"></i>
           <div>
-            <strong>Error</strong>
+            <strong>Lỗi</strong>
             <p class="mt-2">{{ bookingError }}</p>
           </div>
         </div>
@@ -80,13 +80,13 @@
           <div class="form-row">
             <!-- Full Name -->
             <div class="form-group">
-              <label class="form-label">Full Name *</label>
+              <label class="form-label">Họ và tên *</label>
               <input
                 v-model="bookingForm.fullName"
                 type="text"
                 class="form-input"
                 required
-                placeholder="Enter your full name"
+                placeholder="Nhập họ và tên của bạn"
               />
               <span v-if="bookingErrors.fullName" class="form-error">
                 {{ bookingErrors.fullName }}
@@ -95,7 +95,7 @@
 
             <!-- Date of Birth -->
             <div class="form-group">
-              <label class="form-label">Date of Birth *</label>
+              <label class="form-label">Ngày sinh *</label>
               <input
                 v-model="bookingForm.dateOfBirth"
                 type="date"
@@ -111,11 +111,11 @@
           <div class="form-row">
             <!-- Gender -->
             <div class="form-group">
-              <label class="form-label">Gender *</label>
+              <label class="form-label">Giới tính *</label>
               <select v-model="bookingForm.gender" class="form-select" required>
-                <option value="">Select Gender</option>
-                <option value="1">Male</option>
-                <option value="2">Female</option>
+                <option value="">Chọn giới tính</option>
+                <option value="1">Nam</option>
+                <option value="2">Nữ</option>
               </select>
               <span v-if="bookingErrors.gender" class="form-error">
                 {{ bookingErrors.gender }}
@@ -124,13 +124,13 @@
 
             <!-- Phone -->
             <div class="form-group">
-              <label class="form-label">Phone *</label>
+              <label class="form-label">Điện thoại *</label>
               <input
                 v-model="bookingForm.phone"
                 type="tel"
                 class="form-input"
                 required
-                placeholder="Enter your phone number"
+                placeholder="Nhập số điện thoại của bạn"
               />
               <span v-if="bookingErrors.phone" class="form-error">
                 {{ bookingErrors.phone }}
@@ -147,7 +147,7 @@
                 type="email"
                 class="form-input"
                 required
-                placeholder="Enter your email"
+                placeholder="Nhập email của bạn"
               />
               <span v-if="bookingErrors.email" class="form-error">
                 {{ bookingErrors.email }}
@@ -156,13 +156,13 @@
 
             <!-- Address -->
             <div class="form-group">
-              <label class="form-label">Address *</label>
+              <label class="form-label">Địa chỉ *</label>
               <input
                 v-model="bookingForm.address"
                 type="text"
                 class="form-input"
                 required
-                placeholder="Enter your address"
+                placeholder="Nhập địa chỉ của bạn"
               />
               <span v-if="bookingErrors.address" class="form-error">
                 {{ bookingErrors.address }}
@@ -173,7 +173,7 @@
           <div class="form-row">
             <!-- Appointment Date -->
             <div class="form-group">
-              <label class="form-label">Appointment Date *</label>
+              <label class="form-label">Ngày khám *</label>
               <input
                 v-model="bookingForm.appointmentDate"
                 type="date"
@@ -187,7 +187,7 @@
 
             <!-- Appointment Time -->
             <div class="form-group">
-              <label class="form-label">Appointment Time *</label>
+              <label class="form-label">Thời gian khám *</label>
               <input
                 v-model="bookingForm.appointmentTime"
                 type="time"
@@ -202,12 +202,12 @@
 
           <!-- Reason -->
           <div class="form-group">
-            <label class="form-label">Reason for Visit *</label>
+            <label class="form-label">Lý do khám *</label>
             <textarea
               v-model="bookingForm.reason"
               class="form-textarea"
               required
-              placeholder="Please describe your reason for the appointment"
+              placeholder="Vui lòng mô tả lý do khám của bạn"
               rows="4"
             ></textarea>
             <span v-if="bookingErrors.reason" class="form-error">
@@ -223,7 +223,7 @@
           >
             <i v-if="!bookingLoading" class="bi bi-calendar-check me-2"></i>
             <i v-else class="bi bi-spinner animate-spin me-2"></i>
-            {{ bookingLoading ? "Booking..." : "Book Appointment" }}
+            {{ bookingLoading ? "Đang đặt..." : "Đặt lịch khám" }}
           </button>
         </form>
 
@@ -234,7 +234,7 @@
           class="btn btn-secondary w-100"
         >
           <i class="bi bi-arrow-counterclockwise me-2"></i>
-          Book Another Appointment
+          Đặt lịch khám khác
         </button>
       </div>
     </section>
@@ -242,9 +242,9 @@
     <!-- Search Section -->
     <section id="search" class="search-section">
       <div class="container">
-        <h2 class="section-title">Search Your Appointment</h2>
+        <h2 class="section-title">Tìm lịch khám của bạn</h2>
         <p class="section-subtitle">
-          Enter your appointment code and phone number to check status
+          Nhập mã lịch khám và số điện thoại để kiểm tra trạng thái
         </p>
 
         <!-- Search Error Alert -->
@@ -257,7 +257,7 @@
         <div v-if="searchResult" class="search-result">
           <div class="result-card">
             <div class="result-header">
-              <h3>Appointment Details</h3>
+              <h3>Chi tiết lịch khám</h3>
               <span class="badge" :class="`badge-${getStatusClass(searchResult.status)}`">
                 {{ searchResult.status }}
               </span>
@@ -265,24 +265,24 @@
 
             <div class="result-grid">
               <div class="result-item">
-                <label>Appointment Code</label>
+                <label>Mã lịch khám</label>
                 <p class="result-value">{{ searchResult.appointmentCode }}</p>
               </div>
 
               <div class="result-item">
-                <label>Patient Name</label>
+                <label>Tên bệnh nhân</label>
                 <p class="result-value">{{ searchResult.fullName }}</p>
               </div>
 
               <div class="result-item">
-                <label>Date & Time</label>
+                <label>Ngày & Giờ</label>
                 <p class="result-value">
                   {{ formatDateTime(searchResult.appointmentDate, searchResult.appointmentTime) }}
                 </p>
               </div>
 
               <div class="result-item">
-                <label>Phone</label>
+                <label>Điện thoại</label>
                 <p class="result-value">{{ searchResult.phone }}</p>
               </div>
 
@@ -292,7 +292,7 @@
               </div>
 
               <div class="result-item">
-                <label>Reason</label>
+                <label>Lý do</label>
                 <p class="result-value">{{ searchResult.reason }}</p>
               </div>
             </div>
@@ -300,12 +300,12 @@
             <div class="result-actions">
               <button @click="cancelAppointment" class="btn btn-danger">
                 <i class="bi bi-x-circle me-2"></i>
-                Cancel Appointment
+                Hủy lịch khám
               </button>
 
               <button @click="resetSearch" class="btn btn-secondary">
                 <i class="bi bi-search me-2"></i>
-                Search Another
+                Tìm kiếm khác
               </button>
             </div>
           </div>
@@ -316,25 +316,25 @@
           <div class="form-row">
             <!-- Appointment Code -->
             <div class="form-group">
-              <label class="form-label">Appointment Code *</label>
+              <label class="form-label">Mã lịch khám *</label>
               <input
                 v-model="searchForm.appointmentCode"
                 type="text"
                 class="form-input"
                 required
-                placeholder="Enter your appointment code"
+                placeholder="Nhập mã lịch khám của bạn"
               />
             </div>
 
             <!-- Phone -->
             <div class="form-group">
-              <label class="form-label">Phone Number *</label>
+              <label class="form-label">Số điện thoại *</label>
               <input
                 v-model="searchForm.phone"
                 type="tel"
                 class="form-input"
                 required
-                placeholder="Enter your phone number" 
+                placeholder="Nhập số điện thoại của bạn" 
               />
             </div>
           </div>
@@ -347,7 +347,7 @@
           >
             <i v-if="!searchLoading" class="bi bi-search me-2"></i>
             <i v-else class="bi bi-spinner animate-spin me-2"></i>
-            {{ searchLoading ? "Searching..." : "Search Appointment" }}
+            {{ searchLoading ? "Đang tìm kiếm..." : "Tìm lịch khám" }}
           </button>
         </form>
       </div>
@@ -365,22 +365,22 @@ const cancelError = ref('')
 const services = reactive([
   {
     id: 1,
-    name: 'General Consultation',
-    description: 'Comprehensive medical checkups and consultations with experienced doctors',
+    name: 'Khám tổng quát',
+    description: 'Kiểm tra sức khỏe toàn diện và tư vấn với các bác sĩ giàu kinh nghiệm',
     icon: 'bi bi-stethoscope',
     color: 'blue'
   },
   {
     id: 2,
-    name: 'Dental Care',
-    description: 'Professional dental services including cleanings and treatments',
+    name: 'Chăm sóc răng',
+    description: 'Dịch vụ nha khoa chuyên nghiệp bao gồm vệ sinh và điều trị',
     icon: 'bi bi-tooth',
     color: 'green'
   },
   {
     id: 3,
-    name: 'Emergency Care',
-    description: '24/7 emergency medical services and urgent care support',
+    name: 'Chăm sóc cấp cứu',
+    description: 'Dịch vụ y tế cấp cứu 24/7 và hỗ trợ chăm sóc khẩn cấp',
     icon: 'bi bi-exclamation-triangle',
     color: 'red'
   }
@@ -446,53 +446,53 @@ const validateBookingForm = (): boolean => {
   let isValid = true
 
   if (!bookingForm.fullName.trim()) {
-    bookingErrors.fullName = 'Full name is required'
+    bookingErrors.fullName = 'Họ và tên là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.dateOfBirth) {
-    bookingErrors.dateOfBirth = 'Date of birth is required'
+    bookingErrors.dateOfBirth = 'Ngày sinh là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.gender) {
-    bookingErrors.gender = 'Gender is required'
+    bookingErrors.gender = 'Giới tính là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.phone.trim()) {
-    bookingErrors.phone = 'Phone number is required'
+    bookingErrors.phone = 'Số điện thoại là bắt buộc'
     isValid = false
   } else if (!/^[0-9]{9,11}$/.test(bookingForm.phone)) {
-    bookingErrors.phone = 'Phone must be 9-11 digits'
+    bookingErrors.phone = 'Số điện thoại phải có 9-11 chữ số'
     isValid = false
   }
 
   if (!bookingForm.email.trim()) {
-    bookingErrors.email = 'Email is required'
+    bookingErrors.email = 'Email là bắt buộc'
     isValid = false
   } else if (!/\S+@\S+\.\S+/.test(bookingForm.email)) {
-    bookingErrors.email = 'Invalid email format'
+    bookingErrors.email = 'Định dạng email không hợp lệ'
     isValid = false
   }
 
   if (!bookingForm.address.trim()) {
-    bookingErrors.address = 'Address is required'
+    bookingErrors.address = 'Địa chỉ là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.appointmentDate) {
-    bookingErrors.appointmentDate = 'Appointment date is required'
+    bookingErrors.appointmentDate = 'Ngày khám là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.appointmentTime) {
-    bookingErrors.appointmentTime = 'Appointment time is required'
+    bookingErrors.appointmentTime = 'Thời gian khám là bắt buộc'
     isValid = false
   }
 
   if (!bookingForm.reason.trim()) {
-    bookingErrors.reason = 'Reason for visit is required'
+    bookingErrors.reason = 'Lý do khám là bắt buộc'
     isValid = false
   }
 
@@ -524,7 +524,7 @@ const submitBooking = async () => {
     bookingResponse.value = response.data
     bookingSuccess.value = true
   } catch (error: any) {
-    bookingError.value = error.response?.data?.message || 'Failed to book appointment. Please try again.'
+    bookingError.value = error.response?.data?.message || 'Không thể đặt lịch khám. Vui lòng thử lại.'
     console.error('Booking error:', error)
   } finally {
     bookingLoading.value = false
@@ -549,7 +549,7 @@ const resetBookingForm = () => {
 // Submit search
 const submitSearch = async () => {
   if (!searchForm.appointmentCode.trim() || !searchForm.phone.trim()) {
-    searchError.value = 'Please enter appointment code and phone number'
+    searchError.value = 'Vui lòng nhập mã lịch khám và số điện thoại'
     return
   }
 
@@ -564,7 +564,7 @@ const submitSearch = async () => {
 
     searchResult.value = response.data
   } catch (error: any) {
-    searchError.value = error.response?.data?.message || 'Appointment not found. Please check your details.'
+    searchError.value = error.response?.data?.message || 'Lịch khám không tìm thấy. Vui lòng kiểm tra thông tin của bạn.'
     console.error('Search error:', error)
   } finally {
     searchLoading.value = false
@@ -610,7 +610,7 @@ const scrollToBooking = () => {
 const cancelAppointment = async () => {
   if (!searchResult.value) return
 
-  const confirmCancel = confirm("Are you sure you want to cancel this appointment?")
+  const confirmCancel = confirm("Bạn có chắc chắn muốn hủy lịch khám này?")
   if (!confirmCancel) return
 
   try {
@@ -625,11 +625,11 @@ const cancelAppointment = async () => {
 
     searchResult.value.status = "Cancelled"
 
-    alert("Appointment cancelled successfully")
+    alert("Lịch khám đã bị hủy thành công")
 
   } catch (error: any) {
     cancelError.value =
-      error.response?.data || "Failed to cancel appointment"
+      error.response?.data || "Không thể hủy lịch khám"
 
     console.error(error)
   } finally {

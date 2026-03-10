@@ -2,56 +2,53 @@
   <div class="staff-form-container">
     <div class="form-card">
       <h1 class="form-title">
-        {{ isEdit ? "Edit Staff" : "Create Staff" }}
+        {{ isEdit ? "Chỉnh sửa nhân viên" : "Tạo nhân viên mới" }}
       </h1>
 
       <form @submit.prevent="handleSubmit">
 
         <div class="form-group">
-          <label>User</label>
+          <label>Người dùng</label>
           <select v-model="form.userId" required>
-            <option disabled value="">Select User</option>
-            <option v-for="u in users" :key="u.id" :value="u.id">
-              {{ u.username }}
-            </option>
+            <option disabled value="">Chọn người dùng</option>
+        <option v-for="u in users" :key="u.id" :value="u.id">
+          {{ u.username }}
+        </option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Code</label>
+          <label>Mã</label>
           <input v-model="form.code" required />
         </div>
 
         <div class="form-group">
-          <label>Full Name</label>
+          <label>Họ và tên</label>
           <input v-model="form.fullName" required />
         </div>
 
         <div class="form-group">
-          <label>Role</label>
+          <label>Vị trí</label>
           <select v-model="form.role" required>
-            <option value="Doctor">Doctor</option>
-            <option value="Nurse">Nurse</option>
-            <option value="Receptionist">Receptionist</option>
-            <option value="Admin">Admin</option>
+            <option value="Staff">Lễ Tân</option>
           </select>
         </div>
 
         <div v-if="isEdit" class="form-group">
-          <label>Status</label>
+          <label>Trạng thái</label>
           <select v-model="form.isActive">
-            <option :value="true">Active</option>
-            <option :value="false">Inactive</option>
+            <option :value="true">Hoạt động</option>
+            <option :value="false">Không hoạt động</option>
           </select>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn-primary">
-            {{ isEdit ? "Update" : "Create" }}
+            {{ isEdit ? "Cập nhật" : "Tạo" }}
           </button>
 
           <button type="button" class="btn-secondary" @click="router.push('/staff')">
-            Cancel
+            Hủy
           </button>
         </div>
 
@@ -81,13 +78,16 @@ const form = reactive({
   userId: "",
   code: "",
   fullName: "",
-  role: "Doctor",
+  role: "Staff",
   isActive: true
 })
 
 onMounted(async () => {
   const resUsers = await getUsers()
-  users.value = resUsers.data
+
+  users.value = resUsers.data.filter(
+    (u: any) => u.role === "Staff"
+  )
 
   if (isEdit.value) {
     const res = await getStaffById(id)
