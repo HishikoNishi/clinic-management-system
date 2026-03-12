@@ -9,7 +9,7 @@ const currentYear = computed(() => new Date().getFullYear())
     <div class="container-fluid">
       <p class="mb-0 text-dark">
         <small>
-          &copy; {{ currentYear }} Clinic Management System. All rights reserved.
+          &copy; {{ currentYear }} Hệ thống quản lý phòng khám. Bảo lưu mọi quyền.
         </small>
       </p>
     </div>

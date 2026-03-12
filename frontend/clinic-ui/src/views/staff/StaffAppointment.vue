@@ -1,17 +1,17 @@
 <template>
   <div class="staff-container">
-    <h2>Appointment Management</h2>
+    <h2>Quản lý lịch khám</h2>
 
     <!-- SEARCH BAR -->
     <div class="search-bar">
-      <input v-model="searchCode" placeholder="Search by code..." />
-      <input v-model="searchName" placeholder="Search by patient name..." />
-      <input v-model="searchPhone" placeholder="Search by phone..." />
+      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
+      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
+      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
       <!-- Chọn bác sĩ -->
       <select v-model="selectedDoctor" @change="loadAppointments">
-        <option value="">All doctors</option>
+        <option value="">Tất cả bác sĩ</option>
         <option v-for="d in doctors" :key="d.id" :value="d.id">
    {{ d.name }}
 
@@ -20,7 +20,7 @@
 
       <!-- Nút kính lúp -->
       <button class="search-btn" @click="loadAppointments">🔍</button>
-      <button class="clear-btn" @click="clearFilters">Clear</button>
+      <button class="clear-btn" @click="clearFilters">Xóa</button>
     </div>
 
     <!-- FILTER STATUS -->
@@ -31,7 +31,7 @@
         :class="{ active: currentStatus === s }"
         @click="changeStatus(s)"
       >
-        {{ s }}
+        {{ statusLabel(s) }}
       </button>
     </div>
 
@@ -39,13 +39,13 @@
   <table>
   <thead>
     <tr>
-      <th>Code</th>
-      <th>Patient</th>
-      <th>Phone</th> <!-- thêm cột -->
-      <th>Date</th>
-      <th>Status</th>
-      <th>Doctor</th>
-      <th v-if="currentStatus === 'Pending'">Assign</th>
+      <th>Mã</th>
+      <th>Bệnh nhân</th>
+      <th>Điện thoại</th> <!-- thêm cột -->
+      <th>Ngày</th>
+      <th>Trạng thái</th>
+      <th>Bác sĩ</th>
+      <th v-if="currentStatus === 'Pending'">Gán bác sĩ</th>
     </tr>
   </thead>
   <tbody>
@@ -60,13 +60,13 @@
       <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
       <td>
         <span :class="'status ' + a.statusDetail.value.toLowerCase()">
-          {{ a.statusDetail.value }}
+          {{ statusLabel(a.statusDetail.value) }}
         </span>
       </td>
-      <td>{{ a.statusDetail.doctorName || 'Not assigned' }}</td>
+      <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
       <td v-if="a.statusDetail.value === 'Pending'">
         <select @change="assignDoctor(a.id, $event)" @click.stop>
-          <option value="">Select doctor</option>
+          <option value="">Chọn bác sĩ</option>
           <option v-for="d in doctors" :key="d.id" :value="d.id">
             {{ d.username }}
           </option>
@@ -77,7 +77,7 @@
 </table>
 
 
-    <p v-if="appointments.length === 0">No appointments</p>
+    <p v-if="appointments.length === 0">Không có lịch khám</p>
   </div>
 </template>
 
@@ -170,8 +170,19 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
   await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
-  alert('Doctor assigned ✅')
+  alert('Bác sĩ đã được gán ✅')
   loadAppointments()
+}
+
+const statusLabel = (status: string) => {
+  const labels: { [key: string]: string } = {
+    'All': 'Tất cả',
+    'Pending': 'Chờ xử lý',
+    'Confirmed': 'Đã xác nhận',
+    'Completed': 'Hoàn thành',
+    'Cancelled': 'Đã hủy'
+  }
+  return labels[status] || status
 }
 
 const clearFilters = () => {

@@ -1,25 +1,25 @@
 <template>
   <div class="appointment-detail">
-    <h2>Appointment Detail</h2>
+    <h2>Chi tiết lịch khám</h2>
     <div v-if="appointment" class="detail-card">
-      <div class="detail-row"><span class="label">Code:</span> {{ appointment.appointmentCode }}</div>
-      <div class="detail-row"><span class="label">Patient:</span> {{ appointment.fullName }}</div>
-      <div class="detail-row"><span class="label">Phone:</span> {{ appointment.phone }}</div>
+      <div class="detail-row"><span class="label">Mã:</span> {{ appointment.appointmentCode }}</div>
+      <div class="detail-row"><span class="label">Bệnh nhân:</span> {{ appointment.fullName }}</div>
+      <div class="detail-row"><span class="label">Điện thoại:</span> {{ appointment.phone }}</div>
       <div class="detail-row"><span class="label">Email:</span> {{ appointment.email }}</div>
-      <div class="detail-row"><span class="label">Date of Birth:</span> {{ formatDate(appointment.dateOfBirth) }}</div>
-      <div class="detail-row"><span class="label">Gender:</span> {{ appointment.gender }}</div>
-      <div class="detail-row"><span class="label">Address:</span> {{ appointment.address }}</div>
-      <div class="detail-row"><span class="label">Reason:</span> {{ appointment.reason }}</div>
+      <div class="detail-row"><span class="label">Ngày sinh:</span> {{ formatDate(appointment.dateOfBirth) }}</div>
+      <div class="detail-row"><span class="label">Giới tính:</span> {{ appointment.gender }}</div>
+      <div class="detail-row"><span class="label">Địa chỉ:</span> {{ appointment.address }}</div>
+      <div class="detail-row"><span class="label">Lý do:</span> {{ appointment.reason }}</div>
       <div class="detail-row">
-        <span class="label">Status:</span>
+        <span class="label">Trạng thái:</span>
         <span :class="'status ' + appointment.status.toLowerCase()">{{ appointment.status }}</span>
       </div>
       <div v-if="appointment.statusDetail.doctorName" class="detail-row">
-        <span class="label">Doctor:</span> {{ appointment.statusDetail.doctorName }} ({{ appointment.statusDetail.doctorCode }})
+        <span class="label">Bác sĩ:</span> {{ appointment.statusDetail.doctorName }} ({{ appointment.statusDetail.doctorCode }})
       </div>
     </div>
     <p v-else-if="error" class="error">{{ error }}</p>
-    <button class="back-btn" @click="$router.push('/staff/appointments')">← Back to listtt</button>
+    <button class="back-btn" @click="$router.push('/staff/appointments')">← Quay lại danh sách</button>
   </div>
 </template>
 
@@ -45,7 +45,7 @@ const loadDetail = async () => {
     const res = await api.get(`/staff/StaffAppointments/${route.params.id}`)
     appointment.value = res.data
   } catch (err) {
-    error.value = "Unable to load appointment detail."
+    error.value = "Không thể tải chi tiết lịch khám."
   }
 }
 

@@ -22,7 +22,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET ALL ================= */
         [HttpGet]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> GetAll()
         {
             var doctors = await _context.Doctors
@@ -41,7 +41,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Staff")]
         /* ================= GET BY ID ================= */
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)

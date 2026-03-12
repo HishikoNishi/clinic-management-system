@@ -1,16 +1,16 @@
 <template>
   <div class="doctor-container">
-    <h2>My Appointments</h2>
+    <h2>Lịch khám của tôi</h2>
 
     <!-- SEARCH BAR -->
     <div class="search-bar">
-      <input v-model="searchCode" placeholder="Search by code..." />
-      <input v-model="searchName" placeholder="Search by patient name..." />
-      <input v-model="searchPhone" placeholder="Search by phone..." />
+      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
+      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
+      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
       <button class="search-btn">🔍</button>
-      <button class="clear-btn" @click="clearFilters">Clear</button>
+      <button class="clear-btn" @click="clearFilters">Xóa</button>
     </div>
 
     <!-- FILTER STATUS -->
@@ -21,7 +21,7 @@
         :class="{ active: currentStatus === s }"
         @click="changeStatus(s)"
       >
-        {{ s }}
+        {{ statusLabel(s) }}
       </button>
     </div>
 
@@ -29,12 +29,12 @@
    <table>
   <thead>
     <tr>
-      <th>Code</th>
-      <th>Patient</th>
-      <th>Phone</th> <!-- thêm cột -->
-      <th>Date</th>
-      <th>Status</th>
-      <th>Action</th>
+      <th>Mã</th>
+      <th>Bệnh nhân</th>
+      <th>Điện thoại</th> <!-- thêm cột -->
+      <th>Ngày</th>
+      <th>Trạng thái</th>
+      <th>Hành động</th>
     </tr>
   </thead>
   <tbody>
@@ -49,12 +49,12 @@
       <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
       <td>
         <span :class="'status ' + a.status.toLowerCase()">
-          {{ a.status }}
+          {{ statusLabel(a.status) }}
         </span>
       </td>
       <td>
         <button v-if="a.status === 'Confirmed'" @click.stop="completeAppointment(a.id)">
-          Completed this appointment
+          Hoàn thành lịch khám
         </button>
       </td>
     </tr>
@@ -62,7 +62,7 @@
 </table>
 
 
-    <p v-if="filteredAppointments.length === 0">No appointments</p>
+    <p v-if="filteredAppointments.length === 0">Không có lịch khám</p>
   </div>
 </template>
 
@@ -139,13 +139,25 @@ const changeStatus = (s: string) => {
 
 /* COMPLETE APPOINTMENT */
 const completeAppointment = async (appointmentId: string) => {
-  const ok = confirm("Are you sure you want to mark this appointment as completed?")
+  const ok = confirm("Bạn có chắc chắn muốn đánh dấu lịch khám này hoàn thành?")
   if (!ok) return
 
   await api.patch(`/doctor/DoctorAppointments/${appointmentId}/complete`)
-  alert("Status updated ✅")
+  alert("Cập nhật trạng thái ✅")
 
   loadAppointments()
+}
+
+/* STATUS LABEL */
+const statusLabel = (status: string) => {
+  const labels: { [key: string]: string } = {
+    'All': 'Tất cả',
+    'Pending': 'Chờ xử lý',
+    'Confirmed': 'Đã xác nhận',
+    'Completed': 'Hoàn thành',
+    'Cancelled': 'Đã hủy'
+  }
+  return labels[status] || status
 }
 
 /* CLEAR FILTER */

@@ -17,21 +17,21 @@
             <i class="bi bi-hospital logo-icon"></i>
           </div>
 
-          <h1 class="brand-title">Clinic Management</h1>
-          <p class="brand-subtitle">Professional Healthcare System</p>
+          <h1 class="brand-title">Quản Lý Phòng Khám</h1>
+          <p class="brand-subtitle">Hệ thống quản lý chăm sóc sức khỏe chuyên nghiệp</p>
 
           <div class="features">
             <div class="feature-item">
               <i class="bi bi-shield-check feature-icon"></i>
-              <span class="px-2">Secure & Reliable</span>
+              <span class="px-2">An toàn & Đáng tin cậy</span>
             </div>
             <div class="feature-item">
               <i class="bi bi-clock feature-icon"></i>
-              <span class="px-2">24/7 Access</span>
+              <span class="px-2">Truy cập 24/7</span>
             </div>
             <div class="feature-item">
               <i class="bi bi-people feature-icon"></i>
-              <span class="px-2">Patient Focused</span>
+              <span class="px-2">Tập trung vào bệnh nhân</span>
             </div>
           </div>
         </div>
@@ -42,8 +42,8 @@
         <div class="form-container">
 
           <div class="form-header">
-            <h2 class="form-title">Welcome Back</h2>
-            <p class="form-subtitle">Sign in to your account</p>
+            <h2 class="form-title">Chào mừng trở lại</h2>
+            <p class="form-subtitle">Đăng nhập vào tài khoản của bạn</p>
           </div>
 
           <div v-if="errorMessage" class="alert alert-error">
@@ -53,7 +53,7 @@
           <form @submit.prevent="handleLogin" class="login-form">
 
             <div class="form-group">
-              <label class="form-label">Username</label>
+              <label class="form-label">Tên đăng nhập</label>
               <input
                 v-model="credentials.username"
                 class="form-input"
@@ -63,7 +63,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Password</label>
+              <label class="form-label">Mật khẩu</label>
               <input
                 v-model="credentials.password"
                 class="form-input"
@@ -73,8 +73,8 @@
             </div>
 
             <button class="btn-login" :disabled="loading">
-              <span v-if="!loading">Login</span>
-              <span v-else>Logging in...</span>
+              <span v-if="!loading">Đăng nhập</span>
+              <span v-else>Đang đăng nhập...</span>
             </button>
           </form>
         </div>
