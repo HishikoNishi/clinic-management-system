@@ -31,23 +31,18 @@
       <div>
         <h5 class="fw-bold mb-3">Hành động nhanh</h5>
         <div class="d-flex gap-3 flex-wrap">
-          <button class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-plus-circle"></i>
-            Bệnh nhân mới
-          </button>
 
-          <button class="btn btn-warning d-flex align-items-center gap-2">
-            <i class="bi bi-calendar-event"></i>
-            Đặt lịch hẹn
+          <button class="btn btn-success d-flex align-items-center gap-2" @click="$router.push('/doctors')">
+            <i class="bi bi-people"></i>
+            Quản lý bác sĩ
           </button>
-
-          <button class="btn btn-success d-flex align-items-center gap-2">
-            <i class="bi bi-file-earmark-text"></i>
-            Hồ sơ bệnh án
-          </button>
-          <button class="action-btn staff" @click="$router.push('/staff')">
+          <button class="btn btn-warning d-flex align-items-center gap-2" @click="$router.push('/staff')">
           <i class="bi bi-people"></i>
             Quản lý nhân viên
+          </button>
+          <button class="btn btn-info d-flex align-items-center gap-2" @click="$router.push('/admin/users/create')">
+             <i class="bi bi-person-plus"></i>
+            Thêm người dùng
           </button>
         </div>
       </div>

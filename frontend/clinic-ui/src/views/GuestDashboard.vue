@@ -53,7 +53,7 @@
             <strong>Lịch khám đã được đặt thành công!</strong>
             <p class="mt-2">
               <strong>Mã lịch khám:</strong>
-              <span class="appointment-code">{{ bookingResponse.appointmentCode }}</span>
+              <span class="appointment-code">{{ bookingResponse.appointmentCode }}</span><strong class="text-warning"></strong>
             </p>
             <p>
               <strong>Trạng thái:</strong>
