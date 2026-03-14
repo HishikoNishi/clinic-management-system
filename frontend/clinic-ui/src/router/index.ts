@@ -21,13 +21,13 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/admin/AdminDashboard.vue'),
-    meta: { requiresAuth: true, role: 'Admin' }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
   {
     path: '/admin/users/create',
     name: 'CreateUser',
     component: () => import('@/views/admin/CreateUserView.vue'),
-    meta: { requiresAuth: true, role: 'Admin' }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
 
   {
@@ -42,49 +42,55 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/AppointmentDetail.vue')
   },
 
-  // ✅ STAFF AREA
+  // STAFF AREA
   {
     path: '/staff/appointments',
     name: 'StaffAppointment',
     component: () => import('@/views/staff/StaffAppointment.vue'),
-    meta: { requiresAuth: true, role: 'Staff' }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Staff' }
   },  
   {
     path: '/staff/appointments/:id',
     name: 'StaffAppointmentDetail',
     component: () => import('@/views/staff/StaffAppointmentDetail.vue'),
-    meta: { requiresAuth: true, role: 'Staff' }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Staff' }
   },
 
+  // DOCTOR AREA
   {
     path: '/doctorappointment',
     name: 'DoctorAppointment',
     component: () => import('@/views/doctor/DoctorAppointments.vue'),
-    meta: { requiresAuth: true, role: 'Doctor' }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Doctor' }
   },
   {
-  path: '/doctor/appointments/:id',
-  name: 'DoctorAppointmentDetail',
-  component: () => import('@/views/doctor/DoctorAppointmentDetail.vue'),
-  meta: { requiresRole: 'Doctor' }
+    path: '/doctor/appointments/:id',
+    name: 'DoctorAppointmentDetail',
+    component: () => import('@/views/doctor/DoctorAppointmentDetail.vue'),
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Doctor' }
   },
+
+  // ADMIN MANAGEMENT
   {
     path: '/doctors',
     name: 'Doctors',
     component: () => import('@/views/admin/DoctorList.vue'),
-    meta: { requiresAuth: true }
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
   {
-    path: "/staff",
-    component: () => import("@/views/admin/StaffList.vue")
+    path: '/staff',
+    component: () => import('@/views/admin/StaffList.vue'),
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
   {
-    path: "/staff/create",
-    component: () => import("@/views/admin/StaffForm.vue")
+    path: '/staff/create',
+    component: () => import('@/views/admin/StaffForm.vue'),
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
   {
-    path: "/staff/edit/:id",
-    component: () => import("@/views/admin/StaffForm.vue")
+    path: '/staff/edit/:id',
+    component: () => import('@/views/admin/StaffForm.vue'),
+    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   }
 ]
 
@@ -95,6 +101,11 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  const roleFallback: Record<string, string> = {
+    Admin: '/dashboard',
+    Staff: '/staff/appointments',
+    Doctor: '/doctorappointment'
+  }
 
   if (to.meta.requiresAuth) {
     if (!authStore.token) {
@@ -103,10 +114,10 @@ router.beforeEach((to) => {
     }
   }
 
-  // ✅ check role
   if (to.meta.role) {
     if (authStore.role !== to.meta.role) {
-      return { name: 'Dashboard' }
+      const fallback = authStore.role ? roleFallback[authStore.role] : '/home'
+      return fallback ? { path: fallback } : { path: '/home' }
     }
   }
 })

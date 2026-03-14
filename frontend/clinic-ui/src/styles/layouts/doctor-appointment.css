@@ -29,7 +29,7 @@
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  background: #f9fff9; /* xanh lá nhạt */
+  background: var(--color-bg-soft);
   font-size: 14px;
   flex: 1;
   min-width: 180px;
@@ -43,7 +43,7 @@
 }
 
 .search-btn:hover {
-  background: #2ecc71;
+  background: var(--color-primary-dark);
 }
 
 .clear-btn {
@@ -77,9 +77,9 @@
 }
 
 .filter button.active {
-  background: #2ecc71; /* xanh lá nhạt */
+  background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.35);
   border-color: transparent;
 }
 
