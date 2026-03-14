@@ -375,7 +375,7 @@ const services = reactive([
     name: 'Chăm sóc răng',
     description: 'Dịch vụ nha khoa chuyên nghiệp bao gồm vệ sinh và điều trị',
     icon: 'bi bi-tooth',
-    color: 'green'
+    color: 'sky'
   },
   {
     id: 3,

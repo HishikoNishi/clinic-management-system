@@ -14,7 +14,8 @@ const currentLayout = computed(() => {
 // Layout components map
 const layoutComponents = {
   guest: GuestLayout,
-  admin: AdminLayout
+  admin: AdminLayout,
+  dashboard: AdminLayout
 }
 
 // Get current layout component

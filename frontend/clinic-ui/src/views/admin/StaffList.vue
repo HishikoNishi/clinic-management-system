@@ -120,8 +120,8 @@ onMounted(loadStaffs)
 }
 
 .btn-create {
-  background: #6c4cf1;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   padding: 10px 18px;
   border-radius: 8px;
   text-decoration: none;
@@ -130,7 +130,7 @@ onMounted(loadStaffs)
 }
 
 .btn-create:hover {
-  background: #5a3de0;
+  background: var(--color-primary-dark);
 }
 
 .table-card {
@@ -177,8 +177,8 @@ tbody tr:hover {
 }
 
 .active {
-  background: #eafaf1;
-  color: #27ae60;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
 
 .inactive {
