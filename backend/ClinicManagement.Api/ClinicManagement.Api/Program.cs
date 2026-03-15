@@ -58,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=DESKTOP-0Q90AUE;Database=ClinicManagement;Trusted_Connection=true;";
+    ?? "Server=MSI;Database=ClinicManagement;Trusted_Connection=true;";
 
 builder.Services.AddDbContext<ClinicDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -121,12 +121,15 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
+
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ClinicManagement API v1");
     });
 }
+
 
 app.UseHttpsRedirection();
 

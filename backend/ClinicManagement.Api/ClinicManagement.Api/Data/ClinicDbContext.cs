@@ -18,6 +18,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Appointment> Appointments { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
         public DbSet<Invoice> Invoices { get; set; } = null!;
+        public DbSet<Payment> Payments { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -183,13 +184,39 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Invoice>(entity =>
             {
                 entity.HasKey(i => i.Id);
+                entity.Property(i => i.Amount)
+                      .HasColumnType("decimal(18,2)")
+                      .IsRequired();
                 entity.HasOne(i => i.Appointment)
                       .WithOne()
                       .HasForeignKey<Invoice>(i => i.AppointmentId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
+            /* ================================
+             * PAYMENT
+             * ================================ */
 
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.Amount)
+                      .HasColumnType("decimal(18,2)")
+                      .IsRequired();
+
+                entity.Property(p => p.Method)
+                      .HasConversion<string>() // enum lưu dạng string
+                      .IsRequired();
+
+                entity.Property(p => p.PaymentDate)
+                      .IsRequired();
+
+                entity.HasOne(p => p.Invoice)
+                      .WithMany(i => i.Payments)
+                      .HasForeignKey(p => p.InvoiceId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
             /* ================================
              * SEED DATA (GUID CỐ ĐỊNH)
