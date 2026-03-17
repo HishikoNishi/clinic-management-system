@@ -41,9 +41,11 @@
     <tr>
       <th>Mã</th>
       <th>Bệnh nhân</th>
-      <th>Điện thoại</th> <!-- thêm cột -->
+      <th>Điện thoại</th>
+      <th>Ngày sinh</th> <!-- thêm cột ngày sinh -->
       <th>Ngày</th>
       <th>Trạng thái</th>
+      <th>Lý do</th>
       <th>Bác sĩ</th>
       <th v-if="currentStatus === 'Pending'">Gán bác sĩ</th>
     </tr>
@@ -56,13 +58,15 @@
     >
       <td>{{ a.appointmentCode }}</td>
       <td>{{ a.fullName }}</td>
-      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
+      <td>{{ a.phone }}</td>
+      <td>{{ formatDate(a.dateOfBirth) }}</td> <!-- hiển thị ngày sinh -->
       <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
       <td>
         <span :class="'status ' + a.statusDetail.value.toLowerCase()">
           {{ statusLabel(a.statusDetail.value) }}
         </span>
       </td>
+      <td>{{ a.reason }}</td>
       <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
       <td v-if="a.statusDetail.value === 'Pending'">
         <select @change="assignDoctor(a.id, $event)" @click.stop>
@@ -75,6 +79,7 @@
     </tr>
   </tbody>
 </table>
+
 
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
@@ -93,8 +98,11 @@ interface Appointment {
   appointmentCode: string
   fullName: string
   phone: string
+    dateOfBirth: string 
   appointmentDate: string
   appointmentTime: string
+
+    reason: string 
   statusDetail: {
     value: string
     doctorName: string
@@ -164,6 +172,11 @@ const loadDoctors = async () => {
 const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
+}
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
 
 const assignDoctor = async (appointmentId: string, e: Event) => {
