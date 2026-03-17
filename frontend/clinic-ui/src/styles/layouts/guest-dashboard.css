@@ -30,12 +30,13 @@
 /* ==================== Navbar ==================== */
 
 .navbar {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)!important;
   padding: var(--space-4) 0;
   box-shadow: var(--shadow-md);
   position: sticky;
   top: 0;
   z-index: 100;
+  
 }
 
 .navbar-container {
@@ -212,9 +213,9 @@
   color: var(--color-primary-dark);
 }
 
-.service-icon.icon-green {
-  background: rgba(22, 163, 74, 0.1);
-  color: var(--color-success);
+.service-icon.icon-sky {
+  background: rgba(47, 128, 237, 0.12);
+  color: var(--color-primary-dark);
 }
 
 .service-icon.icon-red {
@@ -289,7 +290,7 @@
   outline: none;
   border-color: var(--color-primary);
   background-color: var(--color-bg-card);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.18);
 }
 
 .form-input::placeholder,

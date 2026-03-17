@@ -18,21 +18,4 @@ import AppFooter from '@/components/layouts/AppFooter.vue'
   </div>
 </template>
 
-<style scoped>
-.guest-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  margin-bottom: 80px;
-  flex: 1;
-}
-
-@media (max-width: 991px) {
-  .main-content {
-    margin-top: 60px;
-  }
-}
-</style>
+<style src="@/styles/layouts/guest-layout.css" scoped></style>

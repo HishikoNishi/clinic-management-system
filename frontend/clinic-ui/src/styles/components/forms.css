@@ -99,7 +99,7 @@
   outline: none;
   border-color: var(--color-primary);
   background-color: var(--color-bg-card);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.18);
 }
 
 /* Disabled State */
@@ -195,7 +195,7 @@
 .form-checkbox:focus,
 .form-radio:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.18);
   border-color: var(--color-primary);
 }
 

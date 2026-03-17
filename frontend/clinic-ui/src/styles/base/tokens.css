@@ -6,19 +6,19 @@
 :root {
   /* ==================== Colors ==================== */
 
-  /* White + Green healthcare theme (required) */
-  --color-primary: #2ecc71;
-  --color-primary-dark: #27ae60;
-  --color-primary-light: #a9f5c9;
+  /* White + Blue healthcare theme */
+  --color-primary: #2f80ed;
+  --color-primary-dark: #1c64d1;
+  --color-primary-light: #e1efff;
 
-  --color-bg-main: #f6fff9;
+  --color-bg-main: #f4f8ff;
   --color-bg-card: #ffffff;
-  --color-bg-soft: #ecfdf3;
+  --color-bg-soft: #edf3ff;
 
   --color-text-main: #1f2937;
   --color-text-muted: #6b7280;
 
-  --color-border: #d1fae5;
+  --color-border: #d6e4ff;
   --color-shadow: rgba(0, 0, 0, 0.05);
 
   /*
@@ -66,7 +66,7 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
 
-  /* Deprecated secondary palette (mapped to green) */
+  /* Deprecated secondary palette (legacy fallback) */
   --color-secondary: var(--color-primary-dark);
   --color-secondary-light: var(--color-primary);
   --color-secondary-lighter: var(--color-primary-light);
@@ -145,7 +145,7 @@
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.14);
   
   /* Shadow colors */
-  --shadow-primary: 0 14px 30px rgba(46, 204, 113, 0.22);
+  --shadow-primary: 0 14px 30px rgba(47, 128, 237, 0.22);
   --shadow-danger: 0 14px 30px rgba(220, 38, 38, 0.18);
   --shadow-warning: 0 14px 30px rgba(245, 158, 11, 0.18);
   

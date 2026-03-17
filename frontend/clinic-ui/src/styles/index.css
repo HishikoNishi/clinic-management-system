@@ -22,3 +22,4 @@
 /* 5. Page-Specific Styles (imported in component) */
 /* Login styles: @import './layouts/login.css' in Login.vue */
 /* Dashboard styles: @import './layouts/dashboard.css' in Dashboard.vue */
+@import './layouts/create-user.css';

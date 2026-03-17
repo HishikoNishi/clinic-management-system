@@ -1,22 +1,22 @@
 <template>
   <div class="appointment-container">
-    <h2>Create Appointment</h2>
+    <h2>Tạo lịch khám</h2>
 
     <form class="appointment-form" @submit.prevent="submit">
-      <label>Full name</label>
+      <label>Họ và tên</label>
       <input v-model="form.fullName" required />
 
-      <label>Date of birth</label>
+      <label>Ngày sinh</label>
       <input type="date" v-model="form.dateOfBirth" required />
 
-      <label>Gender</label>
+      <label>Giới tính</label>
       <select v-model="form.gender" required>
-        <option value="">Select gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
+        <option value="">Chọn giới tính</option>
+        <option value="Male">Nam</option>
+        <option value="Female">Nữ</option>
       </select>
 
-      <label>Phone number</label>
+      <label>Số điện thoại</label>
       <input type="text" v-model="form.phone" @input="handlePhoneInput" @blur="validatePhone" maxlength="10" required />
       <span v-if="errors.phone" class="error">{{ errors.phone }}</span>
 
@@ -24,21 +24,21 @@
       <input type="email" v-model="form.email" @input="validateEmail" required />
       <span v-if="errors.email" class="error">{{ errors.email }}</span>
 
-      <label>Address</label>
+      <label>Địa chỉ</label>
       <input v-model="form.address" required />
 
-      <label>Appointment date</label>
+      <label>Ngày khám</label>
       <input type="date" v-model="form.date" required />
 
-      <label>Appointment time</label>
+      <label>Thời gian khám</label>
       <input type="time" v-model="form.time" required />
 
-      <label>Reason / Note</label>
+      <label>Lý do / Ghi chú</label>
       <textarea v-model="form.note"></textarea>
 
       <div class="actions">
-        <button type="submit">Create Appointment</button>
-        <button type="button" @click="goToMyAppointment">My Appointment</button>
+        <button type="submit">Tạo lịch khám</button>
+        <button type="button" @click="goToMyAppointment">Lịch khám của tôi</button>
       </div>
     </form>
   </div>
@@ -72,12 +72,12 @@ const handlePhoneInput = () => {
 }
 
 const validatePhone = () => {
-  errors.phone = form.phone.length !== 10 ? "Please enter a valid phone number" : ""
+  errors.phone = form.phone.length !== 10 ? "Vui lòng nhập số điện thoại hợp lệ" : ""
 }
 
 const validateEmail = () => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  errors.email = !regex.test(form.email) ? "Please enter a valid email address" : ""
+  errors.email = !regex.test(form.email) ? "Vui lòng nhập địa chỉ email hợp lệ" : ""
 }
 
 const submit = async () => {
@@ -101,11 +101,11 @@ const submit = async () => {
       const appointmentData = res.data
       localStorage.setItem("appointmentCode", appointmentData.appointmentCode)
 
-      if (window.confirm("Appointment created successfully! Go to Your Appointment?")) {
+      if (window.confirm("Lịch khám đã được tạo thành công! Đi đến lịch khám của bạn?")) {
         router.push("/appointmentdetail")
       }
     } catch (err: any) {
-      alert("Failed: " + (err.response?.data || err.message))
+      alert("Lỗi: " + (err.response?.data || err.message))
     }
   }
 }

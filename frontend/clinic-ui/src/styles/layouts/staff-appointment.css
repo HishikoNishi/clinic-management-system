@@ -56,6 +56,7 @@
 .staff-container h2 {
   margin-bottom: 24px;
   color: var(--color-text-main);
+  font-weight: 600;
   font-weight: 700;
   font-size: 28px;
   text-align: center;
@@ -71,7 +72,7 @@
 .filter button {
   padding: 10px 20px;
   margin: 0 8px;
-  border: 1px solid var(--color-border);
+  border: none;
   background: var(--color-bg-soft);
   cursor: pointer;
   border-radius: 25px;
@@ -79,26 +80,33 @@
   font-weight: 500;
   font-size: 15px;
   color: var(--color-text-main);
+  border: 1px solid var(--color-border);
 }
 
 .filter button.active {
-  background:#6adca3;
-  color: #fdfcfc;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-primary);
   border-color: transparent;
 }
 
 .filter button:hover {
-  background: #abbfce;
+  background: var(--color-bg-card);
 }
 
 /* Table */
 table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 10px;
   margin-top: 16px;
   box-shadow: 0 6px 20px var(--color-shadow);
   border-radius: 12px;
+  box-shadow: 0 6px 20px var(--color-shadow);
+  border-radius: 12px;
   overflow: hidden;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
 }
@@ -106,24 +114,28 @@ table {
 table th,
 table td {
   border: 1px solid var(--color-border);
-  padding: 14px;
+  padding: 12px;
+  padding: 16px;
   text-align: left;
   font-size: 14px;
+  color: var(--color-text-main);
   color: var(--color-text-main);
 }
 
 table th {
-  background:#abeaab;
-
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 600;
   font-size: 15px;
 }
 
 table tr:nth-child(even) {
   background-color: var(--color-bg-soft);
+  background-color: var(--color-bg-soft);
 }
 
 table tr:hover {
-  background-color: #b7e0cb;
+  background-color: var(--color-primary-light);
   transition: background-color 0.2s ease;
 }
 
@@ -139,30 +151,33 @@ table tr:hover {
 }
 
 .status.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--color-warning-bg);
+  color: var(--color-text-main);
 }
 
 .status.confirmed {
-  background: #d4edda;
-  color: #2d713e;
+  background: var(--color-success-bg);
+  color: var(--color-text-main);
 }
 
 .status.completed {
-  background: #cce5ff;
-  color: #163e6a;
+  background: var(--color-info-bg);
+  color: var(--color-text-main);
 }
 
 .status.cancelled {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--color-danger-bg);
+  color: var(--color-text-main);
 }
 
 /* Assign select */
 select {
   padding: 8px 12px;
   border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
+  background: var(--color-bg-soft);
+  color: var(--color-text-main);
   background: var(--color-bg-soft);
   color: var(--color-text-main);
   transition: border-color 0.2s;
@@ -170,17 +185,18 @@ select {
 }
 
 select:focus {
-  border-color: #e67e22;
+  border-color: var(--color-primary);
   outline: none;
   background: var(--color-bg-card);
-  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.18);
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
 select option.inactive {
   color: var(--color-text-muted);
   background-color: var(--color-bg-soft);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-soft);
 }
-
-p {
+p{
   color: var(--color-text-muted);
 }

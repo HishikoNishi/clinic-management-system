@@ -7,37 +7,32 @@ const router = useRouter()
 const authStore = useAuthStore()
 const isNavOpen = ref(false)
 
-// Check if user is logged in and get their role
 const isLoggedIn = computed(() => {
   if (!authStore.token) return false
   if (!authStore.expiresAt) return true
   return new Date(authStore.expiresAt) > new Date()
 })
+
 const userRole = computed(() => authStore.role)
 
-// Guest navigation items (scroll anchors)
-const guestNavigationItems = computed(() => [
-  { label: 'Services', path: '#services', icon: 'heart', isAnchor: true },
-  { label: 'Book Appointment', path: '#booking', icon: 'calendar-check', isAnchor: true },
-  { label: 'Search', path: '#search', icon: 'search', isAnchor: true }
-])
+const guestNavigationItems = [
+  { label: 'Dịch vụ', path: '#services', icon: 'heart', isAnchor: true },
+  { label: 'Đặt lịch hẹn', path: '#booking', icon: 'calendar-check', isAnchor: true },
+  { label: 'Tìm kiếm', path: '#search', icon: 'search', isAnchor: true }
+]
 
-// Admin/staff/doctor navigation items (route paths)
-const adminNavigationItems = computed(() => [
-  { label: 'Dashboard', path: '/dashboard', icon: 'speedometer2', isAnchor: false },
-  { label: 'Appointments', path: '/appointments', icon: 'calendar-event', isAnchor: false },
-  ...(userRole.value === 'Admin' ? [
-    { label: 'Patients', path: '/patients', icon: 'people', isAnchor: false },
-    { label: 'Doctors', path: '/doctors', icon: 'person-workspace', isAnchor: false }
-  ] : [])
-])
+const authNavigationItems = [
+  { label: 'Bảng điều khiển', path: '/dashboard', icon: 'speedometer2', isAnchor: false },
+  { label: 'Lịch khám', path: '/appointment', icon: 'calendar-event', isAnchor: false },
+  { label: 'Bác sĩ', path: '/doctors', icon: 'person-workspace', isAnchor: false },
+  { label: 'Nhân viên', path: '/staff', icon: 'people', isAnchor: false }
+]
 
-// Determine which navigation items to show based on role
 const navigationItems = computed(() => {
   if (!isLoggedIn.value || userRole.value === 'Guest') {
-    return guestNavigationItems.value
+    return guestNavigationItems
   }
-  return adminNavigationItems.value
+  return authNavigationItems
 })
 
 const handleLogout = () => {
@@ -55,10 +50,8 @@ const closeNavbar = () => {
 
 const navigateTo = (path: string, isAnchor: boolean) => {
   if (isAnchor) {
-    // For anchor links, don't close navbar and let browser handle the scroll
     closeNavbar()
   } else {
-    // For route paths, use router
     router.push(path)
     closeNavbar()
   }
@@ -66,15 +59,13 @@ const navigateTo = (path: string, isAnchor: boolean) => {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
-      <!-- Brand -->
       <router-link to="/" class="navbar-brand d-flex align-items-center gap-2">
         <i class="bi bi-hospital"></i>
-        <span class="fw-bold">Clinic Management</span>
+        <span class="fw-bold">Quản lý phòng khám</span>
       </router-link>
 
-      <!-- Toggler Button for Mobile -->
       <button
         class="navbar-toggler"
         type="button"
@@ -85,12 +76,9 @@ const navigateTo = (path: string, isAnchor: boolean) => {
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!-- Navbar Content -->
       <div class="collapse navbar-collapse" :class="{ show: isNavOpen }">
-        <!-- Navigation Links -->
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li v-for="item in navigationItems" :key="item.path" class="nav-item">
-            <!-- Anchor links for guest navigation -->
             <a
               v-if="item.isAnchor"
               :href="item.path"
@@ -101,7 +89,6 @@ const navigateTo = (path: string, isAnchor: boolean) => {
               {{ item.label }}
             </a>
 
-            <!-- Router links for authenticated navigation -->
             <router-link
               v-else
               :to="item.path"
@@ -115,10 +102,8 @@ const navigateTo = (path: string, isAnchor: boolean) => {
           </li>
         </ul>
 
-        <!-- Divider -->
         <hr v-if="isLoggedIn" class="text-secondary d-lg-none" />
 
-        <!-- Login Button (for guests/not logged in) -->
         <div v-if="!isLoggedIn" class="mt-3 mt-lg-0 ms-lg-2">
           <button
             @click="handleLogin"
@@ -126,15 +111,14 @@ const navigateTo = (path: string, isAnchor: boolean) => {
             type="button"
           >
             <i class="bi bi-box-arrow-in-right me-1"></i>
-            Login
+            Đăng nhập
           </button>
         </div>
 
-        <!-- User Info + Logout -->
         <div v-if="isLoggedIn" class="d-flex gap-2 align-items-center mt-3 mt-lg-0 ms-lg-3">
           <span class="navbar-text text-light d-none d-lg-inline">
             <i class="bi bi-person-circle me-1"></i>
-            {{ userRole || 'User' }}
+            {{ userRole || 'Người dùng' }}
           </span>
 
           <button
@@ -143,7 +127,7 @@ const navigateTo = (path: string, isAnchor: boolean) => {
             type="button"
           >
             <i class="bi bi-box-arrow-right me-1"></i>
-            Logout
+            Đăng xuất
           </button>
         </div>
       </div>
@@ -154,6 +138,7 @@ const navigateTo = (path: string, isAnchor: boolean) => {
 <style scoped>
 .navbar {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary));
 }
 
 .nav-link {
@@ -164,27 +149,36 @@ const navigateTo = (path: string, isAnchor: boolean) => {
 }
 
 .nav-link:hover {
-  color: #0d6efd !important;
+  color: #e8f0ff !important;
 }
 
 .nav-link.active {
-  color: #0d6efd !important;
-  border-bottom: 3px solid #0d6efd;
+  color: #e8f0ff !important;
+  border-bottom: 3px solid #e8f0ff;
 }
 
 .navbar-brand {
   font-size: 1.3rem;
   transition: opacity 0.3s ease;
+  color: #fff !important;
 }
 
 .navbar-brand:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.navbar-toggler-icon {
+  filter: brightness(0) invert(1);
 }
 
 @media (max-width: 991px) {
   .nav-link.active {
     border-bottom: none;
-    background-color: rgba(13, 110, 253, 0.1);
+    background-color: rgba(232, 240, 255, 0.12);
   }
 }
 </style>

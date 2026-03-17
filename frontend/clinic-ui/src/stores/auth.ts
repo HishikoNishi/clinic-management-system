@@ -11,7 +11,11 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: (state) => {
       if (!state.token || !state.expiresAt) return false
       return new Date(state.expiresAt).getTime() > Date.now()
-    }
+    },
+
+    isAdmin: (state) => state.role === 'Admin',
+    isDoctor: (state) => state.role === 'Doctor',
+    isStaff: (state) => state.role === 'Staff'
   },
 
   actions: {
@@ -33,6 +37,11 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       localStorage.removeItem('role')
       localStorage.removeItem('expiresAt')
+    },
+
+    isTokenExpired(): boolean {
+      if (!this.expiresAt) return true
+      return new Date(this.expiresAt).getTime() < Date.now()
     }
   }
 })
