@@ -21,6 +21,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
+        public DbSet<ClinicalTest> ClinicalTests { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
