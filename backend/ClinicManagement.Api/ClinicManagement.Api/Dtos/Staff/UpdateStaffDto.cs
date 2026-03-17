@@ -1,18 +1,19 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace ClinicManagement.Api.Dtos.Staff
+public class UpdateStaffDto
 {
-    public class UpdateStaffDto
-    {
-        [Required]
-        [MaxLength(20)]
-        public string Code { get; set; } = null!;
+    [Required]
+    public Guid UserId { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string FullName { get; set; } = null!;
+    [Required]
+    public string Code { get; set; } = null!;
 
-        [MaxLength(100)]
-        public string? Position { get; set; }
-    }
+    [Required]
+    public string FullName { get; set; } = null!;
+
+    [Required]
+    public string Role { get; set; } = null!;
+
+    public bool IsActive { get; set; }
 }

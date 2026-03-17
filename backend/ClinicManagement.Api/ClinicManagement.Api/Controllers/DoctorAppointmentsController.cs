@@ -72,61 +72,51 @@ namespace ClinicManagement.Api.Controllers
         }
 
 
-        // GET: api/doctor/DoctorAppointments?name={name}&phone={phone}&date={date}&code={code}
+        // GET: api/doctor/Appointments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsForDoctor(
-            [FromQuery] string? name,
-            [FromQuery] string? phone,
-            [FromQuery] DateTime? date,
-            [FromQuery] string? code)
+        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsForDoctor()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (!Guid.TryParse(userIdClaim, out Guid userId))
                 return Unauthorized("Invalid user id in token");
-
+      
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
             if (doctor == null) return Unauthorized("Doctor not found");
-
-            var query = _context.Appointments
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"{claim.Type} : {claim.Value}");
+            }
+            var appointments = await _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.DoctorId == doctor.Id &&
-                           (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed));
+                .Where(a => a.DoctorId == doctor.Id)
+               .Select(a => new AppointmentDetailDto
+               {
+                   Id = a.Id,
+                   AppointmentCode = a.AppointmentCode,
+                   FullName = a.Patient != null ? a.Patient.FullName : null,
+                   Phone = a.Patient != null ? a.Patient.Phone : null,
+                   Email = a.Patient != null ? a.Patient.Email : null,
+                   DateOfBirth = a.Patient != null ? a.Patient.DateOfBirth : DateTime.MinValue,
+                   Gender = a.Patient != null ? a.Patient.Gender.ToString() : null,
+                   Address = a.Patient != null ? a.Patient.Address : null,
+                   Reason = a.Reason,
+                   Status = a.Status.ToString(),
+                   AppointmentDate = a.AppointmentDate,
+                   AppointmentTime = a.AppointmentTime,
+                   CreatedAt = a.CreatedAt,
+                   StatusDetail = new AppointmentStatusDto
+                   {
+                       Value = a.Status.ToString(),
+                       DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+                                     ? a.Doctor.User.Username   // lấy username từ User
+                                     : null,
+                       DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+                                     ? a.Doctor.Code
+                                     : null
+                   }
 
-            if (!string.IsNullOrEmpty(name))
-                query = query.Where(a => a.Patient.FullName.Contains(name));
-
-            if (!string.IsNullOrEmpty(phone))
-                query = query.Where(a => a.Patient.Phone.Contains(phone));
-
-            if (date.HasValue)
-                query = query.Where(a => a.AppointmentDate.Date == date.Value.Date);
-
-            if (!string.IsNullOrEmpty(code))
-                query = query.Where(a => a.AppointmentCode.Contains(code));
-
-            var appointments = await query
-                .Select(a => new AppointmentDetailDto
-                {
-                    Id = a.Id,
-                    AppointmentCode = a.AppointmentCode,
-                    FullName = a.Patient != null ? a.Patient.FullName : null,
-                    Phone = a.Patient != null ? a.Patient.Phone : null,
-                    Email = a.Patient != null ? a.Patient.Email : null,
-                    DateOfBirth = a.Patient != null ? a.Patient.DateOfBirth : DateTime.MinValue,
-                    Gender = a.Patient != null ? a.Patient.Gender.ToString() : null,
-                    Address = a.Patient != null ? a.Patient.Address : null,
-                    Reason = a.Reason,
-                    Status = a.Status.ToString(),
-                    AppointmentDate = a.AppointmentDate,
-                    AppointmentTime = a.AppointmentTime,
-                    CreatedAt = a.CreatedAt,
-                    StatusDetail = new AppointmentStatusDto
-                    {
-                        Value = a.Status.ToString(),
-                        DoctorName = a.Doctor != null ? a.Doctor.User.Username : null,
-                        DoctorCode = a.Doctor != null ? a.Doctor.Code : null
-                    }
-                })
+               })
                 .ToListAsync();
 
             return Ok(appointments);
@@ -152,9 +142,5 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Appointment marked as completed" });
         }
-
-
-
-
     }
 }
