@@ -19,7 +19,6 @@ namespace ClinicManagement.Api.Controllers
 
         // CREATE
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePrescriptionDto dto)
         {
             var prescription = new Prescription
@@ -34,7 +33,7 @@ namespace ClinicManagement.Api.Controllers
                     MedicineName = d.MedicineName,
                     Dosage = d.Dosage,
                     Frequency = d.Frequency,
-                    Duration = d.Duration
+                    Duration = d.Quantity > 0 ? d.Quantity : d.Duration
                 }).ToList()
             };
 
@@ -101,7 +100,7 @@ namespace ClinicManagement.Api.Controllers
                     MedicineName = d.MedicineName,
                     Dosage = d.Dosage,
                     Frequency = d.Frequency,
-                    Duration = d.Duration
+                    Duration = d.Quantity > 0 ? d.Quantity : d.Duration
                 });
             }
 

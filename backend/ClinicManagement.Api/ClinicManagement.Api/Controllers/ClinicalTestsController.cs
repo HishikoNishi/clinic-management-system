@@ -1,9 +1,11 @@
-﻿using ClinicManagement.Api.Data;
+using System;
+using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.ClinicalTests;
 using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -18,7 +20,7 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
-        // Doctor tạo yêu cầu xét nghiệm
+        // Doctor t?o y�u c?u x�t nghi?m
         [HttpPost]
         public async Task<IActionResult> CreateTest(CreateClinicalTestDto dto)
         {
@@ -34,7 +36,7 @@ namespace ClinicManagement.Api.Controllers
             return Ok(test);
         }
 
-        // Technician nhập kết quả
+        // Technician nh?p k?t qu?
         [HttpPatch("{id}/result")]
         public async Task<IActionResult> UpdateResult(int id, UpdateClinicalTestResultDto dto)
         {
@@ -53,7 +55,7 @@ namespace ClinicManagement.Api.Controllers
 
       
         [HttpGet("medical-record/{medicalRecordId}")]
-        public async Task<IActionResult> GetByMedicalRecord(int medicalRecordId)
+        public async Task<IActionResult> GetByMedicalRecord(Guid medicalRecordId)
         {
             var tests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecordId)

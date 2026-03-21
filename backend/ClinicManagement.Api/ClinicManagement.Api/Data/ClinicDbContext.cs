@@ -206,6 +206,15 @@ namespace ClinicManagement.Api.Data
                 .WithMany(p => p.PrescriptionDetails)
                 .HasForeignKey(d => d.PrescriptionId);
 
+            modelBuilder.Entity<ClinicalTest>(entity =>
+            {
+                entity.HasKey(t => t.Id);
+                entity.HasOne(t => t.MedicalRecord)
+                      .WithMany()
+                      .HasForeignKey(t => t.MedicalRecordId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
 
 
 

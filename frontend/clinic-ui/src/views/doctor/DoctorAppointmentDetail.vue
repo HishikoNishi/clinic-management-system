@@ -207,7 +207,7 @@
 
     <button
       class="back-btn"
-      @click="$router.push('/doctorappointment')"
+      @click="$router.push('/doctor/appointments')"
     >
       ← Quay lại danh sách
     </button>

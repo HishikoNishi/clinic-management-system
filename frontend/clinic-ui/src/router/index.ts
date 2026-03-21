@@ -63,14 +63,40 @@ const routes: RouteRecordRaw[] = [
     path: "/doctor/appointments",
     name: "DoctorAppointment",
     component: () => import("@/views/doctor/DoctorAppointments.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Doctor" }
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
+
+  // Backward compatibility for older doctor path
+  {
+    path: "/doctorappointment",
+    redirect: "/doctor/appointments"
+  },
+
+  {
+    path: "/doctor/patients",
+    name: "DoctorPatients",
+    component: () => import("@/views/doctor/DoctorPatients.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
+  {
+    path: "/doctor/patients/:id",
+    name: "DoctorPatientDetail",
+    component: () => import("@/views/doctor/DoctorPatientDetail.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
+
+  {
+    path: "/doctor/examination/:id",
+    name: "DoctorExamination",
+    component: () => import("@/views/doctor/DoctorExamination.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
   },
 
   {
     path: "/doctor/appointments/:id",
     name: "DoctorAppointmentDetail",
     component: () => import("@/views/doctor/DoctorAppointmentDetail.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Doctor" }
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
   },
 
   {
