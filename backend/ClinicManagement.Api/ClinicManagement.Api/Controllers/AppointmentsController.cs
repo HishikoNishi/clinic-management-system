@@ -7,6 +7,7 @@ using ClinicManagement.Api.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Microsoft.AspNetCore.Authorization;
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
@@ -98,6 +99,33 @@ namespace ClinicManagement.Api.Controllers
                 CreatedAt = appointment.CreatedAt
             });
 
+        }
+
+        [HttpGet("patient-lookup")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LookupPatient([FromQuery] string? phone, [FromQuery] string? email)
+        {
+            if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
+                return BadRequest("Cần nhập SĐT hoặc email");
+
+            var patient = await _context.Patients
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p =>
+                    (!string.IsNullOrWhiteSpace(phone) && p.Phone == phone) ||
+                    (!string.IsNullOrWhiteSpace(email) && p.Email == email));
+
+            if (patient == null)
+                return NotFound(new { message = "Không tìm thấy bệnh nhân" });
+
+            return Ok(new
+            {
+                patient.FullName,
+                patient.DateOfBirth,
+                patient.Gender,
+                patient.Phone,
+                patient.Email,
+                patient.Address
+            });
         }
         [HttpGet("{code}")]
         public async Task<IActionResult> GetByCode(string code)

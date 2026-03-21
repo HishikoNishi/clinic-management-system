@@ -1,0 +1,14 @@
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.history-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.prescription-table input {
+  min-width: 120px;
+}

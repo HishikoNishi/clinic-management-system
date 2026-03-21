@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -8,35 +8,11 @@ const route = useRoute()
 const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 
-const role = computed(() => authStore.role || 'Guest')
-
-const navItems = computed(() => {
-  if (role.value === 'Admin') {
-    return [
-      { label: 'Tổng quan', icon: 'speedometer2', path: '/dashboard' },
-      { label: 'Lịch khám', icon: 'calendar-event', path: '/appointment' },
-      { label: 'Bác sĩ', icon: 'person-workspace', path: '/doctors' },
-      { label: 'Nhân viên', icon: 'people', path: '/staff' },
-      { label: 'Tạo tài khoản', icon: 'person-plus', path: '/admin/users/create' }
-    ]
-  }
-
-  if (role.value === 'Staff') {
-    return [
-      { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' }
-    ]
-  }
-
-  if (role.value === 'Doctor') {
-    return [
-      { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' }
-    ]
-  }
-
-  return []
-})
-
-const homePath = computed(() => navItems.value[0]?.path ?? '/home')
+const navItems = computed(() => ([
+  { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' },
+  { label: 'Khám bệnh', icon: 'stethoscope', path: '/doctor/appointments' },
+  { label: 'Bệnh nhân', icon: 'people', path: '/doctor/patients' }
+]))
 
 const go = (path: string) => {
   router.push(path)
@@ -46,10 +22,6 @@ const go = (path: string) => {
 const isActive = (path: string) =>
   route.path === path || route.path.startsWith(`${path}/`)
 
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value
-}
-
 const logout = () => {
   authStore.logout()
   router.push('/login')
@@ -57,24 +29,20 @@ const logout = () => {
 </script>
 
 <template>
-  <div class="dashboard-layout">
+  <div class="doctor-layout">
     <header class="topbar">
-      <div class="brand" @click="go(homePath)">
+      <div class="brand" @click="go('/doctor/appointments')">
         <i class="bi bi-hospital me-2"></i>
-        Quản lý phòng khám
+        Bác sĩ
       </div>
-      <button class="sidebar-toggle d-lg-none" type="button" @click="toggleSidebar">
+      <button class="sidebar-toggle d-lg-none" type="button" @click="isSidebarOpen = !isSidebarOpen">
         <i :class="`bi ${isSidebarOpen ? 'bi-x-lg' : 'bi-list'}`"></i>
       </button>
     </header>
 
     <div class="layout-shell">
       <aside class="sidebar" :class="{ open: isSidebarOpen }">
-        <div class="sidebar-header">
-          <span class="role-pill">{{ role }}</span>
-        </div>
-
-        <nav class="nav-list" v-if="navItems.length">
+        <nav class="nav-list">
           <button
             v-for="item in navItems"
             :key="item.path"
@@ -102,9 +70,9 @@ const logout = () => {
         </div>
       </main>
     </div>
-
-    <div class="backdrop d-lg-none" :class="{ show: isSidebarOpen }" @click="toggleSidebar" />
+    <div class="backdrop d-lg-none" :class="{ show: isSidebarOpen }" @click="isSidebarOpen = false" />
   </div>
 </template>
 
-<style src="@/styles/layouts/admin-layout.css" scoped></style>
+<style src="@/styles/layouts/doctor-layout.css"></style>
+

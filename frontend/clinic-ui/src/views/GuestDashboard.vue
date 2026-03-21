@@ -77,6 +77,36 @@
 
         <!-- Booking Form -->
         <form @submit.prevent="submitBooking" class="booking-form" v-if="!bookingSuccess">
+          <div class="returning-box">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <strong>Bệnh nhân cũ?</strong>
+                <div class="text-muted small">Nhập SĐT hoặc email để tự động điền thông tin.</div>
+              </div>
+              <span v-if="isReturning" class="badge bg-success-subtle text-success">Đã điền từ hồ sơ trước</span>
+            </div>
+            <div class="form-row mt-2">
+              <div class="form-group">
+                <input v-model="lookupPhone" type="tel" class="form-input" placeholder="Số điện thoại" />
+              </div>
+              <div class="form-group">
+                <input v-model="lookupEmail" type="email" class="form-input" placeholder="Email" />
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-outline-primary w-100" :disabled="lookupLoading" @click="lookupPatient">
+                  <span v-if="lookupLoading" class="spinner-border spinner-border-sm me-1"></span>
+                  Dùng thông tin cũ
+                </button>
+              </div>
+              <div class="form-group" v-if="isReturning">
+                <button type="button" class="btn btn-secondary w-100" @click="clearPrefill">Chỉnh sửa</button>
+              </div>
+            </div>
+            <div v-if="lookupError" class="alert alert-warning py-2 my-2">
+              {{ lookupError }}
+            </div>
+          </div>
+
           <div class="form-row">
             <!-- Full Name -->
             <div class="form-group">
@@ -85,6 +115,7 @@
                 v-model="bookingForm.fullName"
                 type="text"
                 class="form-input"
+                :readonly="isReturning"
                 required
                 placeholder="Nhập họ và tên của bạn"
               />
@@ -100,6 +131,7 @@
                 v-model="bookingForm.dateOfBirth"
                 type="date"
                 class="form-input"
+                :readonly="isReturning"
                 required
               />
               <span v-if="bookingErrors.dateOfBirth" class="form-error">
@@ -112,7 +144,7 @@
             <!-- Gender -->
             <div class="form-group">
               <label class="form-label">Giới tính *</label>
-              <select v-model="bookingForm.gender" class="form-select" required>
+              <select v-model="bookingForm.gender" class="form-select" required :disabled="isReturning">
                 <option value="">Chọn giới tính</option>
                 <option value="1">Nam</option>
                 <option value="2">Nữ</option>
@@ -129,6 +161,7 @@
                 v-model="bookingForm.phone"
                 type="tel"
                 class="form-input"
+                :readonly="isReturning"
                 required
                 placeholder="Nhập số điện thoại của bạn"
               />
@@ -146,6 +179,7 @@
                 v-model="bookingForm.email"
                 type="email"
                 class="form-input"
+                :readonly="isReturning"
                 required
                 placeholder="Nhập email của bạn"
               />
@@ -161,6 +195,7 @@
                 v-model="bookingForm.address"
                 type="text"
                 class="form-input"
+                :readonly="isReturning"
                 required
                 placeholder="Nhập địa chỉ của bạn"
               />
@@ -421,6 +456,13 @@ const bookingResponse = ref({
   appointmentTime: ''
 })
 
+// Returning patient lookup
+const lookupPhone = ref('')
+const lookupEmail = ref('')
+const lookupLoading = ref(false)
+const lookupError = ref('')
+const isReturning = ref(false)
+
 // Search Form State
 const searchForm = reactive({
   appointmentCode: '',
@@ -499,6 +541,44 @@ const validateBookingForm = (): boolean => {
   return isValid
 }
 
+const applyPrefill = (data: any) => {
+  bookingForm.fullName = data.fullName || ''
+  bookingForm.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
+  bookingForm.gender = data.gender != null ? String(data.gender) : ''
+  bookingForm.phone = data.phone || ''
+  bookingForm.email = data.email || ''
+  bookingForm.address = data.address || ''
+  isReturning.value = true
+}
+
+const clearPrefill = () => {
+  isReturning.value = false
+  lookupError.value = ''
+}
+
+const lookupPatient = async () => {
+  lookupError.value = ''
+  if (!lookupPhone.value.trim() && !lookupEmail.value.trim()) {
+    lookupError.value = 'Nhập SĐT hoặc email để tra cứu'
+    return
+  }
+  try {
+    lookupLoading.value = true
+    const res = await api.get('/appointments/patient-lookup', {
+      params: {
+        phone: lookupPhone.value || undefined,
+        email: lookupEmail.value || undefined
+      }
+    })
+    applyPrefill(res.data)
+  } catch (err: any) {
+    console.error(err)
+    lookupError.value = err?.response?.data?.message || 'Không tìm thấy bệnh nhân phù hợp'
+  } finally {
+    lookupLoading.value = false
+  }
+}
+
 // Submit booking
 const submitBooking = async () => {
   if (!validateBookingForm()) {
@@ -544,6 +624,10 @@ const resetBookingForm = () => {
   bookingForm.reason = ''
   bookingSuccess.value = false
   bookingError.value = ''
+  isReturning.value = false
+  lookupPhone.value = ''
+  lookupEmail.value = ''
+  lookupError.value = ''
 }
 
 // Submit search
