@@ -4,12 +4,12 @@
 
     <!-- SEARCH BAR -->
     <div class="search-bar">
-      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
-      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
-      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
+      <input v-model="searchCode" placeholder="Tìm theo mã..." />
+      <input v-model="searchName" placeholder="Tìm theo tên bệnh nhân..." />
+      <input v-model="searchPhone" placeholder="Tìm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
-      <button class="search-btn">🔍</button>
+      <button class="search-btn" @click="loadAppointments">🔍</button>
       <button class="clear-btn" @click="clearFilters">Xóa</button>
     </div>
 
@@ -25,53 +25,93 @@
       </button>
     </div>
 
+    <!-- LOADING -->
+    <p v-if="loading">Đang tải dữ liệu...</p>
+
     <!-- TABLE -->
-   <table>
-  <thead>
-    <tr>
-      <th>Mã</th>
-      <th>Bệnh nhân</th>
-      <th>Điện thoại</th> <!-- thêm cột -->
-      <th>Ngày</th>
-      <th>Trạng thái</th>
-      <th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr
-      v-for="a in filteredAppointments"
-      :key="a.id"
-      @click="$router.push(`/doctor/appointments/${a.id}`)"
-    >
-      <td>{{ a.appointmentCode }}</td>
-      <td>{{ a.fullName }}</td>
-      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
-      <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-      <td>
-        <span :class="'status ' + a.status.toLowerCase()">
-          {{ statusLabel(a.status) }}
-        </span>
-      </td>
-      <td>
-        <button v-if="a.status === 'Confirmed'" @click.stop="completeAppointment(a.id)">
-          Hoàn thành lịch khám
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+    <table v-if="!loading">
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Bệnh nhân</th>
+          <th>Điện thoại</th>
+          <th>Ngày khám</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
 
+      <tbody>
+        <tr
+          v-for="a in filteredAppointments"
+          :key="a.id"
+          @click="goDetail(a.id)"
+        >
+          <td>{{ a.appointmentCode }}</td>
 
-    <p v-if="filteredAppointments.length === 0">Không có lịch khám</p>
+          <td>{{ a.fullName }}</td>
+
+          <td>{{ a.phone }}</td>
+
+          <td>
+            {{ formatDateTime(a.appointmentDate, a.appointmentTime) }}
+          </td>
+
+          <td>
+            <span :class="'status ' + a.status.toLowerCase()">
+              {{ statusLabel(a.status) }}
+            </span>
+          </td>
+
+          <td class="actions">
+
+            <!-- APPROVE -->
+            <button
+              v-if="a.status === 'Pending'"
+              @click.stop="approveAppointment(a.id)"
+            >
+              Xác nhận
+            </button>
+
+            <!-- COMPLETE -->
+            <button
+              v-if="a.status === 'Confirmed'"
+              @click.stop="completeAppointment(a.id)"
+            >
+              Hoàn thành
+            </button>
+
+            <!-- CANCEL -->
+            <button
+              v-if="a.status === 'Pending' || a.status === 'Confirmed'"
+              @click.stop="cancelAppointment(a.id)"
+            >
+              Hủy
+            </button>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p v-if="!loading && filteredAppointments.length === 0">
+      Không có lịch khám
+    </p>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import axios from "axios"
 import { ref, computed, onMounted } from "vue"
-import { useAuthStore } from "@/stores/auth"
+import { useRouter } from "vue-router"
+import api from "@/services/api"
 
-const auth = useAuthStore()
+/* ROUTER */
+const router = useRouter()
+
+/* DATA */
+const appointments = ref<any[]>([])
+const loading = ref(false)
 
 /* SEARCH */
 const searchCode = ref("")
@@ -79,27 +119,44 @@ const searchName = ref("")
 const searchPhone = ref("")
 const searchDate = ref("")
 
-/* DATA */
-const appointments = ref<any[]>([])
-const statuses = ["All", "Pending", "Confirmed", "Completed", "Cancelled"]
+/* STATUS FILTER */
+const statuses = [
+  "All",
+  "Pending",
+  "Confirmed",
+  "Completed",
+  "Cancelled"
+]
+
 const currentStatus = ref("All")
 
-/* API */
-const api = axios.create({
-  baseURL: "https://localhost:7235/api",
-  headers: {
-    Authorization: `Bearer ${auth.token}`
-  }
-})
-
-/* LOAD APPOINTMENTS */
+/* LOAD DATA */
 const loadAppointments = async () => {
-  const res = await api.get("/doctor/DoctorAppointments")
-  appointments.value = res.data
+
+  loading.value = true
+
+  try {
+
+    const res = await api.get("/doctor/DoctorAppointments")
+
+    appointments.value = res.data
+
+  } catch (err) {
+
+    console.error("Load appointments error:", err)
+
+  } finally {
+
+    loading.value = false
+
+  }
+
 }
 
 /* FILTER LOGIC */
+
 const filteredAppointments = computed(() => {
+
   return appointments.value.filter(a => {
 
     const matchStatus =
@@ -108,11 +165,15 @@ const filteredAppointments = computed(() => {
 
     const matchCode =
       !searchCode.value ||
-      a.appointmentCode?.toLowerCase().includes(searchCode.value.toLowerCase())
+      a.appointmentCode
+        ?.toLowerCase()
+        .includes(searchCode.value.toLowerCase())
 
     const matchName =
       !searchName.value ||
-      a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
+      a.fullName
+        ?.toLowerCase()
+        .includes(searchName.value.toLowerCase())
 
     const matchPhone =
       !searchPhone.value ||
@@ -129,50 +190,143 @@ const filteredAppointments = computed(() => {
       matchPhone &&
       matchDate
     )
+
   })
+
 })
 
 /* CHANGE STATUS */
+
 const changeStatus = (s: string) => {
+
   currentStatus.value = s
+
 }
 
-/* COMPLETE APPOINTMENT */
-const completeAppointment = async (appointmentId: string) => {
-  const ok = confirm("Bạn có chắc chắn muốn đánh dấu lịch khám này hoàn thành?")
+/* ROUTE DETAIL */
+
+const goDetail = (id: string) => {
+
+  router.push(`/doctor/appointments/${id}`)
+
+}
+
+/* APPROVE */
+
+const approveAppointment = async (appointmentId: string) => {
+
+  const ok = confirm("Xác nhận lịch khám này?")
+
   if (!ok) return
 
-  await api.patch(`/doctor/DoctorAppointments/${appointmentId}/complete`)
-  alert("Cập nhật trạng thái ✅")
+  try {
 
-  loadAppointments()
+    await api.patch(`/doctor/DoctorAppointments/${appointmentId}/approve`)
+
+    alert("Đã xác nhận lịch khám")
+
+    loadAppointments()
+
+  } catch (err) {
+
+    console.error(err)
+
+  }
+
+}
+
+/* COMPLETE */
+
+const completeAppointment = async (appointmentId: string) => {
+
+  const ok = confirm("Đánh dấu lịch khám hoàn thành?")
+
+  if (!ok) return
+
+  try {
+
+    await api.patch(`/doctor/DoctorAppointments/${appointmentId}/complete`)
+
+    alert("Đã hoàn thành lịch khám")
+
+    loadAppointments()
+
+  } catch (err) {
+
+    console.error(err)
+
+  }
+
+}
+
+/* CANCEL */
+
+const cancelAppointment = async (appointmentId: string) => {
+
+  const ok = confirm("Bạn chắc chắn muốn hủy lịch khám?")
+
+  if (!ok) return
+
+  try {
+
+    await api.patch(`/doctor/DoctorAppointments/${appointmentId}/cancel`)
+
+    alert("Đã hủy lịch khám")
+
+    loadAppointments()
+
+  } catch (err) {
+
+    console.error(err)
+
+  }
+
 }
 
 /* STATUS LABEL */
+
 const statusLabel = (status: string) => {
+
   const labels: { [key: string]: string } = {
-    'All': 'Tất cả',
-    'Pending': 'Chờ xử lý',
-    'Confirmed': 'Đã xác nhận',
-    'Completed': 'Hoàn thành',
-    'Cancelled': 'Đã hủy'
+
+    All: "Tất cả",
+
+    Pending: "Chờ xử lý",
+
+    Confirmed: "Đã xác nhận",
+
+    Completed: "Hoàn thành",
+
+    Cancelled: "Đã hủy"
+
   }
+
   return labels[status] || status
+
 }
 
 /* CLEAR FILTER */
+
 const clearFilters = () => {
+
   searchCode.value = ""
   searchName.value = ""
   searchPhone.value = ""
   searchDate.value = ""
+
 }
 
 /* DATE FORMAT */
-const formatDateTime = (dateStr: string, timeStr: string) => {
-  if (!dateStr) return ""
+
+const formatDateTime = (
+  dateStr: string,
+  timeStr: string
+) => {
+
+  if (!dateStr || !timeStr) return ""
 
   const date = new Date(dateStr)
+
   const [hours, minutes] = timeStr.split(":")
 
   const day = String(date.getDate()).padStart(2, "0")
@@ -180,10 +334,15 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   const year = date.getFullYear()
 
   return `${day}/${month}/${year} ${hours}:${minutes}`
+
 }
 
+/* INIT */
+  
 onMounted(() => {
+
   loadAppointments()
+
 })
 </script>
 
