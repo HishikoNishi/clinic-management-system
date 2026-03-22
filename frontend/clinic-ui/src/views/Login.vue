@@ -127,7 +127,11 @@ if (role === 'Staff') {
   router.push('/staff/appointments')
 }
 else if (role === 'Doctor') {
+<<<<<<< Updated upstream
   router.push('/doctorappointment')
+=======
+  router.push('/doctor/appointments')
+>>>>>>> Stashed changes
 }
 else if (role === 'Admin') {
   router.push('/dashboard')

@@ -41,11 +41,17 @@
     <tr>
       <th>Mã</th>
       <th>Bệnh nhân</th>
+<<<<<<< Updated upstream
       <th>Điện thoại</th>
       <th>Ngày sinh</th> <!-- thêm cột ngày sinh -->
       <th>Ngày</th>
       <th>Trạng thái</th>
       <th>Lý do</th>
+=======
+      <th>Điện thoại</th> <!-- thêm cột -->
+      <th>Ngày</th>
+      <th>Trạng thái</th>
+>>>>>>> Stashed changes
       <th>Bác sĩ</th>
       <th v-if="currentStatus === 'Pending'">Gán bác sĩ</th>
     </tr>
@@ -58,15 +64,22 @@
     >
       <td>{{ a.appointmentCode }}</td>
       <td>{{ a.fullName }}</td>
+<<<<<<< Updated upstream
       <td>{{ a.phone }}</td>
       <td>{{ formatDate(a.dateOfBirth) }}</td> <!-- hiển thị ngày sinh -->
+=======
+      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
+>>>>>>> Stashed changes
       <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
       <td>
         <span :class="'status ' + a.statusDetail.value.toLowerCase()">
           {{ statusLabel(a.statusDetail.value) }}
         </span>
       </td>
+<<<<<<< Updated upstream
       <td>{{ a.reason }}</td>
+=======
+>>>>>>> Stashed changes
       <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
       <td v-if="a.statusDetail.value === 'Pending'">
         <select @change="assignDoctor(a.id, $event)" @click.stop>
@@ -81,7 +94,10 @@
 </table>
 
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     <p v-if="appointments.length === 0">Không có lịch khám</p>
   </div>
 </template>
@@ -98,11 +114,16 @@ interface Appointment {
   appointmentCode: string
   fullName: string
   phone: string
+<<<<<<< Updated upstream
     dateOfBirth: string 
   appointmentDate: string
   appointmentTime: string
 
     reason: string 
+=======
+  appointmentDate: string
+  appointmentTime: string
+>>>>>>> Stashed changes
   statusDetail: {
     value: string
     doctorName: string
@@ -173,11 +194,14 @@ const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
+<<<<<<< Updated upstream
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
+=======
+>>>>>>> Stashed changes
 
 const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value

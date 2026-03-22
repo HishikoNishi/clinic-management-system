@@ -3,6 +3,10 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import GuestLayout from '@/layouts/GuestLayout.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+<<<<<<< Updated upstream
+=======
+import DoctorLayout from '@/layouts/DoctorLayout.vue'
+>>>>>>> Stashed changes
 
 const route = useRoute()
 
@@ -15,7 +19,12 @@ const currentLayout = computed(() => {
 const layoutComponents = {
   guest: GuestLayout,
   admin: AdminLayout,
+<<<<<<< Updated upstream
   dashboard: AdminLayout
+=======
+  dashboard: AdminLayout,
+  doctor: DoctorLayout
+>>>>>>> Stashed changes
 }
 
 // Get current layout component
