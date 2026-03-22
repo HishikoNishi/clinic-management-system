@@ -22,6 +22,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<ClinicalTest> ClinicalTests { get; set; }
+        public DbSet<Department> Departments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -103,8 +104,12 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(d => d.UserId).IsUnique();
-            });
 
+                entity.HasOne(d => d.Department)
+                      .WithMany(dep => dep.Doctors)
+                      .HasForeignKey(d => d.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
             /* ================================
              * STAFF
              * ================================ */
