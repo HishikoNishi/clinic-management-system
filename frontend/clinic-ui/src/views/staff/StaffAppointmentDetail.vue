@@ -17,6 +17,26 @@
       <div v-if="appointment.statusDetail.doctorName" class="detail-row">
         <span class="label">Bác sĩ:</span> {{ appointment.statusDetail.doctorName }} ({{ appointment.statusDetail.doctorCode }})
       </div>
+
+      <!-- Nếu trạng thái là Pending thì cho phép gán bác sĩ -->
+      <div v-if="appointment.status === 'Pending'" class="assign-doctor">
+        <h3>Gán bác sĩ</h3>
+        <select v-model="selectedDepartment" @change="loadDoctorsByDepartment">
+          <option value="">Chọn khoa</option>
+          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+            {{ dep.name }}
+          </option>
+        </select>
+
+        <select v-model="selectedDoctor" :disabled="!selectedDepartment">
+          <option value="">Chọn bác sĩ</option>
+          <option v-for="d in doctors" :key="d.id" :value="d.id">
+            {{ d.username }}
+          </option>
+        </select>
+
+        <button @click="assignDoctor">Gán</button>
+      </div>
     </div>
     <p v-else-if="error" class="error">{{ error }}</p>
     <button class="back-btn" @click="$router.push('/staff/appointments')">← Quay lại danh sách</button>
@@ -40,6 +60,11 @@ const api = axios.create({
 const appointment = ref<any>(null)
 const error = ref<string | null>(null)
 
+const departments = ref<any[]>([])
+const doctors = ref<any[]>([])
+const selectedDepartment = ref('')
+const selectedDoctor = ref('')
+
 const loadDetail = async () => {
   try {
     const res = await api.get(`/staff/StaffAppointments/${route.params.id}`)
@@ -47,6 +72,30 @@ const loadDetail = async () => {
   } catch (err) {
     error.value = "Không thể tải chi tiết lịch khám."
   }
+}
+
+const loadDepartments = async () => {
+  const res = await api.get('/Departments')
+  departments.value = res.data
+}
+
+const loadDoctorsByDepartment = async () => {
+  if (!selectedDepartment.value) {
+    doctors.value = []
+    return
+  }
+  const res = await api.get(`/Doctor/by-department/${selectedDepartment.value}`)
+  doctors.value = res.data
+}
+
+const assignDoctor = async () => {
+  if (!selectedDoctor.value) return
+  await api.post('/staff/StaffAppointments/assign-doctor', {
+    appointmentId: appointment.value.id,
+    doctorId: selectedDoctor.value
+  })
+  alert('Bác sĩ đã được gán ✅')
+  loadDetail()
 }
 
 const formatDate = (dateStr: string) => {
@@ -57,6 +106,7 @@ const formatDate = (dateStr: string) => {
 
 onMounted(() => {
   loadDetail()
+  loadDepartments()
 })
 </script>
 
