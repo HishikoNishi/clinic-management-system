@@ -3,30 +3,28 @@
     <h2>Quản lý lịch khám</h2>
 
     <!-- SEARCH BAR -->
-   <!-- SEARCH BAR -->
-<div class="search-bar">
-  <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
-  <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
-  <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
-  <input type="date" v-model="searchDate" />
+    <div class="search-bar">
+      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
+      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
+      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
+      <input type="date" v-model="searchDate" />
 
-  <!-- Chọn khoa để lọc -->
-  <select v-model="selectedDepartment" @change="loadDoctorsByDepartment">
-    <option value="">Chọn khoa</option>
-    <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-      {{ dep.name }}
-    </option>
-  </select>
+      <!-- Chọn khoa để lọc -->
+      <select v-model="selectedDepartment" @change="loadDoctorsByDepartment(null)">
+        <option value="">Chọn khoa</option>
+        <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+          {{ dep.name }}
+        </option>
+      </select>
 
-  <!-- Chọn bác sĩ để lọc -->
-  <select v-model="selectedDoctor" @change="loadAppointments" :disabled="!selectedDepartment">
-    <option value="">chọn bác sĩ</option>
-    <option v-for="d in doctors" :key="d.id" :value="d.id">
-      {{  d.fullName }}
-    </option>
-  </select>
-</div>
-
+      <!-- Chọn bác sĩ để lọc -->
+      <select v-model="selectedDoctor" @change="loadAppointments" :disabled="!selectedDepartment">
+        <option value="">Chọn bác sĩ</option>
+        <option v-for="d in doctors" :key="d.id" :value="d.id">
+          {{ d.fullName }}
+        </option>
+      </select>
+    </div>
 
     <!-- FILTER STATUS -->
     <div class="filter">
@@ -41,63 +39,63 @@
     </div>
 
     <!-- TABLE -->
-   <table>
-  <thead>
-    <tr>
-      <th>Mã</th>
-      <th>Bệnh nhân</th>
-      <th>Điện thoại</th>
-      <th>Ngày sinh</th>
-      <th>Ngày</th>
-      <th>Trạng thái</th>
-      <th>Triệu chứng</th>
-      <th>Bác sĩ</th>
-      <th>Gán bác sĩ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr
-      v-for="a in filteredAppointments"
-      :key="a.id"
-      @click="$router.push(`/staff/appointments/${a.id}`)"
-    >
-      <td>{{ a.appointmentCode }}</td>
-      <td>{{ a.fullName }}</td>
-      <td>{{ a.phone }}</td>
-      <td>{{ formatDate(a.dateOfBirth) }}</td>
-      <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-      <td>
-        <span :class="'status ' + a.statusDetail.value.toLowerCase()">
-          {{ statusLabel(a.statusDetail.value) }}
-        </span>
-      </td>
-      <td>{{ a.reason }}</td>
-      <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
-      <td @click.stop class="assign-cell">
-        <template v-if="a.statusDetail.value === 'Pending'">
-         <select v-model="selectedDepartment">
-  <option value="">Chọn khoa</option>
-  <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-    {{ dep.name }}
-  </option>
-</select>
+    <table>
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Bệnh nhân</th>
+          <th>Điện thoại</th>
+          <th>Ngày sinh</th>
+          <th>Ngày</th>
+          <th>Trạng thái</th>
+          <th>Triệu chứng</th>
+          <th>Bác sĩ</th>
+          <th>Gán bác sĩ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="a in filteredAppointments"
+          :key="a.id"
+          @click="$router.push(`/staff/appointments/${a.id}`)"
+        >
+          <td>{{ a.appointmentCode }}</td>
+          <td>{{ a.fullName }}</td>
+          <td>{{ a.phone }}</td>
+          <td>{{ formatDate(a.dateOfBirth) }}</td>
+          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+          <td>
+            <span :class="'status ' + a.statusDetail.value.toLowerCase()">
+              {{ statusLabel(a.statusDetail.value) }}
+            </span>
+          </td>
+          <td>{{ a.reason }}</td>
+          <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
+          <td @click.stop class="assign-cell">
+            <template v-if="a.statusDetail.value === 'Pending'">
+              <!-- Chọn khoa riêng cho từng appointment -->
+              <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
+                <option value="">Chọn khoa</option>
+                <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+                  {{ dep.name }}
+                </option>
+              </select>
 
-
-          <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartment">
-            <option value="">Chọn bác sĩ</option>
-            <option v-for="d in doctors" :key="d.id" :value="d.id">
-              {{ d.fullName }}
-            </option>
-          </select>
-        </template>
-        <template v-else>
-          —
-        </template>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+              <!-- Chọn bác sĩ riêng cho từng appointment -->
+              <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartments[a.id]">
+                <option value="">Chọn bác sĩ</option>
+                <option v-for="d in assignDoctors[a.id] || []" :key="d.id" :value="d.id">
+                  {{ d.fullName }}
+                </option>
+              </select>
+            </template>
+            <template v-else>
+              —
+            </template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
   </div>
@@ -131,11 +129,14 @@ const searchPhone = ref('')
 const searchDate = ref('')
 const selectedDoctor = ref('')
 const selectedDepartment = ref('')
-const assignDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
 const departments = ref<any[]>([])
+
+// riêng cho từng appointment
+const assignDepartments = ref<{ [key: string]: string }>({})
+const assignDoctors = ref<{ [key: string]: any[] }>({})
 
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
@@ -157,53 +158,40 @@ const api = axios.create({
 
 const loadAppointments = async () => {
   let res
-
   if (selectedDoctor.value) {
-    // lọc theo bác sĩ
-    res = await api.get<Appointment[]>(
-      `/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`
-    )
+    res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`)
     appointments.value = res.data
   } else if (selectedDepartment.value) {
-    // lọc theo khoa
-    res = await api.get<Appointment[]>(
-      `/staff/StaffAppointments/by-department?departmentId=${selectedDepartment.value}`
-    )
+    res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-department?departmentId=${selectedDepartment.value}`)
     appointments.value = res.data
   } else {
-    // tất cả
     if (currentStatus.value === 'All') {
       res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
     } else {
-      res = await api.get<Appointment[]>(
-        `/staff/StaffAppointments/filter?status=${currentStatus.value}`
-      )
+      res = await api.get<Appointment[]>(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
     }
     appointments.value = res.data
   }
-
-  // lọc thêm theo trạng thái
   if (currentStatus.value !== 'All') {
-    appointments.value = appointments.value.filter(
-      a => a.statusDetail.value === currentStatus.value
-    )
+    appointments.value = appointments.value.filter(a => a.statusDetail.value === currentStatus.value)
   }
 }
-
 
 const loadDepartments = async () => {
   const res = await api.get('/Departments')
   departments.value = res.data
 }
 
-const loadDoctorsByDepartment = async () => {
-  const depId = assignDepartment.value || selectedDepartment.value
+const loadDoctorsByDepartment = async (appointmentId: string | null) => {
+  const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
   if (!depId) {
-    doctors.value = []
+    if (appointmentId) assignDoctors.value[appointmentId] = []
+    else doctors.value = []
     return
   }
   const res = await api.get(`/Doctor/by-department/${depId}`)
-  doctors.value = res.data
+  if (appointmentId) assignDoctors.value[appointmentId] = res.data
+  else doctors.value = res.data
 }
 
 const changeStatus = (s: string) => {
@@ -211,34 +199,26 @@ const changeStatus = (s: string) => {
   loadAppointments()
 }
 
-
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
+
 const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
-
   const appointment = appointments.value.find(a => a.id === appointmentId)
-  const doctor = doctors.value.find(d => d.id === doctorId)
-
+  const doctor = (assignDoctors.value[appointmentId] || []).find(d => d.id === doctorId)
   const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
-
   if (!confirm(message)) {
-    // nếu Cancel thì reset lại dropdown về "Chọn bác sĩ"
     (e.target as HTMLSelectElement).value = ''
     return
   }
-
   await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
   alert('Bác sĩ đã được gán ✅')
   loadAppointments()
 }
-
-
-
 const statusLabel = (status: string) => {
   const labels: { [key: string]: string } = {
     'All': 'Tất cả',
@@ -249,7 +229,6 @@ const statusLabel = (status: string) => {
   }
   return labels[status] || status
 }
-
 
 const formatDateTime = (dateStr: string, timeStr: string) => {
   if (!dateStr) return ''
