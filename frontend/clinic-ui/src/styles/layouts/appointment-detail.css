@@ -1,95 +1,124 @@
 .appointment-detail {
-  max-width: 700px;
-  margin: 40px auto;
+  max-width: 640px;
+  margin: 30px auto;
   font-family: "Poppins", "Roboto", "Segoe UI", sans-serif;
   color: var(--color-text-main);
   background: var(--color-bg-main);
-  border-radius: 12px;
-  padding: 28px;
-  box-shadow: 0 6px 20px var(--color-shadow);
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 12px var(--color-shadow);
 }
 
 /* Tiêu đề */
 .appointment-detail h2 {
   text-align: center;
-  margin-bottom: 24px;
-  color: var(--color-text-main);
+  margin-bottom: 20px;
+  color: var(--color-primary);
   font-weight: 700;
-  font-size: 26px;
-  letter-spacing: 0.5px;
+  font-size: 22px;
 }
 
 /* Nội dung chi tiết */
 .detail-card {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 6px 20px var(--color-shadow);
+  border-radius: 10px;
+  padding: 20px;
 }
 
 .detail-row {
-  margin: 14px 0;
-  font-size: 15px;
+  margin: 10px 0;
+  font-size: 14px;
   color: var(--color-text-main);
 }
 
 .label {
   font-weight: 600;
-  color: var(--color-text-main);
-  margin-right: 8px;
+  color: var(--color-text-muted);
+  margin-right: 6px;
 }
 
 /* Status */
 .status {
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
   display: inline-block;
-  min-width: 100px;
+  min-width: 80px;
   text-align: center;
 }
 
-.status.confirmed {
-  background-color: var(--color-success-bg);
-  color: var(--color-text-main);
+.status.confirmed { background-color: var(--color-success-bg); }
+.status.pending   { background-color: var(--color-warning-bg); }
+.status.completed { background-color: var(--color-info-bg); }
+.status.cancelled { background-color: var(--color-danger-bg); }
+
+/* Gán bác sĩ */
+.assign-doctor {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--color-bg-soft);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  text-align: center;
 }
 
-.status.pending {
-  background-color: var(--color-warning-bg);
-  color: var(--color-text-main);
+.assign-doctor h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-primary);
 }
 
-.status.completed {
-  background-color: var(--color-info-bg);
-  color: var(--color-text-main);
+/* Dropdowns */
+.assign-doctor select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  font-size: 13px;
+  margin: 0 8px 12px 8px;
+  min-width: 180px;
 }
 
-.status.cancelled {
-  background-color: var(--color-danger-bg);
-  color: var(--color-text-main);
+.assign-doctor select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button */
+.assign-doctor button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assign-doctor button:hover {
+  background: var(--color-primary-dark);
 }
 
 /* Nút quay lại */
 .back-btn {
   display: block;
-  margin: 30px auto 0;
-  padding: 12px 28px;
+  margin: 24px auto 0;
+  padding: 10px 22px;
   background: var(--color-primary);
   color: var(--color-text-inverse);
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.3s;
 }
 
 .back-btn:hover {
-  transform: translateY(-2px);
   background: var(--color-primary-dark);
-  box-shadow: var(--shadow-primary);
 }
 
 /* Error */
@@ -97,4 +126,5 @@
   color: var(--color-danger);
   text-align: center;
   font-weight: 600;
+  font-size: 14px;
 }
