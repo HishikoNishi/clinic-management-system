@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Security.Claims;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
+using ClinicManagement.Api.Dtos.MedicalRecords;
+using System.Linq;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,16 +26,16 @@ namespace ClinicManagement.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
         {
-            // Lấy userId từ token
+            // L?y userId t? token
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out Guid userId))
                 return Unauthorized("Invalid user id in token");
 
-            // Tìm doctor theo userId
+            // T�m doctor theo userId
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
             if (doctor == null) return Unauthorized("Doctor not found");
 
-            // Lấy appointment thuộc về doctor này
+            // L?y appointment thu?c v? doctor n�y
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor).ThenInclude(d => d.User)
@@ -74,7 +76,7 @@ namespace ClinicManagement.Api.Controllers
 
         // GET: api/doctor/Appointments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsForDoctor()
+        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsForDoctor([FromQuery] string? status = null)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -87,9 +89,26 @@ namespace ClinicManagement.Api.Controllers
             {
                 Console.WriteLine($"{claim.Type} : {claim.Value}");
             }
-            var appointments = await _context.Appointments
+            var appointmentsQuery = _context.Appointments
                 .Include(a => a.Patient)
-                .Where(a => a.DoctorId == doctor.Id)
+                .Where(a => a.DoctorId == doctor.Id);
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var statusList = status.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                       .Select(s => s.Trim())
+                                       .Select(s => Enum.TryParse<AppointmentStatus>(s, true, out var parsed) ? parsed : (AppointmentStatus?)null)
+                                       .Where(s => s.HasValue)
+                                       .Select(s => s!.Value)
+                                       .ToList();
+
+                if (statusList.Any())
+                {
+                    appointmentsQuery = appointmentsQuery.Where(a => statusList.Contains(a.Status));
+                }
+            }
+
+            var appointments = await appointmentsQuery
                .Select(a => new AppointmentDetailDto
                {
                    Id = a.Id,
@@ -109,7 +128,7 @@ namespace ClinicManagement.Api.Controllers
                    {
                        Value = a.Status.ToString(),
                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.User.Username   // lấy username từ User
+                                     ? a.Doctor.User.Username   // l?y username t? User
                                      : null,
                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
                                      ? a.Doctor.Code
@@ -120,6 +139,61 @@ namespace ClinicManagement.Api.Controllers
                 .ToListAsync();
 
             return Ok(appointments);
+        }
+
+        [HttpGet("{id}/examination")]
+        public async Task<ActionResult<ExaminationDetailDto>> GetExaminationDetail(Guid id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!Guid.TryParse(userIdClaim, out Guid userId))
+                return Unauthorized("Invalid user id in token");
+
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
+            if (doctor == null) return Unauthorized("Doctor not found");
+
+            var appointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
+
+            if (appointment == null) return NotFound();
+
+            var history = await _context.MedicalRecords
+                .Where(r => r.PatientId == appointment.PatientId)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(5)
+                .Select(r => new BasicMedicalHistoryDto
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    Diagnosis = r.Diagnosis,
+                    Note = r.Note
+                })
+                .ToListAsync();
+
+            var dto = new ExaminationDetailDto
+            {
+                AppointmentId = appointment.Id,
+                Appointment = new AppointmentDetailDto
+                {
+                    Id = appointment.Id,
+                    AppointmentCode = appointment.AppointmentCode,
+                    FullName = appointment.Patient?.FullName,
+                    Phone = appointment.Patient?.Phone,
+                    Email = appointment.Patient?.Email,
+                    DateOfBirth = appointment.Patient?.DateOfBirth ?? DateTime.MinValue,
+                    Gender = appointment.Patient?.Gender.ToString(),
+                    Address = appointment.Patient?.Address,
+                    Reason = appointment.Reason,
+                    Status = appointment.Status.ToString(),
+                    AppointmentDate = appointment.AppointmentDate,
+                    AppointmentTime = appointment.AppointmentTime,
+                    CreatedAt = appointment.CreatedAt
+                },
+                MedicalHistory = history
+            };
+
+            return Ok(dto);
         }
 
 

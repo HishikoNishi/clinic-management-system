@@ -17,8 +17,8 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters
-            .Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -107,7 +107,8 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
-
+builder.Services.AddScoped<MedicalRecordService>();
+builder.Services.AddScoped<PrescriptionService>();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();
