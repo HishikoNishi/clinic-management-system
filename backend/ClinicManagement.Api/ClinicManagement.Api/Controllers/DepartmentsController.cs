@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,8 @@ using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using ClinicManagement.Api.Dtos.Department;
 using ClinicManagement.Api.Dtos.Doctor;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -21,23 +24,21 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
-
-
         [HttpGet("Departments")]
         public IActionResult GetDepartments()
         {
             var values = Enum.GetValues(typeof(DepartmentEnum))
-                             .Cast<DepartmentEnum>()
-                             .Select(e => new { id = (int)e, name = e.ToString() });
-            return Ok(values);
+                  .Cast<DepartmentEnum>()
+                  .Select(e => new {
+                      id = (int)e,
+                      name = e.GetType()
+                              .GetMember(e.ToString())
+                              .First()
+                              .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
+                  });
 
+            return Ok(values); 
         }
-
-
-
-
-
-
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -59,7 +60,5 @@ namespace ClinicManagement.Api.Controllers
 
             return CreatedAtAction(nameof(GetDepartments), new { id = department.Id }, department);
         }
-
-
     }
 }
