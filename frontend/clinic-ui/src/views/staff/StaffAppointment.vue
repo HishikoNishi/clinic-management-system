@@ -3,25 +3,30 @@
     <h2>Quản lý lịch khám</h2>
 
     <!-- SEARCH BAR -->
-    <div class="search-bar">
-      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
-      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
-      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
-      <input type="date" v-model="searchDate" />
+   <!-- SEARCH BAR -->
+<div class="search-bar">
+  <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
+  <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
+  <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
+  <input type="date" v-model="searchDate" />
 
-      <!-- Chọn bác sĩ -->
-      <select v-model="selectedDoctor" @change="loadAppointments">
-        <option value="">Tất cả bác sĩ</option>
-        <option v-for="d in doctors" :key="d.id" :value="d.id">
-   {{ d.name }}
+  <!-- Chọn khoa để lọc -->
+  <select v-model="selectedDepartment" @change="loadDoctorsByDepartment">
+    <option value="">Chọn khoa</option>
+    <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+      {{ dep.name }}
+    </option>
+  </select>
 
-        </option>
-      </select>
+  <!-- Chọn bác sĩ để lọc -->
+  <select v-model="selectedDoctor" @change="loadAppointments" :disabled="!selectedDepartment">
+    <option value="">chọn bác sĩ</option>
+    <option v-for="d in doctors" :key="d.id" :value="d.id">
+      {{  d.fullName }}
+    </option>
+  </select>
+</div>
 
-      <!-- Nút kính lúp -->
-      <button class="search-btn" @click="loadAppointments">🔍</button>
-      <button class="clear-btn" @click="clearFilters">Xóa</button>
-    </div>
 
     <!-- FILTER STATUS -->
     <div class="filter">
@@ -36,18 +41,18 @@
     </div>
 
     <!-- TABLE -->
-  <table>
+   <table>
   <thead>
     <tr>
       <th>Mã</th>
       <th>Bệnh nhân</th>
       <th>Điện thoại</th>
-      <th>Ngày sinh</th> <!-- thêm cột ngày sinh -->
+      <th>Ngày sinh</th>
       <th>Ngày</th>
       <th>Trạng thái</th>
-      <th>Lý do</th>
+      <th>Triệu chứng</th>
       <th>Bác sĩ</th>
-      <th v-if="currentStatus === 'Pending'">Gán bác sĩ</th>
+      <th>Gán bác sĩ</th>
     </tr>
   </thead>
   <tbody>
@@ -59,7 +64,7 @@
       <td>{{ a.appointmentCode }}</td>
       <td>{{ a.fullName }}</td>
       <td>{{ a.phone }}</td>
-      <td>{{ formatDate(a.dateOfBirth) }}</td> <!-- hiển thị ngày sinh -->
+      <td>{{ formatDate(a.dateOfBirth) }}</td>
       <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
       <td>
         <span :class="'status ' + a.statusDetail.value.toLowerCase()">
@@ -68,18 +73,29 @@
       </td>
       <td>{{ a.reason }}</td>
       <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
-      <td v-if="a.statusDetail.value === 'Pending'">
-        <select @change="assignDoctor(a.id, $event)" @click.stop>
-          <option value="">Chọn bác sĩ</option>
-          <option v-for="d in doctors" :key="d.id" :value="d.id">
-            {{ d.username }}
-          </option>
-        </select>
+      <td @click.stop class="assign-cell">
+        <template v-if="a.statusDetail.value === 'Pending'">
+          <select v-model="assignDepartment" @change="loadDoctorsByDepartment">
+            <option value="">Chọn khoa</option>
+            <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+              {{ dep.name }}
+            </option>
+          </select>
+
+          <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartment">
+            <option value="">Chọn bác sĩ</option>
+            <option v-for="d in doctors" :key="d.id" :value="d.id">
+              {{ d.fullName }}
+            </option>
+          </select>
+        </template>
+        <template v-else>
+          —
+        </template>
       </td>
     </tr>
   </tbody>
 </table>
-
 
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
@@ -98,11 +114,10 @@ interface Appointment {
   appointmentCode: string
   fullName: string
   phone: string
-    dateOfBirth: string 
+  dateOfBirth: string
   appointmentDate: string
   appointmentTime: string
-
-    reason: string 
+  reason: string
   statusDetail: {
     value: string
     doctorName: string
@@ -114,9 +129,12 @@ const searchName = ref('')
 const searchPhone = ref('')
 const searchDate = ref('')
 const selectedDoctor = ref('')
+const selectedDepartment = ref('')
+const assignDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
+const departments = ref<any[]>([])
 
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
@@ -140,18 +158,19 @@ const loadAppointments = async () => {
   let res
 
   if (selectedDoctor.value) {
+    // lọc theo bác sĩ
     res = await api.get<Appointment[]>(
       `/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`
     )
-
-    let data: Appointment[] = res.data
-
-    if (currentStatus.value !== 'All') {
-      data = data.filter(a => a.statusDetail.value === currentStatus.value)
-    }
-
-    appointments.value = data
+    appointments.value = res.data
+  } else if (selectedDepartment.value) {
+    // lọc theo khoa
+    res = await api.get<Appointment[]>(
+      `/staff/StaffAppointments/by-department?departmentId=${selectedDepartment.value}`
+    )
+    appointments.value = res.data
   } else {
+    // tất cả
     if (currentStatus.value === 'All') {
       res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
     } else {
@@ -159,13 +178,30 @@ const loadAppointments = async () => {
         `/staff/StaffAppointments/filter?status=${currentStatus.value}`
       )
     }
-
     appointments.value = res.data
+  }
+
+  // lọc thêm theo trạng thái
+  if (currentStatus.value !== 'All') {
+    appointments.value = appointments.value.filter(
+      a => a.statusDetail.value === currentStatus.value
+    )
   }
 }
 
-const loadDoctors = async () => {
-  const res = await api.get('/Doctor')
+
+const loadDepartments = async () => {
+  const res = await api.get('/Departments')
+  departments.value = res.data
+}
+
+const loadDoctorsByDepartment = async () => {
+  const depId = assignDepartment.value || selectedDepartment.value
+  if (!depId) {
+    doctors.value = []
+    return
+  }
+  const res = await api.get(`/Doctor/by-department/${depId}`)
   doctors.value = res.data
 }
 
@@ -173,19 +209,33 @@ const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
+
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
-
 const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
+
+  const appointment = appointments.value.find(a => a.id === appointmentId)
+  const doctor = doctors.value.find(d => d.id === doctorId)
+
+  const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
+
+  if (!confirm(message)) {
+    // nếu Cancel thì reset lại dropdown về "Chọn bác sĩ"
+    (e.target as HTMLSelectElement).value = ''
+    return
+  }
+
   await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
   alert('Bác sĩ đã được gán ✅')
   loadAppointments()
 }
+
+
 
 const statusLabel = (status: string) => {
   const labels: { [key: string]: string } = {
@@ -198,14 +248,6 @@ const statusLabel = (status: string) => {
   return labels[status] || status
 }
 
-const clearFilters = () => {
-  searchCode.value = ''
-  searchName.value = ''
-  searchPhone.value = ''
-  searchDate.value = ''
-  selectedDoctor.value = ''
-  loadAppointments()
-}
 
 const formatDateTime = (dateStr: string, timeStr: string) => {
   if (!dateStr) return ''
@@ -216,7 +258,7 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 
 onMounted(() => {
   loadAppointments()
-  loadDoctors()
+  loadDepartments()
 })
 </script>
 
