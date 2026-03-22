@@ -1,6 +1,6 @@
 .staff-container {
-  padding: 32px;
-  font-family: "Poppins", "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  font-family: "Poppins", "Roboto", "Segoe UI", sans-serif;
   background: var(--color-bg-main);
   min-height: 100vh;
 }
@@ -9,29 +9,32 @@
 .search-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 20px 0;
+  gap: 8px;
+  margin: 12px 0;
   justify-content: center;
 }
 
 .search-bar input,
 .search-bar select {
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
   border: 1px solid var(--color-border);
   background: #f9fff9;
-  font-size: 14px;
+  font-size: 12px;
   flex: 1;
-  min-width: 180px;
+  min-width: 140px;
+  height: 28px;
 }
 
 .search-bar button {
-  padding: 10px 16px;
-  border-radius: 8px;
+  padding: 0 10px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s ease;
+  font-size: 12px;
+  height: 28px;
+  line-height: 28px;
 }
 
 .search-btn {
@@ -54,31 +57,28 @@
 
 /* Tiêu đề */
 .staff-container h2 {
-  margin-bottom: 24px;
-  color: var(--color-text-main);
-  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--color-primary);
   font-weight: 700;
-  font-size: 28px;
+  font-size: 18px;
   text-align: center;
-  letter-spacing: 0.5px;
 }
 
 /* Filter buttons */
 .filter {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   text-align: center;
 }
 
 .filter button {
-  padding: 10px 20px;
-  margin: 0 8px;
+  padding: 6px 12px;
+  margin: 0 4px;
   border: none;
   background: var(--color-bg-soft);
   cursor: pointer;
-  border-radius: 25px;
-  transition: all 0.3s ease;
+  border-radius: 16px;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 12px;
   color: var(--color-text-main);
   border: 1px solid var(--color-border);
 }
@@ -86,7 +86,6 @@
 .filter button.active {
   background: var(--color-primary);
   color: var(--color-text-inverse);
-  box-shadow: var(--shadow-primary);
   border-color: transparent;
 }
 
@@ -98,15 +97,10 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  margin-top: 16px;
-  box-shadow: 0 6px 20px var(--color-shadow);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px var(--color-shadow);
-  border-radius: 12px;
+  margin-top: 12px;
+  box-shadow: 0 3px 8px var(--color-shadow);
+  border-radius: 8px;
   overflow: hidden;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
 }
@@ -114,11 +108,9 @@ table {
 table th,
 table td {
   border: 1px solid var(--color-border);
-  padding: 12px;
-  padding: 16px;
+  padding: 6px 8px;
   text-align: left;
-  font-size: 14px;
-  color: var(--color-text-main);
+  font-size: 12px;
   color: var(--color-text-main);
 }
 
@@ -126,77 +118,56 @@ table th {
   background-color: var(--color-primary);
   color: var(--color-text-inverse);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 table tr:nth-child(even) {
-  background-color: var(--color-bg-soft);
   background-color: var(--color-bg-soft);
 }
 
 table tr:hover {
   background-color: var(--color-primary-light);
-  transition: background-color 0.2s ease;
 }
 
-/* Status labels với nhiều màu pastel */
+/* Status labels */
 .status {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.85em;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 11px;
   display: inline-block;
   text-align: center;
-  min-width: 100px;
+  min-width: 70px;
 }
 
-.status.pending {
-  background: var(--color-warning-bg);
-  color: var(--color-text-main);
-}
-
-.status.confirmed {
-  background: var(--color-success-bg);
-  color: var(--color-text-main);
-}
-
-.status.completed {
-  background: var(--color-info-bg);
-  color: var(--color-text-main);
-}
-
-.status.cancelled {
-  background: var(--color-danger-bg);
-  color: var(--color-text-main);
-}
+.status.pending   { background: var(--color-warning-bg); }
+.status.confirmed { background: var(--color-success-bg); }
+.status.completed { background: var(--color-info-bg); }
+.status.cancelled { background: var(--color-danger-bg); }
 
 /* Assign select */
 select {
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  padding: 6px 8px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-bg-soft);
   color: var(--color-text-main);
-  background: var(--color-bg-soft);
-  color: var(--color-text-main);
-  transition: border-color 0.2s;
-  font-size: 14px;
+  font-size: 12px;
+  height: 28px;
 }
 
 select:focus {
   border-color: var(--color-primary);
   outline: none;
   background: var(--color-bg-card);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
 }
 
 select option.inactive {
   color: var(--color-text-muted);
   background-color: var(--color-bg-soft);
-  color: var(--color-text-muted);
-  background-color: var(--color-bg-soft);
 }
-p{
+
+p {
   color: var(--color-text-muted);
+  font-size: 12px;
 }
