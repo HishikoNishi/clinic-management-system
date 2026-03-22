@@ -93,6 +93,7 @@ namespace ClinicManagement.Api.Controllers
                 LicenseNumber = dto.LicenseNumber ?? string.Empty,
                 Status = DoctorStatus.Active,
                 UserId = dto.UserId,
+                DepartmentId = dto.DepartmentId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -125,6 +126,7 @@ namespace ClinicManagement.Api.Controllers
             doctor.FullName = dto.FullName;
             doctor.Specialty = dto.Specialty;
             doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
+            doctor.DepartmentId = dto.DepartmentId;
 
             await _context.SaveChangesAsync();
 
@@ -143,6 +145,22 @@ namespace ClinicManagement.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Doctor profile deleted successfully." });
+        }
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpGet("by-department/{departmentId}")]
+        public async Task<IActionResult> GetByDepartment(Guid departmentId)
+        {
+            var doctors = await _context.Doctors
+                .Where(d => d.DepartmentId == departmentId)
+                .Select(d => new
+                {
+                    d.Id,
+                    d.FullName,
+                    d.Specialty
+                })
+                .ToListAsync();
+
+            return Ok(doctors);
         }
     }
 }
