@@ -21,34 +21,20 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetDepartments()
+
+
+        [HttpGet("Departments")]
+        public IActionResult GetDepartments()
         {
-            var deps = await _context.Departments
-                .Include(d => d.Doctors)
-                    .ThenInclude(doc => doc.User) 
-                .Select(d => new DepartmentDto
-                {
-                    Id = d.Id,
-                    Name = d.Name,
-                    Description = d.Description,
-                    CreatedAt = d.CreatedAt,
-                    Doctors = d.Doctors.Select(doc => new DoctorDto
-                    {
-                        Id = doc.Id,
-                        Code = doc.Code,
-                        FullName = doc.FullName,
-                        Specialty = doc.Specialty,
-                        LicenseNumber = doc.LicenseNumber,
-                        Username = doc.User != null ? doc.User.Username : null, 
-                        Status = doc.Status.ToString() 
-                    }).ToList()
+            var values = Enum.GetValues(typeof(DepartmentEnum))
+                             .Cast<DepartmentEnum>()
+                             .Select(e => new { id = (int)e, name = e.ToString() });
+            return Ok(values);
 
-                })
-                .ToListAsync();
-
-            return Ok(deps);
         }
+
+
+
 
 
 
