@@ -15,5 +15,6 @@ public class UpdateDoctorDto
 
         [MaxLength(50)]
         public string? LicenseNumber { get; set; }
+    public Guid? DepartmentId { get; set; }
 }
 
