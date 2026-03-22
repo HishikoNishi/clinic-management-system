@@ -178,9 +178,11 @@ const loadAppointments = async () => {
 }
 
 const loadDepartments = async () => {
-  const res = await api.get('/Departments')
+  const res = await api.get('/Departments/Departments')
+  console.log('Departments:', res.data) 
   departments.value = res.data
 }
+
 
 const loadDoctorsByDepartment = async (appointmentId: string | null) => {
   const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
