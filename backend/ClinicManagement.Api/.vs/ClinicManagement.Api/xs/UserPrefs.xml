@@ -1,0 +1,38 @@
+﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Program.cs">
+    <Files>
+      <File FileName="ClinicManagement.Api/appsettings.json" Line="19" Column="1" />
+      <File FileName="ClinicManagement.Api/Controllers/DepartmentsController.cs" Line="23" Column="10" />
+      <File FileName="ClinicManagement.Api/Models/Department.cs" Line="10" Column="25" />
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="20" Column="29" />
+      <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Models/Doctor.cs" Line="28" Column="52" />
+      <File FileName="ClinicManagement.Api/Controllers/DoctorAppointmentsController.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Controllers/DoctorController.cs" Line="133" Column="21" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/CreateDoctorDto.cs" Line="20" Column="1" />
+      <File FileName="ClinicManagement.Api/Program.cs" Line="69" Column="16" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/DoctorDto.cs" Line="1" Column="1" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/UpdateDoctorDto.cs" Line="18" Column="44" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="ClinicManagement.Api">
+            <Node name="ClinicManagement.Api">
+              <Node name="Data" expanded="True" />
+              <Node name="Models" expanded="True" />
+              <Node name="Program.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+</Properties>
