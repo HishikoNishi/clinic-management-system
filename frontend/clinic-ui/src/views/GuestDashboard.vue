@@ -77,8 +77,6 @@
 
         <!-- Booking Form -->
         <form @submit.prevent="submitBooking" class="booking-form" v-if="!bookingSuccess">
-<<<<<<< Updated upstream
-=======
           <div class="returning-box">
             <div class="d-flex align-items-center justify-content-between">
               <div>
@@ -109,7 +107,6 @@
             </div>
           </div>
 
->>>>>>> Stashed changes
           <div class="form-row">
             <!-- Full Name -->
             <div class="form-group">
@@ -118,10 +115,7 @@
                 v-model="bookingForm.fullName"
                 type="text"
                 class="form-input"
-<<<<<<< Updated upstream
-=======
                 :readonly="isReturning"
->>>>>>> Stashed changes
                 required
                 placeholder="Nhập họ và tên của bạn"
               />
@@ -137,10 +131,7 @@
                 v-model="bookingForm.dateOfBirth"
                 type="date"
                 class="form-input"
-<<<<<<< Updated upstream
-=======
                 :readonly="isReturning"
->>>>>>> Stashed changes
                 required
               />
               <span v-if="bookingErrors.dateOfBirth" class="form-error">
@@ -153,11 +144,7 @@
             <!-- Gender -->
             <div class="form-group">
               <label class="form-label">Giới tính *</label>
-<<<<<<< Updated upstream
-              <select v-model="bookingForm.gender" class="form-select" required>
-=======
               <select v-model="bookingForm.gender" class="form-select" required :disabled="isReturning">
->>>>>>> Stashed changes
                 <option value="">Chọn giới tính</option>
                 <option value="1">Nam</option>
                 <option value="2">Nữ</option>
@@ -174,10 +161,7 @@
                 v-model="bookingForm.phone"
                 type="tel"
                 class="form-input"
-<<<<<<< Updated upstream
-=======
                 :readonly="isReturning"
->>>>>>> Stashed changes
                 required
                 placeholder="Nhập số điện thoại của bạn"
               />
@@ -195,10 +179,7 @@
                 v-model="bookingForm.email"
                 type="email"
                 class="form-input"
-<<<<<<< Updated upstream
-=======
                 :readonly="isReturning"
->>>>>>> Stashed changes
                 required
                 placeholder="Nhập email của bạn"
               />
@@ -214,10 +195,7 @@
                 v-model="bookingForm.address"
                 type="text"
                 class="form-input"
-<<<<<<< Updated upstream
-=======
                 :readonly="isReturning"
->>>>>>> Stashed changes
                 required
                 placeholder="Nhập địa chỉ của bạn"
               />
@@ -478,8 +456,6 @@ const bookingResponse = ref({
   appointmentTime: ''
 })
 
-<<<<<<< Updated upstream
-=======
 // Returning patient lookup
 const lookupPhone = ref('')
 const lookupEmail = ref('')
@@ -487,7 +463,6 @@ const lookupLoading = ref(false)
 const lookupError = ref('')
 const isReturning = ref(false)
 
->>>>>>> Stashed changes
 // Search Form State
 const searchForm = reactive({
   appointmentCode: '',
@@ -566,8 +541,6 @@ const validateBookingForm = (): boolean => {
   return isValid
 }
 
-<<<<<<< Updated upstream
-=======
 const applyPrefill = (data: any) => {
   bookingForm.fullName = data.fullName || ''
   bookingForm.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
@@ -606,7 +579,6 @@ const lookupPatient = async () => {
   }
 }
 
->>>>>>> Stashed changes
 // Submit booking
 const submitBooking = async () => {
   if (!validateBookingForm()) {
@@ -652,13 +624,10 @@ const resetBookingForm = () => {
   bookingForm.reason = ''
   bookingSuccess.value = false
   bookingError.value = ''
-<<<<<<< Updated upstream
-=======
   isReturning.value = false
   lookupPhone.value = ''
   lookupEmail.value = ''
   lookupError.value = ''
->>>>>>> Stashed changes
 }
 
 // Submit search

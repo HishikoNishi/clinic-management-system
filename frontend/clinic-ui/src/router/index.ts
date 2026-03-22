@@ -1,22 +1,3 @@
-<<<<<<< Updated upstream
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-
-const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    redirect: '/home'
-  },
-  {
-    path: '/home',
-    name: 'GuestDashboard',
-    component: () => import('@/views/GuestDashboard.vue')
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/Login.vue')
-=======
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 import { useAuthStore } from "@/stores/auth"
 
@@ -96,85 +77,8 @@ const routes: RouteRecordRaw[] = [
     name: "DoctorPatients",
     component: () => import("@/views/doctor/DoctorPatients.vue"),
     meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
->>>>>>> Stashed changes
-  },
-
-  {
-<<<<<<< Updated upstream
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/admin/AdminDashboard.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
   },
   {
-    path: '/admin/users/create',
-    name: 'CreateUser',
-    component: () => import('@/views/admin/CreateUserView.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
-  },
-
-  {
-    path: '/appointment',
-    name: 'Appointment',
-    component: () => import('@/views/AppointmentView.vue')
-  },
-
-  {
-    path: '/appointmentdetail',
-    name: 'AppointmentDetail',
-    component: () => import('@/views/AppointmentDetail.vue')
-  },
-
-  // STAFF AREA
-  {
-    path: '/staff/appointments',
-    name: 'StaffAppointment',
-    component: () => import('@/views/staff/StaffAppointment.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Staff' }
-  },  
-  {
-    path: '/staff/appointments/:id',
-    name: 'StaffAppointmentDetail',
-    component: () => import('@/views/staff/StaffAppointmentDetail.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Staff' }
-  },
-
-  // DOCTOR AREA
-  {
-    path: '/doctorappointment',
-    name: 'DoctorAppointment',
-    component: () => import('@/views/doctor/DoctorAppointments.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Doctor' }
-  },
-  {
-    path: '/doctor/appointments/:id',
-    name: 'DoctorAppointmentDetail',
-    component: () => import('@/views/doctor/DoctorAppointmentDetail.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Doctor' }
-  },
-
-  // ADMIN MANAGEMENT
-  {
-    path: '/doctors',
-    name: 'Doctors',
-    component: () => import('@/views/admin/DoctorList.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
-  },
-  {
-    path: '/staff',
-    component: () => import('@/views/admin/StaffList.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
-  },
-  {
-    path: '/staff/create',
-    component: () => import('@/views/admin/StaffForm.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
-  },
-  {
-    path: '/staff/edit/:id',
-    component: () => import('@/views/admin/StaffForm.vue'),
-    meta: { layout: 'dashboard', requiresAuth: true, role: 'Admin' }
-=======
     path: "/doctor/patients/:id",
     name: "DoctorPatientDetail",
     component: () => import("@/views/doctor/DoctorPatientDetail.vue"),
@@ -228,7 +132,6 @@ const routes: RouteRecordRaw[] = [
     name: "TechnicianTests",
     component: () => import("@/views/technician/TechnicianTests.vue"),
     meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
->>>>>>> Stashed changes
   }
 ]
 
@@ -239,11 +142,6 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
-  const roleFallback: Record<string, string> = {
-    Admin: '/dashboard',
-    Staff: '/staff/appointments',
-    Doctor: '/doctorappointment'
-  }
 
   const roleFallback: Record<string, string> = {
     Admin: "/dashboard",
@@ -259,14 +157,6 @@ router.beforeEach((to) => {
     }
   }
 
-<<<<<<< Updated upstream
-  if (to.meta.role) {
-    if (authStore.role !== to.meta.role) {
-      const fallback = authStore.role ? roleFallback[authStore.role] : '/home'
-      return fallback ? { path: fallback } : { path: '/home' }
-    }
-  }
-=======
  
   if (to.meta.role) {
     const roles = Array.isArray(to.meta.role)
@@ -283,7 +173,6 @@ router.beforeEach((to) => {
   }
 
   return true
->>>>>>> Stashed changes
 })
 
 export default router

@@ -3,11 +3,6 @@ import api from "./api"
 export interface UserDto {
   id: string
   username: string
-<<<<<<< Updated upstream
-}
-
-export const getUsers = () => api.get<UserDto[]>("/Admin")
-=======
   role?: string
 }
 
@@ -20,4 +15,3 @@ export const updateUser = (id: string, payload: Partial<{ username: string; pass
   api.put(`/Admin/${id}`, payload)
 
 export const deleteUser = (id: string) => api.delete(`/Admin/${id}`)
->>>>>>> Stashed changes

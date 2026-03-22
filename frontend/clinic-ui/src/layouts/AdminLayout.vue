@@ -29,11 +29,7 @@ const navItems = computed(() => {
 
   if (role.value === 'Doctor') {
     return [
-<<<<<<< Updated upstream
-      { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctorappointment' }
-=======
       { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' }
->>>>>>> Stashed changes
     ]
   }
 
