@@ -75,12 +75,13 @@
       <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
       <td @click.stop class="assign-cell">
         <template v-if="a.statusDetail.value === 'Pending'">
-          <select v-model="assignDepartment" @change="loadDoctorsByDepartment">
-            <option value="">Chọn khoa</option>
-            <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-              {{ dep.name }}
-            </option>
-          </select>
+         <select v-model="selectedDepartment">
+  <option value="">Chọn khoa</option>
+  <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+    {{ dep.name }}
+  </option>
+</select>
+
 
           <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartment">
             <option value="">Chọn bác sĩ</option>
@@ -209,6 +210,7 @@ const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
+
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
