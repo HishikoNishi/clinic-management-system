@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 public class UpdateDoctorDto
 {
@@ -15,6 +16,6 @@ public class UpdateDoctorDto
 
         [MaxLength(50)]
         public string? LicenseNumber { get; set; }
-    public Guid? DepartmentId { get; set; }
+    public Guid DepartmentId { get; set; }
 }
 
