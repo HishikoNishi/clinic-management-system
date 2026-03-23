@@ -166,6 +166,13 @@ select option.inactive {
   color: var(--color-text-muted);
   background-color: var(--color-bg-soft);
 }
+.assign-cell select {
+  width: 150px;
+  padding: 6px;
+  margin: 4px 0;
+text-align: center;
+  border-radius: 4px;
+}
 
 p {
   color: var(--color-text-muted);
