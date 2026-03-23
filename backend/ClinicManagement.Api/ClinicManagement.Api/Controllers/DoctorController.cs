@@ -128,6 +128,7 @@ namespace ClinicManagement.Api.Controllers
             doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
             doctor.DepartmentId = dto.DepartmentId;
 
+
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Doctor profile updated successfully." });
@@ -146,8 +147,8 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Doctor profile deleted successfully." });
         }
+        [HttpGet("by-department/{departmentId:guid}")]
         [Authorize(Roles = "Admin,Staff")]
-        [HttpGet("by-department/{departmentId}")]
         public async Task<IActionResult> GetByDepartment(Guid departmentId)
         {
             var doctors = await _context.Doctors
@@ -162,5 +163,6 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
+
     }
 }
