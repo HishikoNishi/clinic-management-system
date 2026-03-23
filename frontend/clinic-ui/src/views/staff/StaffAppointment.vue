@@ -132,7 +132,20 @@ const selectedDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
-const departments = ref<any[]>([])
+
+// Hardcode enum ở frontend
+const departments = ref([
+  { id: 0, name: "Nội" },
+  { id: 1, name: "Ngoại" },
+  { id: 2, name: "Nhi" },
+  { id: 3, name: "Sản" },
+  { id: 4, name: "Mắt" },
+  { id: 5, name: "Tai Mũi Họng" },
+  { id: 6, name: "Da Liễu" },
+  { id: 7, name: "Tim Mạch" },
+  { id: 8, name: "Thần Kinh" },
+  { id: 9, name: "Răng Hàm Mặt" }
+])
 
 // riêng cho từng appointment
 const assignDepartments = ref<{ [key: string]: string }>({})
@@ -177,13 +190,6 @@ const loadAppointments = async () => {
   }
 }
 
-const loadDepartments = async () => {
-  const res = await api.get('/Departments/Departments')
-  console.log('Departments:', res.data) 
-  departments.value = res.data
-}
-
-
 const loadDoctorsByDepartment = async (appointmentId: string | null) => {
   const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
   if (!depId) {
@@ -221,6 +227,7 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
   alert('Bác sĩ đã được gán ✅')
   loadAppointments()
 }
+
 const statusLabel = (status: string) => {
   const labels: { [key: string]: string } = {
     'All': 'Tất cả',
@@ -241,7 +248,7 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 
 onMounted(() => {
   loadAppointments()
-  loadDepartments()
+  // không cần loadDepartments nữa vì đã hardcode
 })
 </script>
 
