@@ -29,7 +29,7 @@ const form = reactive({
   code: '',
   specialty: '',
   licenseNumber: '',
-  departmentId: ''  
+  departmentId: null as string | null   // để null thay vì ''
 })
 
 const filteredDoctors = computed(() => {
@@ -54,7 +54,7 @@ function openCreate() {
   form.code = ''
   form.specialty = ''
   form.licenseNumber = ''
-  form.departmentId = ''
+  form.departmentId = null
   showModal.value = true
 }
 
@@ -65,15 +65,21 @@ function openEdit(doctor: Doctor) {
   form.code = doctor.code
   form.specialty = doctor.specialty
   form.licenseNumber = doctor.licenseNumber || ''
-  form.departmentId = (doctor as any).departmentId || ''
+  form.departmentId = (doctor as any).departmentId || null
   showModal.value = true
 }
 
 async function save() {
   try {
+    if (!form.departmentId) {
+      alert("Vui lòng chọn khoa")
+      return
+    }
+
     if (editingId.value) {
       await doctorService.update(editingId.value, {
         code: form.code,
+        fullName: form.fullName,
         specialty: form.specialty,
         licenseNumber: form.licenseNumber,
         departmentId: form.departmentId,
