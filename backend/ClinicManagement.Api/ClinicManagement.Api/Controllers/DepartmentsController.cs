@@ -24,21 +24,20 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
-        [HttpGet("Departments")]
-        public IActionResult GetDepartments()
+        [HttpGet]
+        public async Task<IActionResult> GetDepartments()
         {
-            var values = Enum.GetValues(typeof(DepartmentEnum))
-                  .Cast<DepartmentEnum>()
-                  .Select(e => new {
-                      id = (int)e,
-                      name = e.GetType()
-                              .GetMember(e.ToString())
-                              .First()
-                              .GetCustomAttribute<DisplayAttribute>()?.Name ?? e.ToString()
-                  });
+            var departments = await _context.Departments
+                .Select(d => new {
+                    id = d.Id,
+                    name = d.Name,
+                    description = d.Description
+                })
+                .ToListAsync();
 
-            return Ok(values); 
+            return Ok(departments);
         }
+
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -52,7 +51,7 @@ namespace ClinicManagement.Api.Controllers
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
                 Description = dto.Description,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Departments.Add(department);
@@ -60,5 +59,25 @@ namespace ClinicManagement.Api.Controllers
 
             return CreatedAtAction(nameof(GetDepartments), new { id = department.Id }, department);
         }
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateDepartment(Guid id, [FromBody] UpdateDepartmentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var department = await _context.Departments.FindAsync(id);
+            if (department == null)
+                return NotFound(new { message = "Department not found." });
+
+            department.Name = dto.Name;
+            department.Description = dto.Description;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Department updated successfully." });
+        }
+
+
     }
 }
