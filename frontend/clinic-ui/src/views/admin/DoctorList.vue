@@ -29,7 +29,7 @@ const form = reactive({
   code: '',
   specialty: '',
   licenseNumber: '',
-  departmentId: ''   // thêm field này
+  departmentId: ''  
 })
 
 const filteredDoctors = computed(() => {
@@ -111,7 +111,6 @@ onMounted(async () => {
   await loadDoctors()
 })
 </script>
-
 <template>
   <div class="doctor-page">
     <div class="container">
