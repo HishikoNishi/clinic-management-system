@@ -75,13 +75,12 @@
             <template v-if="a.statusDetail.value === 'Pending'">
               <!-- Chọn khoa riêng cho từng appointment -->
              
-  <select v-model="selectedDepartment" @change="onDepartmentChange">
+      <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
   <option value="">Chọn khoa</option>
   <option v-for="dep in departments" :key="dep.id" :value="dep.id">
     {{ dep.name }}
   </option>
 </select>
-
 
 
               <!-- Chọn bác sĩ riêng cho từng appointment -->
@@ -151,14 +150,9 @@ const filteredAppointments = computed(() => {
     const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
     const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
-    const matchDepartment = !selectedDepartment.value || a.statusDetail?.departmentId === selectedDepartment.value
-    const matchDoctor = !selectedDoctor.value || a.statusDetail?.doctorId === selectedDoctor.value
-
-    return matchCode && matchName && matchPhone && matchDate && matchDepartment && matchDoctor
+    return matchCode && matchName && matchPhone && matchDate
   })
 })
-
-
 
 const api = axios.create({
   baseURL: 'https://localhost:7235/api',
@@ -212,11 +206,6 @@ const loadDoctorsByDepartment = async (appointmentId: string | null) => {
 
 const changeStatus = (s: string) => {
   currentStatus.value = s
-  loadAppointments()
-}
-const onDepartmentChange = () => {
-  selectedDoctor.value = ''   // reset bác sĩ
-  loadDoctorsByDepartment(null)
   loadAppointments()
 }
 
