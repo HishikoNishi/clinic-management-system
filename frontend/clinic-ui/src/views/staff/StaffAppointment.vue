@@ -74,12 +74,15 @@
           <td @click.stop class="assign-cell">
             <template v-if="a.statusDetail.value === 'Pending'">
               <!-- Chọn khoa riêng cho từng appointment -->
-              <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
-                <option value="">Chọn khoa</option>
-                <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-                  {{ dep.name }}
-                </option>
-              </select>
+             
+  <select v-model="selectedDepartment" @change="onDepartmentChange">
+  <option value="">Chọn khoa</option>
+  <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+    {{ dep.name }}
+  </option>
+</select>
+
+
 
               <!-- Chọn bác sĩ riêng cho từng appointment -->
               <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartments[a.id]">
@@ -88,6 +91,7 @@
                   {{ d.fullName }}
                 </option>
               </select>
+         
             </template>
             <template v-else>
               —
@@ -132,20 +136,7 @@ const selectedDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
-
-// Hardcode enum ở frontend
-const departments = ref([
-  { id: 0, name: "Nội" },
-  { id: 1, name: "Ngoại" },
-  { id: 2, name: "Nhi" },
-  { id: 3, name: "Sản" },
-  { id: 4, name: "Mắt" },
-  { id: 5, name: "Tai Mũi Họng" },
-  { id: 6, name: "Da Liễu" },
-  { id: 7, name: "Tim Mạch" },
-  { id: 8, name: "Thần Kinh" },
-  { id: 9, name: "Răng Hàm Mặt" }
-])
+const departments = ref<any[]>([]) // load từ API
 
 // riêng cho từng appointment
 const assignDepartments = ref<{ [key: string]: string }>({})
@@ -160,35 +151,52 @@ const filteredAppointments = computed(() => {
     const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
     const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
-    return matchCode && matchName && matchPhone && matchDate
+    const matchDepartment = !selectedDepartment.value || a.statusDetail?.departmentId === selectedDepartment.value
+    const matchDoctor = !selectedDoctor.value || a.statusDetail?.doctorId === selectedDoctor.value
+
+    return matchCode && matchName && matchPhone && matchDate && matchDepartment && matchDoctor
   })
 })
+
+
 
 const api = axios.create({
   baseURL: 'https://localhost:7235/api',
   headers: { Authorization: `Bearer ${auth.token}` }
 })
 
+const loadDepartments = async () => {
+  const res = await api.get('/departments')
+  departments.value = res.data
+}
+
 const loadAppointments = async () => {
   let res
   if (selectedDoctor.value) {
     res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`)
-    appointments.value = res.data
   } else if (selectedDepartment.value) {
     res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-department?departmentId=${selectedDepartment.value}`)
-    appointments.value = res.data
   } else {
     if (currentStatus.value === 'All') {
       res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
     } else {
       res = await api.get<Appointment[]>(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
     }
-    appointments.value = res.data
   }
+
+  appointments.value = res.data
+
+  // reset dropdown cho từng appointment
+  appointments.value.forEach(a => {
+    assignDepartments.value[a.id] = ''   // luôn rỗng khi load lại
+    assignDoctors.value[a.id] = []       // danh sách bác sĩ trống
+  })
+
   if (currentStatus.value !== 'All') {
     appointments.value = appointments.value.filter(a => a.statusDetail.value === currentStatus.value)
   }
 }
+
 
 const loadDoctorsByDepartment = async (appointmentId: string | null) => {
   const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
@@ -206,6 +214,11 @@ const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
+const onDepartmentChange = () => {
+  selectedDoctor.value = ''   // reset bác sĩ
+  loadDoctorsByDepartment(null)
+  loadAppointments()
+}
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
@@ -218,7 +231,7 @@ const assignDoctor = async (appointmentId: string, e: Event) => {
   if (!doctorId) return
   const appointment = appointments.value.find(a => a.id === appointmentId)
   const doctor = (assignDoctors.value[appointmentId] || []).find(d => d.id === doctorId)
-  const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
+const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} khoa ${doctor?.departmentName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
   if (!confirm(message)) {
     (e.target as HTMLSelectElement).value = ''
     return
@@ -247,8 +260,8 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 }
 
 onMounted(() => {
+  loadDepartments()
   loadAppointments()
-  // không cần loadDepartments nữa vì đã hardcode
 })
 </script>
 
