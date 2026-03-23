@@ -3,7 +3,18 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { doctorService, type Doctor } from '@/services/doctorService'
 import '@/styles/layouts/doctor.css'
 import { getUsers } from '@/services/userService'
+import axios from 'axios'
 
+const api = axios.create({ baseURL: 'https://localhost:7235/api' })
+
+// danh sách khoa
+const departments = ref<any[]>([])
+const loadDepartments = async () => {
+  const res = await api.get('/departments')
+  departments.value = res.data
+}
+
+// danh sách người dùng, bác sĩ
 const users = ref<any[]>([])
 const doctors = ref<Doctor[]>([])
 const loading = ref(false)
@@ -11,12 +22,14 @@ const showModal = ref(false)
 const editingId = ref<string | null>(null)
 const searchTerm = ref('')
 
+// form tạo/chỉnh sửa bác sĩ
 const form = reactive({
   userId: '',
   fullName: '',
   code: '',
   specialty: '',
-  licenseNumber: ''
+  licenseNumber: '',
+  departmentId: ''   // thêm field này
 })
 
 const filteredDoctors = computed(() => {
@@ -41,6 +54,7 @@ function openCreate() {
   form.code = ''
   form.specialty = ''
   form.licenseNumber = ''
+  form.departmentId = ''
   showModal.value = true
 }
 
@@ -51,6 +65,7 @@ function openEdit(doctor: Doctor) {
   form.code = doctor.code
   form.specialty = doctor.specialty
   form.licenseNumber = doctor.licenseNumber || ''
+  form.departmentId = (doctor as any).departmentId || ''
   showModal.value = true
 }
 
@@ -61,6 +76,7 @@ async function save() {
         code: form.code,
         specialty: form.specialty,
         licenseNumber: form.licenseNumber,
+        departmentId: form.departmentId,
         status: 1
       })
     } else {
@@ -69,33 +85,15 @@ async function save() {
         fullName: form.fullName,
         code: form.code,
         specialty: form.specialty,
-        licenseNumber: form.licenseNumber
+        licenseNumber: form.licenseNumber,
+        departmentId: form.departmentId
       })
     }
 
     showModal.value = false
     await loadDoctors()
   } catch (error: any) {
-    if (error.response?.data?.errors) {
-      const errors = Object.values(error.response.data.errors)
-        .flat()
-        .join("\n")
-
-      alert(errors)
-      return
-    }
-
-    if (error.response?.data?.message) {
-      alert(error.response.data.message)
-      return
-    }
-
-    if (typeof error.response?.data === "string") {
-      alert(error.response.data)
-      return
-    }
-
-    alert("Something went wrong")
+    alert(error.response?.data?.message || "Có lỗi xảy ra")
   }
 }
 
@@ -109,6 +107,7 @@ async function remove(id: string) {
 onMounted(async () => {
   const res = await getUsers()
   users.value = res.data.filter((u: any) => u.role === "Doctor")
+  await loadDepartments()
   await loadDoctors()
 })
 </script>
@@ -140,6 +139,7 @@ onMounted(async () => {
               <tr>
                 <th>Mã</th>
                 <th>Chuyên khoa</th>
+                <th>Khoa</th>
                 <th>Giấy phép</th>
                 <th>Trạng thái</th>
                 <th style="text-align:right">Hành động</th>
@@ -148,16 +148,17 @@ onMounted(async () => {
 
             <tbody>
               <tr v-if="loading">
-                <td colspan="5" class="text-center py-4">Đang tải...</td>
+                <td colspan="6" class="text-center py-4">Đang tải...</td>
               </tr>
               <tr v-else-if="filteredDoctors.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted">
+                <td colspan="6" class="text-center py-4 text-muted">
                   Không có bác sĩ nào phù hợp
                 </td>
               </tr>
               <tr v-else v-for="d in filteredDoctors" :key="d.id">
                 <td class="fw-semibold">{{ d.code }}</td>
                 <td>{{ d.specialty }}</td>
+                <td>{{ d.departmentName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
                 <td>
                   <span class="badge bg-success-subtle text-success px-3 py-2">
@@ -179,6 +180,7 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- Modal tạo/chỉnh sửa -->
     <div v-if="showModal" class="modal-backdrop-custom">
       <div class="modal-modern">
         <h3>{{ editingId ? "Chỉnh sửa bác sĩ" : "Tạo bác sĩ mới" }}</h3>
@@ -198,6 +200,14 @@ onMounted(async () => {
           <input class="form-control" v-model="form.code" placeholder="Mã" />
           <input class="form-control" v-model="form.specialty" placeholder="Chuyên khoa" />
           <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
+
+          <!-- chọn khoa -->
+          <select class="form-select" v-model="form.departmentId">
+            <option disabled value="">Chọn khoa</option>
+            <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+              {{ dep.name }}
+            </option>
+          </select>
 
           <div class="modal-actions d-flex justify-content-end gap-2">
             <button class="btn-primary" @click="save">Lưu</button>
