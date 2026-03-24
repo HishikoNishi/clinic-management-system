@@ -18,12 +18,14 @@
       </select>
 
       <!-- Chọn bác sĩ để lọc -->
-      <select v-model="selectedDoctor" @change="loadAppointments" :disabled="!selectedDepartment">
+      <select v-model="selectedDoctor" :disabled="!selectedDepartment">
         <option value="">Chọn bác sĩ</option>
         <option v-for="d in doctors" :key="d.id" :value="d.id">
           {{ d.fullName }}
         </option>
       </select>
+
+    
     </div>
 
     <!-- FILTER STATUS -->
@@ -73,24 +75,18 @@
           <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
           <td @click.stop class="assign-cell">
             <template v-if="a.statusDetail.value === 'Pending'">
-              <!-- Chọn khoa riêng cho từng appointment -->
-             
-      <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
-  <option value="">Chọn khoa</option>
-  <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-    {{ dep.name }}
-  </option>
-</select>
-
-
-              <!-- Chọn bác sĩ riêng cho từng appointment -->
+              <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
+                <option value="">Chọn khoa</option>
+                <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+                  {{ dep.name }}
+                </option>
+              </select>
               <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartments[a.id]">
                 <option value="">Chọn bác sĩ</option>
                 <option v-for="d in assignDoctors[a.id] || []" :key="d.id" :value="d.id">
                   {{ d.fullName }}
                 </option>
               </select>
-         
             </template>
             <template v-else>
               —
@@ -103,7 +99,6 @@
     <p v-if="appointments.length === 0">Không có lịch khám</p>
   </div>
 </template>
-
 <script setup lang="ts">
 import axios from 'axios'
 import { ref, computed, onMounted } from 'vue'
@@ -123,6 +118,8 @@ interface Appointment {
   statusDetail: {
     value: string
     doctorName: string
+    doctorCode?: string
+    doctorDepartmentName?: string
   }
 }
 
@@ -135,14 +132,18 @@ const selectedDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
-const departments = ref<any[]>([]) // load từ API
+const departments = ref<any[]>([])
 
-// riêng cho từng appointment
 const assignDepartments = ref<{ [key: string]: string }>({})
 const assignDoctors = ref<{ [key: string]: any[] }>({})
 
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
+
+const api = axios.create({
+  baseURL: 'https://localhost:7235/api',
+  headers: { Authorization: `Bearer ${auth.token}` }
+})
 
 const filteredAppointments = computed(() => {
   return appointments.value.filter(a => {
@@ -150,14 +151,23 @@ const filteredAppointments = computed(() => {
     const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
     const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
-    return matchCode && matchName && matchPhone && matchDate
+
+    const matchDept = !selectedDepartment.value || a.statusDetail.doctorDepartmentName === getDepartmentName(selectedDepartment.value)
+    const matchDoctor = !selectedDoctor.value || a.statusDetail.doctorCode === getDoctorCode(selectedDoctor.value)
+
+    return matchCode && matchName && matchPhone && matchDate && matchDept && matchDoctor
   })
 })
 
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-  headers: { Authorization: `Bearer ${auth.token}` }
-})
+const getDepartmentName = (depId: string) => {
+  const dep = departments.value.find(d => d.id === depId)
+  return dep ? dep.name : ''
+}
+
+const getDoctorCode = (docId: string) => {
+  const doc = doctors.value.find(d => d.id === docId)
+  return doc ? doc.code : ''
+}
 
 const loadDepartments = async () => {
   const res = await api.get('/departments')
@@ -166,31 +176,19 @@ const loadDepartments = async () => {
 
 const loadAppointments = async () => {
   let res
-  if (selectedDoctor.value) {
-    res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`)
-  } else if (selectedDepartment.value) {
-    res = await api.get<Appointment[]>(`/staff/StaffAppointments/by-department?departmentId=${selectedDepartment.value}`)
+  if (currentStatus.value === 'All') {
+    res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
   } else {
-    if (currentStatus.value === 'All') {
-      res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
-    } else {
-      res = await api.get<Appointment[]>(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
-    }
+    res = await api.get<Appointment[]>(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
   }
 
   appointments.value = res.data
 
-  // reset dropdown cho từng appointment
   appointments.value.forEach(a => {
-    assignDepartments.value[a.id] = ''   // luôn rỗng khi load lại
-    assignDoctors.value[a.id] = []       // danh sách bác sĩ trống
+    assignDepartments.value[a.id] = ''
+    assignDoctors.value[a.id] = []
   })
-
-  if (currentStatus.value !== 'All') {
-    appointments.value = appointments.value.filter(a => a.statusDetail.value === currentStatus.value)
-  }
 }
-
 
 const loadDoctorsByDepartment = async (appointmentId: string | null) => {
   const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
@@ -215,12 +213,19 @@ const formatDate = (dateStr: string) => {
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
 
+const formatDateTime = (dateStr: string, timeStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const [hours, minutes] = timeStr.split(':')
+  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${hours}:${minutes}`
+}
+
 const assignDoctor = async (appointmentId: string, e: Event) => {
   const doctorId = (e.target as HTMLSelectElement).value
   if (!doctorId) return
   const appointment = appointments.value.find(a => a.id === appointmentId)
   const doctor = (assignDoctors.value[appointmentId] || []).find(d => d.id === doctorId)
-const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} khoa ${doctor?.departmentName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
+  const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} khoa ${doctor?.departmentName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
   if (!confirm(message)) {
     (e.target as HTMLSelectElement).value = ''
     return
@@ -239,13 +244,6 @@ const statusLabel = (status: string) => {
     'Cancelled': 'Đã hủy'
   }
   return labels[status] || status
-}
-
-const formatDateTime = (dateStr: string, timeStr: string) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  const [hours, minutes] = timeStr.split(':')
-  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${hours}:${minutes}`
 }
 
 onMounted(() => {
