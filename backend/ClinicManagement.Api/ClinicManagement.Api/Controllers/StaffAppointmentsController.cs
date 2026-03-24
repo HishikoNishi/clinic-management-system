@@ -28,6 +28,9 @@ namespace ClinicManagement.Api.Controllers
             var appointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
+      
+    .ThenInclude(d => d.Department)
+
                 .Select(a => new AppointmentDetailDto
                 {
                     Id = a.Id,
@@ -51,7 +54,10 @@ namespace ClinicManagement.Api.Controllers
                                      : null,
                         DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
                                      ? a.Doctor.Code
-                                     : null
+                                     : null,
+                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+    ? a.Doctor.Department.Name
+    : null
                     }
 
                 })
@@ -92,7 +98,11 @@ namespace ClinicManagement.Api.Controllers
                                      : null,
                         DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
                                      ? a.Doctor.Code
-                                     : null
+                                     : null,
+                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+    ? a.Doctor.Department.Name
+    : null
+
                     }
                 })
                 .ToListAsync();
@@ -135,6 +145,8 @@ namespace ClinicManagement.Api.Controllers
             var appointment = await _context.Appointments
      .Include(a => a.Patient)
      .Include(a => a.Doctor).ThenInclude(d => d.User)
+      .Include(a => a.Doctor)
+            .ThenInclude(d => d.Department)
      .FirstOrDefaultAsync(a => a.Id == id);
 
 
@@ -163,7 +175,10 @@ namespace ClinicManagement.Api.Controllers
                       : null,
                     DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
                       ? appointment.Doctor?.Code
-                      : null
+                      : null,
+                    DoctorDepartmentName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                ? appointment.Doctor?.Department?.Name
+                : null
                 }
             };
 
