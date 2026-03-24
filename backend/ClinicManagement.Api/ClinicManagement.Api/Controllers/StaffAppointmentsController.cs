@@ -49,16 +49,20 @@ namespace ClinicManagement.Api.Controllers
                     StatusDetail = new AppointmentStatusDto
                     {
                         Value = a.Status.ToString(),
+                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+        ? a.Doctor.Id
+        : null,
                         DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.User.Username   // lấy username từ User
-                                     : null,
+        ? a.Doctor.FullName
+        : null,
                         DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.Code
-                                     : null,
+        ? a.Doctor.Code
+        : null,
                         DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-    ? a.Doctor.Department.Name
-    : null
+        ? a.Doctor.Department.Name
+        : null
                     }
+
 
                 })
                 .ToListAsync();
@@ -93,17 +97,20 @@ namespace ClinicManagement.Api.Controllers
                     StatusDetail = new AppointmentStatusDto
                     {
                         Value = a.Status.ToString(),
+                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
+        ? a.Doctor.Id
+        : null,
                         DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.User.Username   // lấy username từ User
-                                     : null,
+        ? a.Doctor.FullName
+        : null,
                         DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-                                     ? a.Doctor.Code
-                                     : null,
+        ? a.Doctor.Code
+        : null,
                         DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-    ? a.Doctor.Department.Name
-    : null
-
+        ? a.Doctor.Department.Name
+        : null
                     }
+
                 })
                 .ToListAsync();
 
