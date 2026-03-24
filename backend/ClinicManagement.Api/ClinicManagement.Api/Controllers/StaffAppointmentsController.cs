@@ -138,17 +138,16 @@ namespace ClinicManagement.Api.Controllers
                 doctorCode = doctor.Code
             });
         }
-        // GET: api/staff/StaffAppointments/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
         {
             var appointment = await _context.Appointments
-     .Include(a => a.Patient)
-     .Include(a => a.Doctor).ThenInclude(d => d.User)
-      .Include(a => a.Doctor)
-            .ThenInclude(d => d.Department)
-     .FirstOrDefaultAsync(a => a.Id == id);
-
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Department)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null) return NotFound();
 
@@ -171,21 +170,20 @@ namespace ClinicManagement.Api.Controllers
                 {
                     Value = appointment.Status.ToString(),
                     DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
-                      ? appointment.Doctor?.User?.Username
-                      : null,
+                        ? appointment.Doctor?.FullName
+                        : null,
                     DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
-                      ? appointment.Doctor?.Code
-                      : null,
+                        ? appointment.Doctor?.Code
+                        : null,
                     DoctorDepartmentName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
-                ? appointment.Doctor?.Department?.Name
-                : null
+                        ? appointment.Doctor?.Department?.Name
+                        : null
                 }
             };
 
-
-
             return Ok(dto);
         }
+
 
 
     }
