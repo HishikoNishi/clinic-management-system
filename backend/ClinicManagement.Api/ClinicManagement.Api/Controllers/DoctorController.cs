@@ -27,6 +27,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var doctors = await _context.Doctors
                 .Include(d => d.User)
+                  .Include(d => d.Department)
                 .Select(d => new DoctorDto
                 {
                     Id = d.Id,
@@ -35,7 +36,9 @@ namespace ClinicManagement.Api.Controllers
                     LicenseNumber = d.LicenseNumber,
                     FullName = d.FullName,
                     Username = d.User.Username,
-                    Status = d.Status.ToString()
+                    Status = d.Status.ToString(),
+                    DepartmentId = (Guid)d.DepartmentId,
+                    DepartmentName = d.Department.Name
                 })
                 .ToListAsync();
 
@@ -48,6 +51,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var doctor = await _context.Doctors
                 .Include(d => d.User)
+                  .Include(d => d.Department)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             if (doctor == null)
@@ -60,7 +64,9 @@ namespace ClinicManagement.Api.Controllers
                 Specialty = doctor.Specialty,
                 LicenseNumber = doctor.LicenseNumber,
                 Username = doctor.User.Username,
-                Status = doctor.Status.ToString()
+                Status = doctor.Status.ToString(),
+                DepartmentId = doctor.DepartmentId,
+                DepartmentName = doctor.Department.Name
             });
         }
         [Authorize(Roles = "Admin")]
