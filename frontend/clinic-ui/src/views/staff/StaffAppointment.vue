@@ -118,6 +118,7 @@ interface Appointment {
   statusDetail: {
     value: string
     doctorName: string
+      doctorId?: string
     doctorCode?: string
     doctorDepartmentName?: string
   }
@@ -145,6 +146,7 @@ const api = axios.create({
   headers: { Authorization: `Bearer ${auth.token}` }
 })
 
+
 const filteredAppointments = computed(() => {
   return appointments.value.filter(a => {
     const matchCode = !searchCode.value || a.appointmentCode?.toLowerCase().includes(searchCode.value.toLowerCase())
@@ -152,12 +154,21 @@ const filteredAppointments = computed(() => {
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
     const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
 
-    const matchDept = !selectedDepartment.value || a.statusDetail.doctorDepartmentName === getDepartmentName(selectedDepartment.value)
-    const matchDoctor = !selectedDoctor.value || a.statusDetail.doctorCode === getDoctorCode(selectedDoctor.value)
+    let matchDept = true
+    if (selectedDepartment.value) {
+      matchDept = a.statusDetail.doctorDepartmentName === getDepartmentName(selectedDepartment.value)
+    }
+
+    let matchDoctor = true
+    if (selectedDoctor.value) {
+      matchDoctor = a.statusDetail.doctorId === selectedDoctor.value
+    }
 
     return matchCode && matchName && matchPhone && matchDate && matchDept && matchDoctor
   })
 })
+
+
 
 const getDepartmentName = (depId: string) => {
   const dep = departments.value.find(d => d.id === depId)
