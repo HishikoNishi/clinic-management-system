@@ -21,6 +21,7 @@ const loading = ref(false)
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 const searchTerm = ref('')
+const filterDepartmentId = ref<string>('')   // filter riêng
 
 // form tạo/chỉnh sửa bác sĩ
 const form = reactive({
@@ -29,15 +30,16 @@ const form = reactive({
   code: '',
   specialty: '',
   licenseNumber: '',
-  departmentId: null as string | null   // để null thay vì ''
+  departmentId: '' as string | null
 })
 
 const filteredDoctors = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
-  if (!term) return doctors.value
   return doctors.value.filter((d) => {
     const text = `${d.code} ${d.specialty} ${d.licenseNumber || ''}`.toLowerCase()
-    return text.includes(term)
+    const matchText = !term || text.includes(term)
+    const matchDept = !filterDepartmentId.value || d.departmentId?.toString() === filterDepartmentId.value
+    return matchText && matchDept
   })
 })
 
@@ -54,18 +56,18 @@ function openCreate() {
   form.code = ''
   form.specialty = ''
   form.licenseNumber = ''
-  form.departmentId = null
+  form.departmentId = ''
   showModal.value = true
 }
 
 function openEdit(doctor: Doctor) {
   editingId.value = doctor.id
   form.userId = doctor.userId
-  form.fullName = (doctor as any).fullName || ''
+  form.fullName = doctor.fullName || ''
   form.code = doctor.code
   form.specialty = doctor.specialty
   form.licenseNumber = doctor.licenseNumber || ''
-  form.departmentId = (doctor as any).departmentId || null
+  form.departmentId = doctor.departmentId?.toString() || ''
   showModal.value = true
 }
 
@@ -133,6 +135,14 @@ onMounted(async () => {
             style="min-width: 260px"
             placeholder="Tìm theo mã, chuyên khoa, giấy phép"
           />
+          <!-- filter theo khoa -->
+          <select class="form-select" v-model="filterDepartmentId" style="min-width:200px">
+            <option value="">Chọn khoa</option>
+            <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+              {{ dep.name }}
+            </option>
+          </select>
+
           <button class="btn btn-primary" @click="openCreate">+ Thêm bác sĩ</button>
         </div>
       </div>
@@ -206,10 +216,10 @@ onMounted(async () => {
           <input class="form-control" v-model="form.specialty" placeholder="Chuyên khoa" />
           <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
 
-          <!-- chọn khoa -->
+          <!-- chọn khoa trong form -->
           <select class="form-select" v-model="form.departmentId">
             <option disabled value="">Chọn khoa</option>
-            <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+            <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
               {{ dep.name }}
             </option>
           </select>
