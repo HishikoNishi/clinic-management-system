@@ -131,7 +131,7 @@ const routes: RouteRecordRaw[] = [
     path: "/technician/tests",
     name: "TechnicianTests",
     component: () => import("@/views/technician/TechnicianTests.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
+    meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
   }
 ]
 

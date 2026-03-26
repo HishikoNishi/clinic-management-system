@@ -78,32 +78,48 @@
         <!-- Booking Form -->
         <form @submit.prevent="submitBooking" class="booking-form" v-if="!bookingSuccess">
           <div class="returning-box">
-            <div class="d-flex align-items-center justify-content-between">
-              <div>
-                <strong>Bệnh nhân cũ?</strong>
-                <div class="text-muted small">Nhập SĐT hoặc email để tự động điền thông tin.</div>
+            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+              <div class="flex-grow-1">
+                <button
+                  type="button"
+                  class="btn btn-link p-0 text-start text-decoration-none"
+                  @click="showReturningLookup = !showReturningLookup"
+                >
+                  <span class="text-body fw-bold">Bệnh nhân cũ?</span>
+                  <i
+                    class="bi ms-1 small"
+                    :class="showReturningLookup ? 'bi-chevron-up' : 'bi-chevron-down'"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+                <div v-if="!showReturningLookup" class="text-muted small mt-1">
+                  Nhấn để mở ô nhập SĐT hoặc email, sau đó chọn «Điền thông tin cũ».
+                </div>
               </div>
               <span v-if="isReturning" class="badge bg-success-subtle text-success">Đã điền từ hồ sơ trước</span>
             </div>
-            <div class="form-row mt-2">
-              <div class="form-group">
-                <input v-model="lookupPhone" type="tel" class="form-input" placeholder="Số điện thoại" />
+
+            <div v-show="showReturningLookup" class="mt-3">
+              <div class="form-row">
+                <div class="form-group">
+                  <input v-model="lookupPhone" type="tel" class="form-input" placeholder="Số điện thoại" />
+                </div>
+                <div class="form-group">
+                  <input v-model="lookupEmail" type="email" class="form-input" placeholder="Email" />
+                </div>
+                <div class="form-group">
+                  <button type="button" class="btn btn-outline-primary w-100" :disabled="lookupLoading" @click="lookupPatient">
+                    <span v-if="lookupLoading" class="spinner-border spinner-border-sm me-1"></span>
+                    Điền thông tin cũ
+                  </button>
+                </div>
+                <div class="form-group" v-if="isReturning">
+                  <button type="button" class="btn btn-secondary w-100" @click="clearPrefill">Chỉnh sửa</button>
+                </div>
               </div>
-              <div class="form-group">
-                <input v-model="lookupEmail" type="email" class="form-input" placeholder="Email" />
+              <div v-if="lookupError" class="alert alert-warning py-2 my-2 mb-0">
+                {{ lookupError }}
               </div>
-              <div class="form-group">
-                <button type="button" class="btn btn-outline-primary w-100" :disabled="lookupLoading" @click="lookupPatient">
-                  <span v-if="lookupLoading" class="spinner-border spinner-border-sm me-1"></span>
-                  Dùng thông tin cũ
-                </button>
-              </div>
-              <div class="form-group" v-if="isReturning">
-                <button type="button" class="btn btn-secondary w-100" @click="clearPrefill">Chỉnh sửa</button>
-              </div>
-            </div>
-            <div v-if="lookupError" class="alert alert-warning py-2 my-2">
-              {{ lookupError }}
             </div>
           </div>
 
@@ -462,6 +478,8 @@ const lookupEmail = ref('')
 const lookupLoading = ref(false)
 const lookupError = ref('')
 const isReturning = ref(false)
+/** Mở phần tra cứu bệnh nhân cũ sau khi nhấn «Bệnh nhân cũ?» */
+const showReturningLookup = ref(false)
 
 // Search Form State
 const searchForm = reactive({
@@ -628,6 +646,7 @@ const resetBookingForm = () => {
   lookupPhone.value = ''
   lookupEmail.value = ''
   lookupError.value = ''
+  showReturningLookup.value = false
 }
 
 // Submit search
