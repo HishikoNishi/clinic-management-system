@@ -63,12 +63,14 @@ namespace ClinicManagement.Api.Controllers
             {
                 Id = doctor.Id,
                 Code = doctor.Code,
+                FullName = doctor.FullName,
                 Specialty = doctor.Specialty,
                 LicenseNumber = doctor.LicenseNumber,
                 Username = doctor.User.Username,
                 Status = doctor.Status.ToString(),
                 DepartmentId = doctor.DepartmentId,
-                DepartmentName = doctor.Department.Name
+                DepartmentName = doctor.Department.Name,
+                AvatarUrl = doctor.AvatarUrl
             });
         }
         [Authorize(Roles = "Admin")]
@@ -135,6 +137,7 @@ namespace ClinicManagement.Api.Controllers
             doctor.Specialty = dto.Specialty;
             doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
             doctor.DepartmentId = dto.DepartmentId;
+            doctor.AvatarUrl = dto.AvatarUrl;
 
 
             await _context.SaveChangesAsync();
@@ -189,7 +192,8 @@ namespace ClinicManagement.Api.Controllers
                     CreatedAt = a.CreatedAt,
                     FullName = a.Patient.FullName,
                     Phone = a.Patient.Phone,
-                    Email = a.Patient.Email
+                    Email = a.Patient.Email,
+
                 })
                 .ToListAsync();
 
