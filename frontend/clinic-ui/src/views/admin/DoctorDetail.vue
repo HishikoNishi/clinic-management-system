@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-
+import '@/styles/layouts/doctor-detail.css'
 const route = useRoute()
 const doctorId = route.params.id
 
@@ -46,72 +46,69 @@ const filteredAppointments = computed(() => {
     })
 })
 </script>
-
 <template>
   <div class="doctor-detail-page container py-4">
-    <h2 class="mb-4">Chi tiết bác sĩ</h2>
+    <h2 class="page-title">Chi tiết bác sĩ</h2>
 
-    <div class="row">
-      <!-- Bên trái: avatar + thông tin cơ bản -->
-      <div class="col-md-4 text-center">
-        <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar mb-3" />
-        <h4>{{ doctor?.fullName }}</h4>
-        <p>Số giấy phép: {{ doctor?.licenseNumber }}</p>
-      </div>
-
-      <!-- Bên phải: card thông tin -->
-      <div class="col-md-8">
-        <div class="card p-3">
+    <!-- Thông tin bác sĩ -->
+    <div class="doctor-info card mb-4">
+      <div class="row g-4 align-items-center">
+        <!-- Avatar -->
+        <div class="col-md-3 text-center">
+          <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
+        </div>
+        <!-- Thông tin -->
+        <div class="col-md-9">
+          <h3 class="doctor-name">{{ doctor?.fullName }}</h3>
           <p><strong>Mã:</strong> {{ doctor?.code }}</p>
           <p><strong>Chuyên khoa:</strong> {{ doctor?.specialty }}</p>
           <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
-          <p><strong>Trạng thái:</strong> Hoạt động</p>
+          <p><strong>Số giấy phép:</strong> {{ doctor?.licenseNumber }}</p>
+          <span class="badge status-badge">Hoạt động</span>
         </div>
       </div>
     </div>
 
-    <!-- Danh sách lịch khám -->
-    <div class="mt-4">
-      <h4>Lịch khám của bác sĩ</h4>
-      <input v-model="searchTerm" class="form-control mb-3" placeholder="Tìm bệnh nhân..." />
+    <!-- Lịch khám -->
+    <div class="appointments card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Lịch khám của bác sĩ</h4>
+        <input v-model="searchTerm" class="form-control search-box" placeholder="Tìm bệnh nhân..." />
+      </div>
 
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Mã lịch</th>
-            <th>Bệnh nhân</th>
-            <th>Điện thoại</th>
-            <th>Ngày</th>
-            <th>Giờ</th>
-            <th>Lý do</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="a in filteredAppointments" :key="a.id">
-            <td>{{ a.appointmentCode }}</td>
-            <td>{{ a.fullName }}</td>
-            <td>{{ a.phone }}</td>
-            <td>{{ a.appointmentDate }}</td>
-            <td>{{ a.appointmentTime }}</td>
-            <td>{{ a.reason }}</td>
-            <td>
-              <span :class="a.status === 'Completed' ? 'text-muted' : 'text-success'">
-                {{ a.status }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Mã lịch</th>
+              <th>Bệnh nhân</th>
+              <th>Điện thoại</th>
+              <th>Ngày</th>
+              <th>Giờ</th>
+              <th>Lý do</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in filteredAppointments" :key="a.id">
+              <td class="fw-semibold">{{ a.appointmentCode }}</td>
+              <td>{{ a.fullName }}</td>
+              <td>{{ a.phone }}</td>
+              <td>{{ a.appointmentDate }}</td>
+              <td>{{ a.appointmentTime }}</td>
+              <td>{{ a.reason }}</td>
+              <td>
+                <span :class="['badge', a.status === 'Completed' ? 'bg-secondary' : 'bg-success']">
+                  {{ a.status }}
+                </span>
+              </td>
+            </tr>
+            <tr v-if="filteredAppointments.length === 0">
+              <td colspan="7" class="text-center text-muted py-3">Không có lịch khám nào</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-</style>
