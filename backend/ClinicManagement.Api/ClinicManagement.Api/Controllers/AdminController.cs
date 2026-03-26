@@ -149,5 +149,15 @@ namespace ClinicManagement.Api.Controllers
             await _userRepo.DeleteAsync(id);
             return NoContent();
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _context.Roles
+                .Select(r => r.Name)
+                .ToListAsync();
+
+            return Ok(roles);
+        }
     }
 }

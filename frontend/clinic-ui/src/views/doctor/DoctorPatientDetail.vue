@@ -58,6 +58,30 @@
                 <div class="text-muted small">Ghi chú</div>
                 <div>{{ latestRecord.note || '—' }}</div>
               </div>
+              <div class="mb-3">
+                <div class="text-muted small">Xét nghiệm</div>
+                <div v-if="testsLoading" class="text-muted small">
+                  <span class="spinner-border spinner-border-sm me-1"></span>Đang tải xét nghiệm...
+                </div>
+                <div v-else-if="testsError" class="alert alert-warning py-2">{{ testsError }}</div>
+                <ul v-else class="list-group list-group-flush">
+                  <li v-for="t in tests" :key="t.id" class="list-group-item px-0">
+                    <div class="d-flex justify-content-between">
+                      <div>
+                        <div class="fw-semibold">{{ t.testName }}</div>
+                        <div class="text-muted small">{{ t.result || 'Chưa có kết quả' }}</div>
+                      </div>
+                      <div class="text-muted small text-end">
+                        <div>{{ t.technicianName || '—' }}</div>
+                        <div>{{ formatDate(t.createdAt) }}</div>
+                      </div>
+                    </div>
+                  </li>
+                  <li v-if="tests.length === 0" class="list-group-item px-0 text-muted small">
+                    Chưa có xét nghiệm nào.
+                  </li>
+                </ul>
+              </div>
               <div class="text-muted small">Các lần khám trước</div>
               <ul class="list-group list-group-flush history-list">
                 <li v-for="r in olderRecords" :key="r.id" class="list-group-item px-0">
@@ -97,6 +121,9 @@ const records = ref<any[]>([])
 const recordsLoading = ref(false)
 const recordsError = ref<string | null>(null)
 const error = ref<string | null>(null)
+const tests = ref<any[]>([])
+const testsLoading = ref(false)
+const testsError = ref<string | null>(null)
 
 const age = computed(() => {
   if (!patient.dateOfBirth) return ""
@@ -127,11 +154,28 @@ const loadRecords = async () => {
   try {
     const res = await api.get(`/medical-record/patient/${patientId}`)
     records.value = res.data ?? []
+    if (records.value.length) {
+      await loadTests(records.value[0].id)
+    }
   } catch (err: any) {
     console.error(err)
     recordsError.value = err?.response?.data?.message || "Không tải được hồ sơ"
   } finally {
     recordsLoading.value = false
+  }
+}
+
+const loadTests = async (recordId: string) => {
+  testsLoading.value = true
+  testsError.value = null
+  try {
+    const res = await api.get(`/ClinicalTests/medical-record/${recordId}`)
+    tests.value = res.data ?? []
+  } catch (err: any) {
+    console.error(err)
+    testsError.value = err?.response?.data?.message || "Không tải được xét nghiệm"
+  } finally {
+    testsLoading.value = false
   }
 }
 

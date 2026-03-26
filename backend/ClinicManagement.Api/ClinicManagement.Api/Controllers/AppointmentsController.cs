@@ -4,6 +4,7 @@ using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Utils;
+using ClinicManagement.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -15,15 +16,26 @@ namespace ClinicManagement.Api.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
+        private readonly OtpService _otpService;
+        private readonly EmailService _emailService;
 
-        public AppointmentsController(ClinicDbContext context)
+        public AppointmentsController(ClinicDbContext context, OtpService otpService, EmailService emailService)
         {
             _context = context;
+            _otpService = otpService;
+            _emailService = emailService;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppointmentDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return BadRequest(new { message = "Email là bắt buộc để xác thực OTP" });
+
+            var verified = await _otpService.IsVerifiedAsync(dto.Email);
+            if (!verified)
+                return BadRequest(new { message = "Email chưa được xác thực OTP hoặc OTP đã hết hạn" });
+
             // 1️⃣ tìm patient theo SĐT + Tên (tránh trùng người)
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(p =>
@@ -83,7 +95,7 @@ namespace ClinicManagement.Api.Controllers
             await _context.SaveChangesAsync();
 
             // ✅ 6️⃣ trả mã cho guest xem
-            return Ok(new AppointmentDetailDto
+            var responseDto = new AppointmentDetailDto
             {
                 AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
@@ -97,7 +109,22 @@ namespace ClinicManagement.Api.Controllers
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 CreatedAt = appointment.CreatedAt
-            });
+            };
+
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(dto.Email))
+                {
+                    await _emailService.SendAsync(dto.Email, "Xác nhận lịch khám",
+                        $"Mã khám: <b>{appointment.AppointmentCode}</b><br/>Họ tên: {appointment.Patient.FullName}<br/>Ngày: {appointment.AppointmentDate:dd/MM/yyyy} - Giờ: {appointment.AppointmentTime}");
+                }
+            }
+            catch (Exception)
+            {
+                // log email failure quietly
+            }
+
+            return Ok(responseDto);
 
         }
 

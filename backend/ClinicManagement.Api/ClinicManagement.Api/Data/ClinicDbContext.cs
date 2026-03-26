@@ -22,6 +22,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<ClinicalTest> ClinicalTests { get; set; }
+        public DbSet<EmailOtp> EmailOtps { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -215,6 +216,14 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<EmailOtp>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Email).IsRequired().HasMaxLength(150);
+                entity.Property(o => o.Code).IsRequired().HasMaxLength(6);
+                entity.HasIndex(o => new { o.Email, o.IsUsed });
+            });
+
 
 
 
@@ -226,12 +235,16 @@ namespace ClinicManagement.Api.Data
             var doctorRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
             var staffRoleId  = Guid.Parse("33333333-3333-3333-3333-333333333333");
             var guestRoleId  = Guid.Parse("44444444-4444-4444-4444-444444444444");
+            var technicianRoleId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var cashierRoleId = Guid.Parse("66666666-6666-6666-6666-666666666666");
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = adminRoleId, Name = "Admin" },
                 new Role { Id = doctorRoleId, Name = "Doctor" },
                 new Role { Id = staffRoleId, Name = "Staff" },
-                new Role { Id = guestRoleId, Name = "Guest" }
+                new Role { Id = guestRoleId, Name = "Guest" },
+                new Role { Id = technicianRoleId, Name = "Technician" },
+                new Role { Id = cashierRoleId, Name = "Cashier" }
             );
 
             var adminUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
