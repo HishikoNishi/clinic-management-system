@@ -9,6 +9,7 @@
         public Guid DepartmentId { get; set; }
         public string DepartmentName { get; set; } = string.Empty;
         public string? LicenseNumber { get; set; }
+        public string? AvatarUrl { get; set; }
         public string Username { get; set; } = null!;
         public string Status { get; set; } = null!;
     }
