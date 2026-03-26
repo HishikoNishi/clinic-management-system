@@ -172,7 +172,7 @@ namespace ClinicManagement.Api.Controllers
             return Ok(doctors);
         }
         [HttpGet("{id}/appointments")]
-        [Authorize(Roles = "Staff")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsByDoctor(Guid id)
         {
             var appointments = await _context.Appointments
