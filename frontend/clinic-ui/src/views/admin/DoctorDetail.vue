@@ -19,7 +19,6 @@ const appointments = ref<any[]>([])
 const searchTerm = ref('')
 const showEdit = ref(false)
 const editForm = ref<any>({})
-const avatarFile = ref<File|null>(null)
 
 onMounted(async () => {
   await loadDoctor()
@@ -30,7 +29,6 @@ async function loadDoctor() {
   try {
     const resDoctor = await api.get(`/Doctor/${doctorId}`)
     doctor.value = resDoctor.data
-    
     editForm.value = { ...doctor.value }
   } catch (err:any) {
     alert("Không thể tải thông tin bác sĩ")
@@ -46,34 +44,16 @@ async function loadAppointments() {
   }
 }
 
-function onFileChange(e: Event) {
-  const target = e.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    avatarFile.value = target.files[0]
-  }
-}
-
 async function saveDoctor() {
   try {
-    let avatarUrl = doctor.value.avatarUrl;
-if (avatarFile.value) {
-  const formData = new FormData();
-  formData.append("file", avatarFile.value);
-  const resUpload = await api.post("/upload/avatar", formData);
-  // Kiểm tra field trả về
-  avatarUrl = resUpload.data.url || resUpload.data.path;
-}
-
-await api.put(`/Doctor/${doctorId}`, {
-  fullName: editForm.value.fullName,
-  code: editForm.value.code,
-  specialty: editForm.value.specialty,
-  licenseNumber: editForm.value.licenseNumber,
-  departmentId: editForm.value.departmentId, 
-  avatarUrl: avatarUrl
-});
-
-
+    await api.put(`/Doctor/${doctorId}`, {
+      fullName: editForm.value.fullName,
+      code: editForm.value.code,
+      specialty: editForm.value.specialty,
+      licenseNumber: editForm.value.licenseNumber,
+      departmentId: editForm.value.departmentId, 
+      avatarUrl: editForm.value.avatarUrl   // chỉ gửi link ảnh
+    })
 
     showEdit.value = false
     await loadDoctor()
@@ -106,7 +86,7 @@ const filteredAppointments = computed(() => {
           <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
         </div>
         <div class="col-md-9">
-<h3 class="doctor-name">Tên: {{ doctor?.fullName || doctor?.name }}</h3>
+          <h3 class="doctor-name">Tên: {{ doctor?.fullName || doctor?.name }}</h3>
           <p><strong>Mã:</strong> {{ doctor?.code }}</p>
           <p><strong>Chuyên khoa:</strong> {{ doctor?.specialty }}</p>
           <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
@@ -168,7 +148,7 @@ const filteredAppointments = computed(() => {
         <input v-model="editForm.code" class="form-control mb-2" placeholder="Mã bác sĩ" />
         <input v-model="editForm.specialty" class="form-control mb-2" placeholder="Chuyên khoa" />
         <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
-        <input type="file" class="form-control mb-2" @change="onFileChange" />
+        <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh avatar" />
         <img v-if="editForm.avatarUrl" :src="editForm.avatarUrl" class="avatar-preview mt-2" />
         <div class="text-end mt-3">
           <button class="btn btn-secondary me-2" @click="showEdit=false">Hủy</button>
@@ -178,4 +158,3 @@ const filteredAppointments = computed(() => {
     </div>
   </div>
 </template>
-
