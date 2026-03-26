@@ -119,6 +119,7 @@ onMounted(async () => {
   await loadDoctors()
 })
 </script>
+
 <template>
   <div class="doctor-page">
     <div class="container">
@@ -181,6 +182,9 @@ onMounted(async () => {
                   </span>
                 </td>
                 <td class="text-end">
+                    <button class="btn btn-sm btn-outline-info me-2" @click="$router.push(`/doctors/${d.id}`)">
+    Chi tiết
+  </button>
                   <button class="btn btn-sm btn-outline-primary me-2" @click="openEdit(d)">
                     Chỉnh sửa
                   </button>
@@ -204,7 +208,7 @@ onMounted(async () => {
           <div v-if="!editingId">
             <label class="form-label">Người dùng</label>
             <select class="form-select" v-model="form.userId">
-              <option disabled value="">Chọn người dùng</option>
+              <option value="">Chọn người dùng</option>
               <option v-for="u in users" :key="u.id" :value="u.id">
                 {{ u.username }}
               </option>
@@ -218,7 +222,7 @@ onMounted(async () => {
 
           <!-- chọn khoa trong form -->
           <select class="form-select" v-model="form.departmentId">
-            <option disabled value="">Chọn khoa</option>
+            <option value="">Chọn khoa</option>
             <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
               {{ dep.name }}
             </option>
