@@ -1,0 +1,57 @@
+.page-title {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.doctor-info {
+  padding: 1.5rem;
+  border-radius: 10px;
+  background: #fdfdfd;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e0e0e0;
+}
+
+.doctor-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.status-badge {
+  background-color: #d1f7d1;
+  color: #2e7d32;
+  padding: .4rem .8rem;
+  border-radius: 20px;
+  font-size: .85rem;
+}
+
+.appointments {
+  margin-top: 2rem;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.card-header {
+  background: #f8f9fa;
+  padding: 1rem;
+}
+
+.search-box {
+  max-width: 250px;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f1f1;
+}
