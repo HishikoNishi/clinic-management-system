@@ -1,5 +1,7 @@
 ﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Doctor;
+using ClinicManagement.Api.Dtos.Patients;
+using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -169,6 +171,31 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
+        [HttpGet("{id}/appointments")]
+        [Authorize(Roles = "Staff")]
+        public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsByDoctor(Guid id)
+        {
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient)
+                .Where(a => a.DoctorId == id)
+                .Select(a => new AppointmentDetailDto
+                {
+                    Id = a.Id,
+                    AppointmentCode = a.AppointmentCode,
+                    Reason = a.Reason,
+                    Status = a.Status.ToString(),
+                    AppointmentDate = a.AppointmentDate,
+                    AppointmentTime = a.AppointmentTime,
+                    CreatedAt = a.CreatedAt,
+                    FullName = a.Patient.FullName,
+                    Phone = a.Patient.Phone,
+                    Email = a.Patient.Email
+                })
+                .ToListAsync();
+
+            return Ok(appointments);
+        }
+
 
     }
 }
