@@ -22,6 +22,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<ClinicalTest> ClinicalTests { get; set; }
+        public DbSet<EmailOtp> EmailOtps { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -213,6 +214,14 @@ namespace ClinicManagement.Api.Data
                       .WithMany()
                       .HasForeignKey(t => t.MedicalRecordId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<EmailOtp>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Email).IsRequired().HasMaxLength(150);
+                entity.Property(o => o.Code).IsRequired().HasMaxLength(6);
+                entity.HasIndex(o => new { o.Email, o.IsUsed });
             });
 
 

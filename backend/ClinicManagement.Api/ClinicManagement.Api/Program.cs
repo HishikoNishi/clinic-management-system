@@ -109,6 +109,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<PrescriptionService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<OtpService>();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();
