@@ -46,7 +46,9 @@ const filteredDoctors = computed(() => {
 async function loadDoctors() {
   loading.value = true
   doctors.value = await doctorService.getAll()
+  
   loading.value = false
+  
 }
 
 function openCreate() {
@@ -154,6 +156,7 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th>Mã</th>
+                      <th>Tên bác sĩ</th>
                 <th>Chuyên khoa</th>
                 <th>Khoa</th>
                 <th>Giấy phép</th>
@@ -173,6 +176,7 @@ onMounted(async () => {
               </tr>
               <tr v-else v-for="d in filteredDoctors" :key="d.id">
                 <td class="fw-semibold">{{ d.code }}</td>
+                 <td class="fw-semibold">{{ d.fullName }}</td>
                 <td>{{ d.specialty }}</td>
                 <td>{{ d.departmentName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
