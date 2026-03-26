@@ -55,22 +55,25 @@ function onFileChange(e: Event) {
 
 async function saveDoctor() {
   try {
-    let avatarUrl = doctor.value.avatarUrl
-    if (avatarFile.value) {
-      const formData = new FormData()
-      formData.append("file", avatarFile.value)
-      const resUpload = await api.post("/upload/avatar", formData)
-      avatarUrl = resUpload.data.url
-    }
+    let avatarUrl = doctor.value.avatarUrl;
+if (avatarFile.value) {
+  const formData = new FormData();
+  formData.append("file", avatarFile.value);
+  const resUpload = await api.post("/upload/avatar", formData);
+  // Kiểm tra field trả về
+  avatarUrl = resUpload.data.url || resUpload.data.path;
+}
 
-    await api.put(`/Doctor/${doctorId}`, {
-      fullName: editForm.value.fullName,
-      code: editForm.value.code,
-      specialty: editForm.value.specialty,
-      licenseNumber: editForm.value.licenseNumber,
-      departmentId: doctor.value.departmentId,
-      avatarUrl: avatarUrl
-    })
+await api.put(`/Doctor/${doctorId}`, {
+  fullName: editForm.value.fullName,
+  code: editForm.value.code,
+  specialty: editForm.value.specialty,
+  licenseNumber: editForm.value.licenseNumber,
+  departmentId: editForm.value.departmentId, 
+  avatarUrl: avatarUrl
+});
+
+
 
     showEdit.value = false
     await loadDoctor()
