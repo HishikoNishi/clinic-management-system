@@ -26,6 +26,7 @@ namespace ClinicManagement.Api.Models
         public DoctorStatus Status { get; set; } = DoctorStatus.Active;
         public Guid DepartmentId { get; set; }
         public Department? Department { get; set; }
+        public string? AvatarUrl { get; set; }
         // ✅ FK → User 
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
