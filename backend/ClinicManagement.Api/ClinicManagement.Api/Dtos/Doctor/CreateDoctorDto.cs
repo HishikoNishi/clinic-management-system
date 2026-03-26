@@ -16,5 +16,6 @@ public class CreateDoctorDto
         [MaxLength(100)]
         public string Specialty { get; set; } = null!;
         public string? LicenseNumber { get; set; }
+    public string? AvatarUrl { get; set; }
     public Guid DepartmentId { get; set; }
 }
