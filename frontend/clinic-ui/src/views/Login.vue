@@ -102,39 +102,45 @@ const showPassword = ref(false)
 const rememberMe = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
-
 const handleLogin = async () => {
   try {
     loading.value = true
     errorMessage.value = ''
 
-    // Call the login API
     const response = await api.post('/Auth/login', {
       username: credentials.value.username,
       password: credentials.value.password
     })
 
+    // ✅ lưu vào store (giữ nguyên)
     authStore.login({
-  token: response.data.token,
-  role: response.data.role,
-  expiresAt: response.data.expiresAt
-})
+      token: response.data.token,
+      role: response.data.role,
+      expiresAt: response.data.expiresAt
+    })
 
-// ✅ redirect theo role
-const role = response.data.role
+    // 🔥 THÊM ĐOẠN NÀY (QUAN TRỌNG NHẤT)
+    if (response.data.doctorId) {
+      localStorage.setItem("doctorId", response.data.doctorId)
+      console.log("✅ saved doctorId:", response.data.doctorId)
+    }
 
-if (role === 'Staff') {
-  router.push('/staff/appointments')
-}
-else if (role === 'Doctor') {
-  router.push('/doctorappointment')
-}
-else if (role === 'Admin') {
-  router.push('/dashboard')
-}
-else {
-  router.push('/login')
-}
+    // ✅ redirect theo role
+    const role = response.data.role
+
+    if (role === 'Staff') {
+      router.push('/staff/appointments')
+    }
+    else if (role === 'Doctor') {
+      router.push('/doctorappointment')
+    }
+    else if (role === 'Admin') {
+      router.push('/dashboard')
+    }
+    else {
+      router.push('/login')
+    }
+
   } catch (error) {
     console.error('Login error:', error)
     errorMessage.value = error.response?.data?.message || 'Invalid username or password. Please try again.'
@@ -142,4 +148,5 @@ else {
     loading.value = false
   }
 }
+
 </script>
