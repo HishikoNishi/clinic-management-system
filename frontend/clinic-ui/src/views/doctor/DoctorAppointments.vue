@@ -3,8 +3,22 @@
     <div class="header">
       <div>
         <h2>Lịch khám của tôi</h2>
-        <p class="text-muted mb-0">Hiển thị lịch đã được phân cho bác sĩ (Đã check-in / Chờ khám).</p>
+
+        <!-- Chọn trạng thái của bác sĩ -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Trạng thái của tôi:</label>
+          <select v-model="doctorStatus" @change="updateDoctorStatus" class="form-select form-select-sm" style="max-width:200px">
+            <option value="Active">Hoạt động</option>
+            <option value="Busy">Đang khám</option>
+            <option value="Inactive">Không hoạt động</option>
+          </select>
+        </div>
+
+        <p class="text-muted mb-0">
+          Hiển thị lịch đã được phân cho bác sĩ (Đã check-in / Chờ khám).
+        </p>
       </div>
+
       <div class="filter d-flex gap-2">
         <select v-model="currentStatus" class="form-select form-select-sm" @change="loadAppointments">
           <option value="CheckedIn,Confirmed">Đã check-in + Chờ khám</option>
@@ -73,6 +87,11 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const currentStatus = ref("CheckedIn,Confirmed")
 
+// trạng thái của bác sĩ
+const doctorStatus = ref("Active")
+const doctorId = localStorage.getItem("doctorId") // giống DoctorList
+
+/* ================= LOAD DATA ================= */
 const loadAppointments = async () => {
   loading.value = true
   error.value = null
@@ -92,6 +111,24 @@ const loadAppointments = async () => {
   }
 }
 
+/* ================= UPDATE DOCTOR STATUS ================= */
+async function updateDoctorStatus() {
+  if (!doctorId) {
+    error.value = "Không tìm thấy ID bác sĩ"
+    return
+  }
+  try {
+    await api.put(`/doctor/${doctorId}/status`, {
+      Status: doctorStatus.value   // giống DoctorList: PascalCase
+    })
+    console.log("Doctor status updated:", doctorStatus.value)
+  } catch (err:any) {
+    console.error("Update doctor status error:", err.response?.data || err)
+    error.value = "Không thể cập nhật trạng thái bác sĩ"
+  }
+}
+
+/* ================= ACTIONS ================= */
 const goExamine = (id: string) => {
   router.push(`/doctor/examination/${id}`)
 }
