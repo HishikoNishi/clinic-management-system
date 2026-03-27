@@ -7,30 +7,23 @@ import axios from 'axios'
 
 const api = axios.create({ baseURL: 'https://localhost:7235/api' })
 
-// danh sách khoa
 const departments = ref<any[]>([])
-const loadDepartments = async () => {
-  const res = await api.get('/departments')
-  departments.value = res.data
-}
-
-// danh sách người dùng, bác sĩ
 const users = ref<any[]>([])
 const doctors = ref<Doctor[]>([])
 const loading = ref(false)
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
 const searchTerm = ref('')
-const filterDepartmentId = ref<string>('')   // filter riêng
+const filterDepartmentId = ref<string>('')
 
-// form tạo/chỉnh sửa bác sĩ
 const form = reactive({
   userId: '',
   fullName: '',
   code: '',
   specialty: '',
   licenseNumber: '',
-  departmentId: '' as string | null
+  departmentId: '' as string | null,
+  status: 'Active' // thêm status vào form
 })
 
 const filteredDoctors = computed(() => {
@@ -43,12 +36,15 @@ const filteredDoctors = computed(() => {
   })
 })
 
+async function loadDepartments() {
+  const res = await api.get('/departments')
+  departments.value = res.data
+}
+
 async function loadDoctors() {
   loading.value = true
   doctors.value = await doctorService.getAll()
-  
   loading.value = false
-  
 }
 
 function openCreate() {
@@ -59,6 +55,7 @@ function openCreate() {
   form.specialty = ''
   form.licenseNumber = ''
   form.departmentId = ''
+  form.status = 'Active'
   showModal.value = true
 }
 
@@ -70,6 +67,7 @@ function openEdit(doctor: Doctor) {
   form.specialty = doctor.specialty
   form.licenseNumber = doctor.licenseNumber || ''
   form.departmentId = doctor.departmentId?.toString() || ''
+  form.status = doctor.status || 'Active'
   showModal.value = true
 }
 
@@ -87,7 +85,7 @@ async function save() {
         specialty: form.specialty,
         licenseNumber: form.licenseNumber,
         departmentId: form.departmentId,
-        status: 1
+        status: form.status
       })
     } else {
       await doctorService.create({
@@ -111,6 +109,16 @@ async function remove(id: string) {
   if (confirm("Bạn có chắc muốn xóa bác sĩ này?")) {
     await doctorService.delete(id)
     await loadDoctors()
+  }
+}
+
+
+async function updateStatus(id: string, status: string) {
+  try {
+    await api.put(`/Doctor/${id}/status`, { status }) // gửi "Active", "Busy", "Inactive"
+    await loadDoctors()
+  } catch (err:any) {
+    alert("Không thể cập nhật trạng thái bác sĩ")
   }
 }
 
@@ -138,7 +146,6 @@ onMounted(async () => {
             style="min-width: 260px"
             placeholder="Tìm theo mã, chuyên khoa, giấy phép"
           />
-          <!-- filter theo khoa -->
           <select class="form-select" v-model="filterDepartmentId" style="min-width:200px">
             <option value="">Chọn khoa</option>
             <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
@@ -156,7 +163,7 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th>Mã</th>
-                      <th>Tên bác sĩ</th>
+                <th>Tên bác sĩ</th>
                 <th>Chuyên khoa</th>
                 <th>Khoa</th>
                 <th>Giấy phép</th>
@@ -167,28 +174,30 @@ onMounted(async () => {
 
             <tbody>
               <tr v-if="loading">
-                <td colspan="6" class="text-center py-4">Đang tải...</td>
+                <td colspan="7" class="text-center py-4">Đang tải...</td>
               </tr>
               <tr v-else-if="filteredDoctors.length === 0">
-                <td colspan="6" class="text-center py-4 text-muted">
+                <td colspan="7" class="text-center py-4 text-muted">
                   Không có bác sĩ nào phù hợp
                 </td>
               </tr>
               <tr v-else v-for="d in filteredDoctors" :key="d.id">
                 <td class="fw-semibold">{{ d.code }}</td>
-                 <td class="fw-semibold">{{ d.fullName }}</td>
+                <td class="fw-semibold">{{ d.fullName }}</td>
                 <td>{{ d.specialty }}</td>
                 <td>{{ d.departmentName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
                 <td>
-                  <span class="badge bg-success-subtle text-success px-3 py-2">
-                    Hoạt động
-                  </span>
+                  <select v-model="d.status" @change="updateStatus(d.id, d.status)" class="form-select form-select-sm">
+                    <option value="Active">Hoạt động</option>
+                    <option value="Busy">Đang khám</option>
+                    <option value="Inactive">Không hoạt động</option>
+                  </select>
                 </td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-outline-info me-2" @click="$router.push(`/doctors/${d.id}`)">
-    Chi tiết
-  </button>
+                  <button class="btn btn-sm btn-outline-info me-2" @click="$router.push(`/doctors/${d.id}`)">
+                    Chi tiết
+                  </button>
                   <button class="btn btn-sm btn-outline-primary me-2" @click="openEdit(d)">
                     Chỉnh sửa
                   </button>
@@ -224,12 +233,18 @@ onMounted(async () => {
           <input class="form-control" v-model="form.specialty" placeholder="Chuyên khoa" />
           <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
 
-          <!-- chọn khoa trong form -->
           <select class="form-select" v-model="form.departmentId">
             <option value="">Chọn khoa</option>
             <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
               {{ dep.name }}
             </option>
+          </select>
+
+                    <!-- chọn trạng thái -->
+          <select class="form-select" v-model="form.status">
+            <option value="Active">Hoạt động</option>
+            <option value="Busy">Đang khám</option>
+            <option value="Inactive">Không hoạt động</option>
           </select>
 
           <div class="modal-actions d-flex justify-content-end gap-2">
