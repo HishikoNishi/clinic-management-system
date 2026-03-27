@@ -3,9 +3,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { doctorService, type Doctor } from '@/services/doctorService'
 import '@/styles/layouts/doctor.css'
 import { getUsers } from '@/services/userService'
-import axios from 'axios'
-
-const api = axios.create({ baseURL: 'https://localhost:7235/api' })
+import api from "@/services/api"
 
 const departments = ref<any[]>([])
 const users = ref<any[]>([])
