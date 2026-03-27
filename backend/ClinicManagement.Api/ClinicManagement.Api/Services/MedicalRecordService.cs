@@ -3,14 +3,17 @@ using ClinicManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Dtos.MedicalRecords;
 using System.Linq;
+using ClinicManagement.Api.Services;
 
 public class MedicalRecordService
 {
     private readonly ClinicDbContext _context;
+    private readonly BillingService _billingService;
 
-    public MedicalRecordService(ClinicDbContext context)
+    public MedicalRecordService(ClinicDbContext context, BillingService billingService)
     {
         _context = context;
+        _billingService = billingService;
     }
 
     public async Task<MedicalRecord> CreateMedicalRecord(MedicalRecord record)
@@ -38,6 +41,10 @@ public class MedicalRecordService
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == doctorUserId);
             if (doctor == null) throw new InvalidOperationException("Doctor not found");
 
+            var insurance = dto.InsuranceCoverPercent;
+            if (insurance < 0) insurance = 0;
+            if (insurance > 1) insurance = 1;
+
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId && a.DoctorId == doctor.Id);
@@ -57,6 +64,9 @@ public class MedicalRecordService
                 Diagnosis = dto.Diagnosis,
                 Treatment = string.Empty,
                 Note = dto.Notes ?? string.Empty,
+                InsuranceCoverPercent = insurance,
+                Surcharge = dto.Surcharge,
+                Discount = dto.Discount,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -99,6 +109,10 @@ public class MedicalRecordService
             appointment.Status = AppointmentStatus.Completed;
 
             await _context.SaveChangesAsync();
+
+            // Tự động tính hóa đơn sau khi lưu hồ sơ
+            await _billingService.GenerateInvoiceAsync(appointment.Id);
+
             await transaction.CommitAsync();
 
             return medicalRecord;

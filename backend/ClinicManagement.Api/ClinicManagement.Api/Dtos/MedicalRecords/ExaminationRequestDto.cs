@@ -19,5 +19,10 @@ namespace ClinicManagement.Api.Dtos.MedicalRecords
         public string? ClinicalTestName { get; set; }
 
         public List<PrescriptionItemDto> PrescriptionItems { get; set; } = new();
+
+        // Thông tin thanh toán/b?o hi?m
+        public decimal InsuranceCoverPercent { get; set; } = 0m; // 0-1
+        public decimal Surcharge { get; set; } = 0m;
+        public decimal Discount { get; set; } = 0m;
     }
 }

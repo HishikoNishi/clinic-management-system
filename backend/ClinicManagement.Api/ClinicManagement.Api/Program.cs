@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using System.Text.Json.Serialization;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
@@ -7,8 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text.Json.Serialization;
-using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +16,8 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -58,7 +57,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=DESKTOP-0Q90AUE;Database=ClinicManagement;Trusted_Connection=true;";
+    ?? "Server=MSI;Database=ClinicManagement;Trusted_Connection=true;";
 
 builder.Services.AddDbContext<ClinicDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -111,6 +110,8 @@ builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<PrescriptionService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<OtpService>();
+builder.Services.AddScoped<BillingService>();
+builder.Services.AddSingleton<FakeInsuranceService>();
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();
@@ -124,12 +125,15 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
+
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ClinicManagement API v1");
     });
 }
+
 
 app.UseHttpsRedirection();
 

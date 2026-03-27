@@ -23,6 +23,10 @@ namespace ClinicManagement.Api.Data
         public DbSet<PrescriptionDetail> PrescriptionDetails { get; set; }
         public DbSet<ClinicalTest> ClinicalTests { get; set; }
         public DbSet<EmailOtp> EmailOtps { get; set; }
+        public DbSet<Payment> Payments { get; set; } = null!;
+        public DbSet<InvoiceLine> InvoiceLines { get; set; } = null!;
+        public DbSet<InsurancePlan> InsurancePlans { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -187,6 +191,9 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Invoice>(entity =>
             {
                 entity.HasKey(i => i.Id);
+                entity.Property(i => i.Amount)
+                      .HasColumnType("decimal(18,2)")
+                      .IsRequired();
                 entity.HasOne(i => i.Appointment)
                       .WithOne()
                       .HasForeignKey<Invoice>(i => i.AppointmentId)
@@ -224,7 +231,52 @@ namespace ClinicManagement.Api.Data
                 entity.HasIndex(o => new { o.Email, o.IsUsed });
             });
 
+            modelBuilder.Entity<InvoiceLine>(entity =>
+            {
+                entity.HasKey(l => l.Id);
+                entity.Property(l => l.Description).IsRequired().HasMaxLength(255);
+                entity.Property(l => l.ItemType).IsRequired().HasMaxLength(50);
+                entity.Property(l => l.Amount).HasColumnType("decimal(18,2)");
 
+                entity.HasOne(l => l.Invoice)
+                      .WithMany(i => i.InvoiceLines)
+                      .HasForeignKey(l => l.InvoiceId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<InsurancePlan>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.Code).IsRequired().HasMaxLength(50);
+                entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
+                entity.Property(p => p.CoveragePercent).HasColumnType("decimal(5,4)");
+                entity.HasIndex(p => p.Code).IsUnique();
+            });
+
+            /* ================================
+             * PAYMENT
+             * ================================ */
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.Amount)
+                      .HasColumnType("decimal(18,2)")
+                      .IsRequired();
+
+                entity.Property(p => p.Method)
+                      .HasConversion<string>() // enum lưu dạng string
+                      .IsRequired();
+
+                entity.Property(p => p.PaymentDate)
+                      .IsRequired();
+
+                entity.HasOne(p => p.Invoice)
+                      .WithMany(i => i.Payments)
+                      .HasForeignKey(p => p.InvoiceId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
 
             /* ================================
@@ -261,6 +313,13 @@ namespace ClinicManagement.Api.Data
 
 
             modelBuilder.Entity<User>().HasData(adminUser);
+
+            // Seed bảo hiểm mẫu
+            modelBuilder.Entity<InsurancePlan>().HasData(
+                new InsurancePlan { Id = Guid.Parse("77777777-0000-0000-0000-000000000001"), Code = "BHYT-A", Name = "BHYT Nhà nước A", CoveragePercent = 0.8m, Note = "Giảm 80% tổng phí (trừ phụ thu)", IsActive = true },
+                new InsurancePlan { Id = Guid.Parse("77777777-0000-0000-0000-000000000002"), Code = "CORP-ACME", Name = "Bảo hiểm công ty ACME", CoveragePercent = 0.5m, Note = "Giảm 50%", IsActive = true },
+                new InsurancePlan { Id = Guid.Parse("77777777-0000-0000-0000-000000000003"), Code = "VIP-GOLD", Name = "VIP Gold", CoveragePercent = 0.9m, Note = "Giảm 90%", IsActive = true }
+            );
         }
     }
 }
