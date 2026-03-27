@@ -82,53 +82,74 @@ import { useRouter } from "vue-router"
 import api from "@/services/api"
 
 const router = useRouter()
+
 const appointments = ref<any[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const currentStatus = ref("CheckedIn,Confirmed")
 
-// trạng thái của bác sĩ
+// trạng thái bác sĩ
 const doctorStatus = ref("Active")
-const doctorId = localStorage.getItem("doctorId") // giống DoctorList
+const doctorId = ref<string | null>(null)
 
 /* ================= LOAD DATA ================= */
 const loadAppointments = async () => {
   loading.value = true
   error.value = null
   appointments.value = []
+
   try {
-    const params = currentStatus.value === "All"
-      ? {}
-      : { status: currentStatus.value }
+    const params =
+      currentStatus.value === "All"
+        ? {}
+        : { status: currentStatus.value }
 
     const res = await api.get("/doctor/DoctorAppointments", { params })
     appointments.value = res.data ?? []
+
+    // 👉 nếu backend có trả doctorStatus thì sync
+    if (appointments.value.length > 0) {
+      doctorStatus.value =
+        appointments.value[0].doctorStatus || doctorStatus.value
+    }
+
   } catch (err) {
     console.error(err)
-    error.value = "Không tải được dữ liệu. Vui lòng thử lại."
+    error.value = "Không tải được dữ liệu."
   } finally {
     loading.value = false
   }
 }
-
-/* ================= UPDATE DOCTOR STATUS ================= */
-async function updateDoctorStatus() {
-  if (!doctorId) {
-    error.value = "Không tìm thấy ID bác sĩ"
-    return
-  }
+const loadDoctorStatus = async () => {
   try {
-    await api.put(`/doctor/${doctorId}/status`, {
-      Status: doctorStatus.value   // giống DoctorList: PascalCase
+    const res = await api.get(`/doctor/${doctorId.value}`)
+
+    console.log("🔥 RAW DOCTOR:", res.data)
+
+    // 🔥 FIX QUAN TRỌNG
+    doctorStatus.value =
+      res.data.status?.value || res.data.status || "Active"
+
+  } catch (err) {
+    console.error("❌ load doctor status error:", err)
+  }
+}
+/* ================= UPDATE STATUS ================= */
+async function updateDoctorStatus() {
+  try {
+    await api.put(`/doctor/${doctorId.value}/status`, {
+      status: doctorStatus.value
     })
-    console.log("Doctor status updated:", doctorStatus.value)
-  } catch (err:any) {
-    console.error("Update doctor status error:", err.response?.data || err)
-    error.value = "Không thể cập nhật trạng thái bác sĩ"
+
+    // 🔥 reload lại để sync UI
+    await loadDoctorStatus()
+
+  } catch (err: any) {
+    error.value = err.response?.data?.message || "Update fail"
   }
 }
 
-/* ================= ACTIONS ================= */
+/* ================= ACTION ================= */
 const goExamine = (id: string) => {
   router.push(`/doctor/examination/${id}`)
 }
@@ -159,9 +180,19 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
 
+/* ================= INIT ================= */
 onMounted(() => {
+  const raw = localStorage.getItem("doctorId")
+
+  if (!raw || raw === "[object Object]") {
+    error.value = "doctorId không hợp lệ"
+    return
+  }
+
+  doctorId.value = raw
+
+  loadDoctorStatus()   // 🔥 BẮT BUỘC
   loadAppointments()
 })
 </script>
-
 <style src="@/styles/layouts/doctor-appointments.css"></style>
