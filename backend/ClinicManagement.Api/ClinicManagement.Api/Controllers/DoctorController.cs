@@ -47,8 +47,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
-        [Authorize(Roles = "Admin,Staff")]
-        /* ================= GET BY ID ================= */
+        [Authorize(Roles = "Admin,Staff,Doctor")]        /* ================= GET BY ID ================= */
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {
