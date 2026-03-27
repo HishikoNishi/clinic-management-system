@@ -1,0 +1,65 @@
+########################################
+# OS / Editor
+########################################
+.DS_Store
+Thumbs.db
+*.swp
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vscode/
+.idea/
+.vs/
+
+########################################
+# ASP.NET Core / Visual Studio
+########################################
+**/bin/
+**/obj/
+*.log
+.dotnet/
+
+########################################
+# ASP.NET Core Secrets
+########################################
+**/appsettings.Development.json
+**/appsettings.Local.json
+secrets.json
+
+########################################
+# Node / Frontend
+########################################
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+########################################
+# Environment files
+########################################
+.env
+.env.*
+
+########################################
+# Build outputs
+########################################
+*.exe
+*.dll
+*.pdb
+
+########################################
+# Test / Coverage
+########################################
+coverage/
+*.coverage
+
+########################################
+# Logs
+########################################
+logs/
+
+# OPTIONAL (dev only)
+# **/Migrations/

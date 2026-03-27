@@ -97,6 +97,7 @@ namespace ClinicManagement.Api.Controllers
             // ✅ 6️⃣ trả mã cho guest xem
             var responseDto = new AppointmentDetailDto
             {
+                Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
                 Phone = appointment.Patient.Phone,
@@ -165,6 +166,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new AppointmentDetailDto
             {
+                Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
                 Phone = appointment.Patient.Phone,
@@ -195,6 +197,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new AppointmentDetailDto
             {
+                Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
                 FullName = appointment.Patient.FullName,
                 Phone = appointment.Patient.Phone,

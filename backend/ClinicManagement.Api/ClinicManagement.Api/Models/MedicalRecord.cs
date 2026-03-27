@@ -21,6 +21,16 @@ namespace ClinicManagement.Api.Models
 
         public string Note { get; set; }
 
+        // Mã gói bảo hiểm áp dụng (nếu có)
+        public string? InsurancePlanCode { get; set; }
+
+        // Bảo hiểm y tế chi trả (% 0-1); 0 nếu không có
+        public decimal InsuranceCoverPercent { get; set; } = 0m;
+
+        // Phụ thu/giảm trừ thủ công
+        public decimal Surcharge { get; set; } = 0m;
+        public decimal Discount { get; set; } = 0m;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

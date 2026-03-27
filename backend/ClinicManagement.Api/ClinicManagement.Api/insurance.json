@@ -1,0 +1,29 @@
+[
+  {
+    "Id": "88888888-1111-1111-1111-111111111111",
+    "Code": "BHYT-A",
+    "Name": "BHYT Nhà nước A",
+    "CoveragePercent": 0.8,
+    "ExpiryDate": "2027-12-31T00:00:00Z",
+    "IsActive": true,
+    "Note": "Giảm 80% tổng phí"
+  },
+  {
+    "Id": "88888888-2222-2222-2222-222222222222",
+    "Code": "CORP-ACME",
+    "Name": "Bảo hiểm công ty ACME",
+    "CoveragePercent": 0.5,
+    "ExpiryDate": "2026-12-31T00:00:00Z",
+    "IsActive": true,
+    "Note": "Giảm 50% cho nhân viên ACME"
+  },
+  {
+    "Id": "88888888-3333-3333-3333-333333333333",
+    "Code": "VIP-GOLD",
+    "Name": "VIP Gold",
+    "CoveragePercent": 0.9,
+    "ExpiryDate": "2026-09-30T00:00:00Z",
+    "IsActive": true,
+    "Note": "Giảm 90% dịch vụ"
+  }
+]

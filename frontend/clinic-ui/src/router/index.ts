@@ -132,6 +132,12 @@ const routes: RouteRecordRaw[] = [
     name: "TechnicianTests",
     component: () => import("@/views/technician/TechnicianTests.vue"),
     meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
+  },
+  {
+    path: "/cashier/invoices",
+    name: "CashierInvoices",
+    component: () => import("@/views/cashier/CashierInvoices.vue"),
+    meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
   }
 ]
 
@@ -146,7 +152,8 @@ router.beforeEach((to) => {
   const roleFallback: Record<string, string> = {
     Admin: "/dashboard",
     Staff: "/staff/appointments",
-    Doctor: "/doctor/appointments"
+    Doctor: "/doctor/appointments",
+    Cashier: "/cashier/invoices"
   }
 
 
