@@ -1,9 +1,12 @@
-﻿namespace ClinicManagement.Api.Models
+﻿using System.Text.Json.Serialization;
+
+namespace ClinicManagement.Api.Models
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum DoctorStatus
     {
-        Active = 1,
-        Inactive = 2,
-        OnLeave = 3
+        Active = 1,    
+        Busy = 2,     
+        Inactive = 3   
     }
 }
