@@ -1,22 +1,16 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Dtos/Doctor/DoctorDto.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/DoctorController.cs">
     <Files>
       <File FileName="ClinicManagement.Api/appsettings.json" />
       <File FileName="ClinicManagement.Api/Models/Department.cs" />
-      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" />
+      <File FileName="ClinicManagement.Api/Data/ClinicDbContext.cs" Line="1" Column="1" />
       <File FileName="ClinicManagement.Api/Controllers/AppointmentsController.cs" />
-      <File FileName="ClinicManagement.Api/Models/Doctor.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Doctor/CreateDoctorDto.cs" />
-      <File FileName="ClinicManagement.Api/Program.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Doctor/DoctorDto.cs" Line="9" Column="47" />
-      <File FileName="ClinicManagement.Api/Dtos/Doctor/UpdateDoctorDto.cs" Line="20" Column="1" />
+      <File FileName="ClinicManagement.Api/Models/Doctor.cs" Line="29" Column="47" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/CreateDoctorDto.cs" Line="19" Column="43" />
+      <File FileName="ClinicManagement.Api/Program.cs" Line="120" Column="1" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/DoctorDto.cs" Line="12" Column="47" />
+      <File FileName="ClinicManagement.Api/Dtos/Doctor/UpdateDoctorDto.cs" Line="22" Column="1" />
       <File FileName="ClinicManagement.Api/Dtos/Department/CreateDepartmentDto.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Department/DepartmentDto.cs" />
       <File FileName="ClinicManagement.Api/Properties/launchSettings.json" />
@@ -28,33 +22,43 @@
       <File FileName="ClinicManagement.Api/Models/Invoice.cs" />
       <File FileName="ClinicManagement.Api/Models/PrescriptionDetail.cs" />
       <File FileName="ClinicManagement.Api/Models/ClinicalTest.cs" />
-      <File FileName="ClinicManagement.Api/Controllers/DoctorController.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/DoctorController.cs" Line="201" Column="10" />
       <File FileName="ClinicManagement.Api/Controllers/PatientController.cs" />
       <File FileName="ClinicManagement.Api/Controllers/DoctorAppointmentsController.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Department/UpdateDepartmentDto.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentDetailDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Department/DepartmentEnum.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/AppointmentStatusDto.cs" />
       <File FileName="ClinicManagement.Api/Services/IJwtService.cs" />
       <File FileName="ClinicManagement.Api/Services/JwtService.cs" />
       <File FileName="ClinicManagement.Api/Services/MedicalRecordService.cs" />
       <File FileName="ClinicManagement.Api/Services/PrescriptionService.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Appointments/CancelAppointmentDto.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/StaffAppointmentsController.cs" Line="113" Column="1" />
+      <File FileName="ClinicManagement.Api/Models/Patient.cs" Line="20" Column="1" />
+      <File FileName="ClinicManagement.Api/Migrations/ClinicDbContextModelSnapshot.cs" Line="107" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="ClinicManagement.Api">
-            <Node name="ClinicManagement.Api" expanded="True">
-              <Node name="Dtos" expanded="True">
-                <Node name="Doctor" expanded="True">
-                  <Node name="DoctorDto.cs" selected="True" />
-                </Node>
+          <Node name="ClinicManagement.Api" expanded="True">
+            <Node name="ClinicManagement.Api">
+              <Node name="Controllers" expanded="True">
+                <Node name="DoctorController.cs" selected="True" />
               </Node>
+              <Node name="Dtos" expanded="True">
+                <Node name="Doctor" expanded="True" />
+              </Node>
+              <Node name="Models" expanded="True" />
             </Node>
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
 </Properties>
