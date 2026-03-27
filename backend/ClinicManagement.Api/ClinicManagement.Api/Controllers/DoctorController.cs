@@ -40,7 +40,8 @@ namespace ClinicManagement.Api.Controllers
                     Username = d.User.Username,
                     Status = d.Status.ToString(),
                     DepartmentId = (Guid)d.DepartmentId,
-                    DepartmentName = d.Department.Name
+                    DepartmentName = d.Department.Name,
+                    AvatarUrl = d.AvatarUrl
                 })
                 .ToListAsync();
 
@@ -103,6 +104,7 @@ namespace ClinicManagement.Api.Controllers
                 LicenseNumber = dto.LicenseNumber ?? string.Empty,
                 Status = DoctorStatus.Active,
                 UserId = dto.UserId,
+                AvatarUrl = dto.AvatarUrl,
                 DepartmentId = dto.DepartmentId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -116,6 +118,20 @@ namespace ClinicManagement.Api.Controllers
                 doctorId = doctor.Id
             });
         }
+        [HttpPut("{id:guid}/status")]
+        [Authorize(Roles = "Admin,Doctor")]
+        public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateDoctorStatusDto dto)
+        {
+            var doctor = await _context.Doctors.FindAsync(id);
+            if (doctor == null) return NotFound();
+
+            doctor.Status = dto.Status;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Doctor status updated successfully.", status = doctor.Status.ToString() });
+        }
+
+
         [Authorize(Roles = "Admin")]
         /* ================= UPDATE ================= */
         [HttpPut("{id:guid}")]
