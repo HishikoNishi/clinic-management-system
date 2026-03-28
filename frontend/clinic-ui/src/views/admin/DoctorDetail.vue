@@ -52,7 +52,7 @@ async function saveDoctor() {
       specialty: editForm.value.specialty,
       licenseNumber: editForm.value.licenseNumber,
       departmentId: editForm.value.departmentId, 
-      avatarUrl: editForm.value.avatarUrl   // chỉ gửi link ảnh
+      avatarUrl: editForm.value.avatarUrl
     })
 
     showEdit.value = false
@@ -73,6 +73,34 @@ const filteredAppointments = computed(() => {
       return 0
     })
 })
+
+// badge class cho trạng thái bác sĩ
+const doctorBadgeClass = (status: string) => {
+  if (status === "Active") return "bg-success"
+  if (status === "Busy") return "bg-warning"
+  if (status === "Inactive") return "bg-secondary"
+  return "bg-light"
+}
+
+// dịch trạng thái bác sĩ sang tiếng Việt
+const doctorStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    Active: "Hoạt động",
+    Busy: "Đang khám",
+    Inactive: "Không hoạt động"
+  }
+  return labels[status] || status
+}
+
+// dịch trạng thái lịch hẹn sang tiếng Việt
+const appointmentStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    Pending: "Chờ xác nhận",
+    Confirmed: "Đã xác nhận",
+    Completed: "Đã khám xong"
+  }
+  return labels[status] || status
+}
 </script>
 
 <template>
@@ -86,12 +114,15 @@ const filteredAppointments = computed(() => {
           <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
         </div>
         <div class="col-md-9">
-          <h3 class="doctor-name">Tên: {{ doctor?.fullName || doctor?.name }}</h3>
+          <h3 class="doctor-name">Tên: {{ doctor?.fullName }}</h3>
           <p><strong>Mã:</strong> {{ doctor?.code }}</p>
           <p><strong>Chuyên khoa:</strong> {{ doctor?.specialty }}</p>
           <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
           <p><strong>Số giấy phép:</strong> {{ doctor?.licenseNumber }}</p>
-          <span class="badge status-badge">Hoạt động</span>
+          <!-- 🔥 Hiển thị trạng thái bằng tiếng Việt -->
+          <span :class="['badge', doctorBadgeClass(doctor?.status)]">
+            {{ doctorStatusLabel(doctor?.status) }}
+          </span>
           <div class="mt-3">
             <button class="btn btn-primary" @click="showEdit = true">Sửa thông tin</button>
           </div>
@@ -128,7 +159,7 @@ const filteredAppointments = computed(() => {
               <td>{{ a.reason }}</td>
               <td>
                 <span :class="['badge', a.status === 'Completed' ? 'bg-secondary' : 'bg-success']">
-                  {{ a.status }}
+                  {{ appointmentStatusLabel(a.status) }}
                 </span>
               </td>
             </tr>
