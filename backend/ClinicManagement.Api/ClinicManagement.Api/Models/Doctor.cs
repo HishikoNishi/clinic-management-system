@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using ClinicManagement.Api.Models.ClinicManagement.Api.Models;
 
 namespace ClinicManagement.Api.Models
 {
@@ -17,8 +18,9 @@ namespace ClinicManagement.Api.Models
         public string FullName { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(100)]
-        public string Specialty { get; set; } = string.Empty;
+        public Guid SpecialtyId { get; set; }
+        public Specialty Specialty { get; set; } = null!;
+
 
         [MaxLength(50)]
         public string LicenseNumber { get; set; } = string.Empty;
