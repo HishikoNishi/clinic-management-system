@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -189,6 +190,26 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(doctors);
         }
+        [HttpGet("departments/{departmentId}/specialties")]
+        [Authorize(Roles = "Admin,Staff,Doctor")]
+        public async Task<IActionResult> GetSpecialtiesByDepartment(Guid departmentId)
+        {
+            var specialties = await _context.Specialties
+                .Where(s => s.DepartmentId == departmentId)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name
+                })
+                .ToListAsync();
+
+            if (!specialties.Any())
+                return NotFound(new { message = "Không tìm thấy chuyên khoa cho khoa này." });
+
+            return Ok(specialties);
+        }
+
+
         [HttpGet("{id}/appointments")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsByDoctor(Guid id)
