@@ -1,4 +1,6 @@
-﻿namespace ClinicManagement.Api.Dtos.Doctor
+﻿using System;
+
+namespace ClinicManagement.Api.Dtos.Doctor
 {
     public class DoctorDto
     {
@@ -12,5 +14,9 @@
         public string? AvatarUrl { get; set; }
         public string Username { get; set; } = null!;
         public string Status { get; set; } = null!;
+        public Guid SpecialtyId { get; set; }
+        public string SpecialtyName { get; set; } = string.Empty;
+
+
     }
 }
