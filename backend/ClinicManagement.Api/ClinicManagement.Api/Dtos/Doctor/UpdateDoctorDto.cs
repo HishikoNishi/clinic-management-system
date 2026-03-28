@@ -18,5 +18,7 @@ public class UpdateDoctorDto
         public string? LicenseNumber { get; set; }
     public Guid DepartmentId { get; set; }
     public string? AvatarUrl { get; set; }
+    public Guid SpecialtyId { get; set; }
+
 }
 
