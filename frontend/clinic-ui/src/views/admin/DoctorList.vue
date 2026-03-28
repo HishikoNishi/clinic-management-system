@@ -99,13 +99,15 @@ async function save() {
       })
     } else {
       await doctorService.create({
-        userId: form.userId,
-        fullName: form.fullName,
-        code: form.code,
-        specialtyId: form.specialtyId,
-        licenseNumber: form.licenseNumber,
-        departmentId: form.departmentId
-      })
+  userId: form.userId,
+  fullName: form.fullName,
+  code: form.code,
+  specialtyId: form.specialtyId ? form.specialtyId.toString() : null,
+  licenseNumber: form.licenseNumber,
+  departmentId: form.departmentId ? form.departmentId.toString() : null
+})
+
+
     }
 
     showModal.value = false
