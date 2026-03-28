@@ -1,4 +1,6 @@
-﻿using ClinicManagement.Api.Data;
+﻿using System;
+using System.Threading.Tasks;
+using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Doctor;
 using ClinicManagement.Api.Dtos.Patients;
 using ClinicManagement.Api.DTOs.Appointments;
@@ -22,6 +24,20 @@ namespace ClinicManagement.Api.Controllers
         {
             _context = context;
         }
+        [HttpGet("departments")]
+        [Authorize(Roles = "Admin,Staff,Doctor")]
+        public async Task<IActionResult> GetDepartments()
+        {
+            var departments = await _context.Departments
+                .Select(d => new
+                {
+                    d.Id,
+                    d.Name
+                })
+                .ToListAsync();
+
+            return Ok(departments);
+        }
 
         /* ================= GET ALL ================= */
         [HttpGet]
@@ -29,22 +45,26 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var doctors = await _context.Doctors
-                .Include(d => d.User)
-                  .Include(d => d.Department)
-                .Select(d => new DoctorDto
-                {
-                    Id = d.Id,
-                    Code = d.Code,
-                    Specialty = d.Specialty,
-                    LicenseNumber = d.LicenseNumber,
-                    FullName = d.FullName,
-                    Username = d.User.Username,
-                    Status = d.Status.ToString(),
-                    DepartmentId = (Guid)d.DepartmentId,
-                    DepartmentName = d.Department.Name,
-                    AvatarUrl = d.AvatarUrl
-                })
-                .ToListAsync();
+    .Include(d => d.User)
+    .Include(d => d.Department)
+    .Include(d => d.Specialty)
+    .Select(d => new DoctorDto
+    {
+        Id = d.Id,
+        Code = d.Code,
+        FullName = d.FullName,
+        SpecialtyId = d.SpecialtyId,
+        SpecialtyName = d.Specialty.Name,
+        LicenseNumber = d.LicenseNumber,
+        Username = d.User.Username,
+        Status = d.Status.ToString(),
+        DepartmentId = d.DepartmentId,
+        DepartmentName = d.Department.Name,
+        AvatarUrl = d.AvatarUrl
+    })
+    .ToListAsync();
+
+
 
             return Ok(doctors);
         }
@@ -65,7 +85,8 @@ namespace ClinicManagement.Api.Controllers
                 Id = doctor.Id,
                 Code = doctor.Code,
                 FullName = doctor.FullName,
-                Specialty = doctor.Specialty,
+                SpecialtyId = doctor.SpecialtyId,
+                SpecialtyName = doctor.Specialty.Name,
                 LicenseNumber = doctor.LicenseNumber,
                 Username = doctor.User.Username,
                 Status = doctor.Status.ToString(),
@@ -73,6 +94,7 @@ namespace ClinicManagement.Api.Controllers
                 DepartmentName = doctor.Department.Name,
                 AvatarUrl = doctor.AvatarUrl
             });
+
         }
         [Authorize(Roles = "Admin")]
         /* ================= CREATE ================= */
@@ -100,7 +122,7 @@ namespace ClinicManagement.Api.Controllers
                 Id = Guid.NewGuid(),
                 Code = dto.Code,
                 FullName = dto.FullName,
-                Specialty = dto.Specialty,
+                SpecialtyId = dto.SpecialtyId,
                 LicenseNumber = dto.LicenseNumber ?? string.Empty,
                 Status = DoctorStatus.Active,
                 UserId = dto.UserId,
@@ -108,6 +130,7 @@ namespace ClinicManagement.Api.Controllers
                 DepartmentId = dto.DepartmentId,
                 CreatedAt = DateTime.UtcNow
             };
+
 
             await _context.Doctors.AddAsync(doctor);
             await _context.SaveChangesAsync();
@@ -150,11 +173,10 @@ namespace ClinicManagement.Api.Controllers
 
             doctor.Code = dto.Code;
             doctor.FullName = dto.FullName;
-            doctor.Specialty = dto.Specialty;
+            doctor.SpecialtyId = dto.SpecialtyId;
             doctor.LicenseNumber = dto.LicenseNumber ?? string.Empty;
             doctor.DepartmentId = dto.DepartmentId;
             doctor.AvatarUrl = dto.AvatarUrl;
-
 
             await _context.SaveChangesAsync();
 
