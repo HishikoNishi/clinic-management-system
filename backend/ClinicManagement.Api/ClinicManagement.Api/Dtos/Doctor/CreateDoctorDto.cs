@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 public class CreateDoctorDto
 {
@@ -18,4 +19,6 @@ public class CreateDoctorDto
         public string? LicenseNumber { get; set; }
     public string? AvatarUrl { get; set; }
     public Guid DepartmentId { get; set; }
+    public Guid SpecialtyId { get; set; }
+
 }
