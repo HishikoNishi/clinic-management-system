@@ -23,6 +23,7 @@
         <span class="label">Bác sĩ:</span>
         {{ appointment.statusDetail.doctorName }} (Mã: {{ appointment.statusDetail.doctorCode }})
         - Khoa: {{ appointment.statusDetail.doctorDepartmentName }}
+          - Chuyên khoa: {{ appointment.statusDetail.specialtyName }}
       </div>
 
       <!-- Nếu trạng thái là Pending thì cho phép gán bác sĩ -->
