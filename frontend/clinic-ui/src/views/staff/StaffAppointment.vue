@@ -169,7 +169,6 @@ const assignForm = ref({
 })
 const assignSpecialties = ref<any[]>([])
 const assignDoctorsList = ref<any[]>([])
-
 function openAssignModal(appointment: Appointment) {
   assignForm.value = {
     appointmentId: appointment.id,
@@ -178,25 +177,38 @@ function openAssignModal(appointment: Appointment) {
     doctorId: ''
   }
   showAssignModal.value = true
+  // gọi luôn cả 3 API để có dữ liệu sẵn
   loadDepartments()
+  loadAllSpecialties()
+  loadAllDoctors()
 }
+
+const loadAllSpecialties = async () => {
+  const res = await api.get('/Doctor/specialties')
+  assignSpecialties.value = res.data
+}
+
+const loadAllDoctors = async () => {
+  const res = await api.get('/Doctor/all')
+  assignDoctorsList.value = res.data
+}
+
 
 watch(() => assignForm.value.departmentId, async (newVal) => {
   if (newVal) {
     const res = await api.get(`/Doctor/departments/${newVal}/specialties`)
     assignSpecialties.value = res.data
-    assignForm.value.specialtyId = ''
-    assignDoctorsList.value = []
   }
 })
+
 
 watch(() => assignForm.value.specialtyId, async (newVal) => {
   if (newVal) {
     const res = await api.get(`/Doctor/by-specialty/${newVal}`)
     assignDoctorsList.value = res.data
-    assignForm.value.doctorId = ''
   }
 })
+
 
 async function confirmAssignDoctor() {
   if (!assignForm.value.doctorId) {
@@ -239,9 +251,14 @@ const getDepartmentName = (depId: string) => {
 }
 
 const loadDepartments = async () => {
-  const res = await api.get('/Doctor/departments')
-  departments.value = res.data
+  try {
+    const res = await api.get('/Doctor/departments')
+    departments.value = res.data
+  } catch (err) {
+    console.error("Không tải được danh sách khoa", err)
+  }
 }
+
 
 
 const loadAppointments = async () => {
