@@ -51,7 +51,7 @@ namespace ClinicManagement.Api.Controllers
                     Code = d.Code,
                     FullName = d.FullName,
                     SpecialtyId = d.SpecialtyId,
-                    SpecialtyName = d.Specialty != null ? d.Specialty.Name : null,
+                    SpecialtyName = d.Specialty != null ? d.Specialty.Name : "",
                     LicenseNumber = d.LicenseNumber,
                     Username = d.User.Username,
                     Status = d.Status.ToString(),
@@ -84,7 +84,7 @@ namespace ClinicManagement.Api.Controllers
                 Code = doctor.Code,
                 FullName = doctor.FullName,
                 SpecialtyId = doctor.SpecialtyId,
-                SpecialtyName = doctor.Specialty != null ? doctor.Specialty.Name : null,
+                SpecialtyName = doctor.Specialty != null ? doctor.Specialty.Name : "",
                 LicenseNumber = doctor.LicenseNumber,
                 Username = doctor.User.Username,
                 Status = doctor.Status.ToString(),
@@ -111,7 +111,11 @@ namespace ClinicManagement.Api.Controllers
 
             if (await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
                 return BadRequest(new { message = "Doctor code already exists." });
+            var departmentExists = await _context.Departments
+    .AnyAsync(d => d.Id == dto.DepartmentId);
 
+            if (!departmentExists)
+                return BadRequest(new { message = "Department not found." });
             // ✅ CHECK Specialty thuộc Department
             var specialty = await _context.Specialties
                 .FirstOrDefaultAsync(s => s.Id == dto.SpecialtyId && s.DepartmentId == dto.DepartmentId);
@@ -185,7 +189,11 @@ namespace ClinicManagement.Api.Controllers
             if (doctor.Code != dto.Code &&
                 await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
                 return BadRequest(new { message = "Doctor code already exists." });
+            var departmentExists = await _context.Departments
+    .AnyAsync(d => d.Id == dto.DepartmentId);
 
+            if (!departmentExists)
+                return BadRequest(new { message = "Department not found." });
             // ✅ CHECK Specialty thuộc Department
             var specialty = await _context.Specialties
                 .FirstOrDefaultAsync(s => s.Id == dto.SpecialtyId && s.DepartmentId == dto.DepartmentId);
@@ -243,7 +251,7 @@ namespace ClinicManagement.Api.Controllers
                     d.Id,
                     d.FullName,
                     SpecialtyId = d.SpecialtyId,
-                    SpecialtyName = d.Specialty != null ? d.Specialty.Name : null
+                    SpecialtyName = d.Specialty != null ? d.Specialty.Name : ""
                 })
                 .ToListAsync();
 
