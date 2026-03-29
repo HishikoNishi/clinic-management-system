@@ -5,10 +5,14 @@ import '@/styles/layouts/doctor.css'
 import { getUsers } from '@/services/userService'
 import api from "@/services/api"
 
+type DoctorUI = Doctor & {
+  status: 'Active' | 'Busy' | 'Inactive' | 'Deleted'
+}
+
 const departments = ref<any[]>([])
 const specialties = ref<any[]>([])
 const users = ref<any[]>([])
-const doctors = ref<Doctor[]>([])
+const doctors = ref<DoctorUI[]>([])
 const loading = ref(false)
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
@@ -28,6 +32,7 @@ const form = reactive({
 const filteredDoctors = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
   return doctors.value.filter((d) => {
+    if (d.status === 'Deleted') return false
     const text = `${d.code} ${d.specialtyName} ${d.licenseNumber || ''}`.toLowerCase()
     const matchText = !term || text.includes(term)
     const matchDept = !filterDepartmentId.value || d.departmentId?.toString() === filterDepartmentId.value
@@ -36,7 +41,7 @@ const filteredDoctors = computed(() => {
 })
 
 async function loadDepartments() {
-  const res = await api.get('/departments')
+  const res = await api.get('/Doctor/departments')
   departments.value = res.data
 }
 
@@ -49,34 +54,65 @@ async function loadSpecialties(departmentId: string) {
   specialties.value = res.data
 }
 
+const statusMap: Record<DoctorUI['status'], number> = {
+  Active: 0,
+  Busy: 1,
+  Inactive: 2,
+  Deleted: 3
+}
+const reverseStatusMap: Record<number, DoctorUI['status']> = {
+  0: 'Active',
+  1: 'Busy',
+  2: 'Inactive',
+  3: 'Deleted'
+}
+
 async function loadDoctors() {
   loading.value = true
-  doctors.value = await doctorService.getAll()
+  const res = await doctorService.getAll()
+  doctors.value = res.map(d => ({
+    ...d,
+    status: reverseStatusMap[d.status]
+  }))
   loading.value = false
+}
+
+async function updateStatus(id: string, status: DoctorUI['status']) {
+  try {
+    await api.put(`/Doctor/${id}/status`, { status: statusMap[status] })
+    const doctor = doctors.value.find(d => d.id === id)
+    if (doctor) doctor.status = status
+  } catch {
+    alert("Không thể cập nhật trạng thái bác sĩ")
+  }
 }
 
 function openCreate() {
   editingId.value = null
-  form.userId = ''
-  form.fullName = ''
-  form.code = ''
-  form.specialtyId = ''
-  form.licenseNumber = ''
-  form.departmentId = ''
-  form.status = 'Active'
+  Object.assign(form, {
+    userId: '',
+    fullName: '',
+    code: '',
+    specialtyId: '',
+    licenseNumber: '',
+    departmentId: '',
+    status: 'Active'
+  })
   specialties.value = []
   showModal.value = true
 }
 
-function openEdit(doctor: Doctor) {
+function openEdit(doctor: DoctorUI) {
   editingId.value = doctor.id
-  form.userId = doctor.userId
-  form.fullName = doctor.fullName || ''
-  form.code = doctor.code
-  form.specialtyId = doctor.specialtyId
-  form.licenseNumber = doctor.licenseNumber || ''
-  form.departmentId = doctor.departmentId?.toString() || ''
-  form.status = doctor.status || 'Active'
+  Object.assign(form, {
+    userId: doctor.userId,
+    fullName: doctor.fullName || '',
+    code: doctor.code,
+    specialtyId: doctor.specialtyId,
+    licenseNumber: doctor.licenseNumber || '',
+    departmentId: doctor.departmentId?.toString() || '',
+    status: doctor.status || 'Active'
+  })
   showModal.value = true
   loadSpecialties(form.departmentId || '')
 }
@@ -87,55 +123,47 @@ async function save() {
       alert("Vui lòng chọn khoa và chuyên khoa")
       return
     }
-
-    if (editingId.value) {
-      await doctorService.update(editingId.value, {
-        code: form.code,
-        fullName: form.fullName,
-        specialtyId: form.specialtyId,
-        licenseNumber: form.licenseNumber,
-        departmentId: form.departmentId,
-        status: form.status
-      })
-    } else {
-      await doctorService.create({
+    if (!editingId.value && !form.userId) {
+      alert("Vui lòng chọn người dùng")
+      return
+    }
+const payload = {
   userId: form.userId,
   fullName: form.fullName,
   code: form.code,
-  specialtyId: form.specialtyId ? form.specialtyId.toString() : null,
+  specialtyId: form.specialtyId,
   licenseNumber: form.licenseNumber,
-  departmentId: form.departmentId ? form.departmentId.toString() : null
-})
-
-
+  departmentId: form.departmentId,
+  status: statusMap[form.status] // 🔥 FIX QUAN TRỌNG
+}
+    if (editingId.value) {
+      await doctorService.update(editingId.value, payload)
+    } else {
+      await doctorService.create(payload)
     }
-
     showModal.value = false
     await loadDoctors()
   } catch (error: any) {
+    console.log(error)
     alert(error.response?.data?.message || "Có lỗi xảy ra")
   }
 }
 
 async function remove(id: string) {
   if (confirm("Bạn có chắc muốn xóa bác sĩ này?")) {
-    await doctorService.delete(id)
-    await loadDoctors()
+    await updateStatus(id, "Deleted")
   }
 }
 
-async function updateStatus(id: string, status: string) {
-  try {
-    await api.put(`/Doctor/${id}/status`, { status })
-    await loadDoctors()
-  } catch (err:any) {
-    alert("Không thể cập nhật trạng thái bác sĩ")
-  }
-}
-
+// 🔥 thêm watch để load chuyên khoa khi chọn khoa
 watch(() => form.departmentId, async (newVal) => {
-  await loadSpecialties(newVal || '')
-  form.specialtyId = ''
+  if (newVal) {
+    await loadSpecialties(newVal)
+    form.specialtyId = ''
+  } else {
+    specialties.value = []
+    form.specialtyId = ''
+  }
 })
 
 onMounted(async () => {
@@ -215,52 +243,52 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="modal-backdrop-custom">
-      <div class="modal-modern">
-        <h3>{{ editingId ? "Chỉnh sửa bác sĩ" : "Tạo bác sĩ mới" }}</h3>
-        <div class="vstack gap-3">
-          <div v-if="!editingId">
-            <label class="form-label">Người dùng</label>
-            <select class="form-select" v-model="form.userId">
-              <option value="">Chọn người dùng</option>
-              <option v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</option>
-            </select>
-          </div>
+<!-- Modal -->
+<div v-if="showModal" class="modal-backdrop-custom">
+  <div class="modal-modern">
+    <h3>{{ editingId ? "Chỉnh sửa bác sĩ" : "Tạo bác sĩ mới" }}</h3>
+    <div class="vstack gap-3">
+      <div v-if="!editingId">
+        <label class="form-label">Người dùng</label>
+        <select class="form-select" v-model="form.userId">
+          <option value="">Chọn người dùng</option>
+          <option v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</option>
+        </select>
+      </div>
 
-          <input class="form-control" v-model="form.fullName" placeholder="Họ và tên" />
-          <input class="form-control" v-model="form.code" placeholder="Mã" />
-          <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
+      <input class="form-control" v-model="form.fullName" placeholder="Họ và tên" />
+      <input class="form-control" v-model="form.code" placeholder="Mã" />
+      <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
 
-               <!-- chọn khoa -->
-          <select class="form-select" v-model="form.departmentId">
-            <option value="">Chọn khoa</option>
-            <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
-              {{ dep.name }}
-            </option>
-          </select>
+      <!-- chọn khoa -->
+      <select class="form-select" v-model="form.departmentId">
+        <option value="">Chọn khoa</option>
+        <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+          {{ dep.name }}
+        </option>
+      </select>
 
-          <!-- chọn chuyên khoa theo khoa -->
-          <select class="form-select" v-model="form.specialtyId" :disabled="!form.departmentId">
-            <option value="">Chọn chuyên khoa</option>
-            <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">
-              {{ s.name }}
-            </option>
-          </select>
+      <!-- chọn chuyên khoa theo khoa -->
+      <select class="form-select" v-model="form.specialtyId" :disabled="!form.departmentId">
+        <option value="">Chọn chuyên khoa</option>
+        <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">
+          {{ s.name }}
+        </option>
+      </select>
 
-          <!-- chọn trạng thái -->
-          <select class="form-select" v-model="form.status">
-            <option value="Active">Hoạt động</option>
-            <option value="Busy">Đang khám</option>
-            <option value="Inactive">Không hoạt động</option>
-          </select>
+      <!-- chọn trạng thái -->
+      <select class="form-select" v-model="form.status">
+        <option value="Active">Hoạt động</option>
+        <option value="Busy">Đang khám</option>
+        <option value="Inactive">Không hoạt động</option>
+      </select>
 
-          <div class="modal-actions d-flex justify-content-end gap-2">
-            <button class="btn-primary" @click="save">Lưu</button>
-            <button class="btn-cancel" @click="showModal = false">Hủy</button>
-          </div>
-        </div>
+      <div class="modal-actions d-flex justify-content-end gap-2">
+        <button class="btn-primary" @click="save">Lưu</button>
+        <button class="btn-cancel" @click="showModal = false">Hủy</button>
       </div>
     </div>
   </div>
+</div>
+</div>
 </template>
