@@ -1,24 +1,25 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 public class CreateDoctorDto
 {
+    [Required]
+    public Guid UserId { get; set; }
 
-        [Required]
-        public Guid UserId { get; set; }
+    [Required]
+    [MaxLength(20)]
+    public string Code { get; set; } = null!;
 
-        [Required]
-        [MaxLength(20)]
-        public string Code { get; set; } = null!;
-        [Required]
-        [MaxLength(30)]
-        public string FullName { get; set; } = null!;
-        [Required]
-        [MaxLength(100)]
-        public string Specialty { get; set; } = null!;
-        public string? LicenseNumber { get; set; }
+    [Required]
+    [MaxLength(30)]
+    public string FullName { get; set; } = null!;
+
+   
+    [Required]
+    public Guid SpecialtyId { get; set; } 
+
+    public string? LicenseNumber { get; set; }
     public string? AvatarUrl { get; set; }
-    public Guid DepartmentId { get; set; }
-    public Guid SpecialtyId { get; set; }
 
+    [Required]
+    public Guid DepartmentId { get; set; }
 }
