@@ -1,4 +1,7 @@
 import api from "./api"
+
+/* ========================= */
+
 export interface Doctor {
   id: string
   userId: string
@@ -9,7 +12,7 @@ export interface Doctor {
   departmentId: string
   departmentName: string
   licenseNumber?: string
-  status: number 
+  status: number
   avatarUrl?: string
   username?: string
 }
@@ -34,8 +37,15 @@ export interface UpdateDoctorDto {
   avatarUrl?: string
 }
 
-
 /* ========================= */
+
+// 🔥 đặt ngoài
+const statusMap: any = {
+  Active: 0,
+  Busy: 1,
+  Inactive: 2,
+  Deleted: 3
+}
 
 export const doctorService = {
 
@@ -44,22 +54,24 @@ export const doctorService = {
     return res.data
   },
 
-async create(data: CreateDoctorDto) {
-  return api.post("/Doctor", {
-    userId: data.userId,
-    fullName: data.fullName,
-    code: data.code,
-    specialtyId: data.specialtyId,
-    licenseNumber: data.licenseNumber,
-    departmentId: data.departmentId,
-    avatarUrl: data.avatarUrl
-  })
-}
-
-,
+  async create(data: CreateDoctorDto & { status: string }) {
+    return api.post("/Doctor", {
+      userId: data.userId,
+      fullName: data.fullName,
+      code: data.code,
+      specialtyId: data.specialtyId,
+      licenseNumber: data.licenseNumber,
+      departmentId: data.departmentId,
+      avatarUrl: data.avatarUrl,
+      status: statusMap[data.status] // ✅ FIX
+    })
+  },
 
   async update(id: string, data: UpdateDoctorDto) {
-    return api.put(`/Doctor/${id}`, data)
+    return api.put(`/Doctor/${id}`, {
+      ...data,
+      status: statusMap[data.status] // ✅ FIX
+    })
   },
 
   async delete(id: string) {
