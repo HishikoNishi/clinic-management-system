@@ -11,7 +11,8 @@ const isSidebarOpen = ref(false)
 const navItems = computed(() => ([
   { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' },
   { label: 'Khám bệnh', icon: 'stethoscope', path: '/doctor/appointments' },
-  { label: 'Bệnh nhân', icon: 'people', path: '/doctor/patients' }
+  { label: 'Bệnh nhân', icon: 'people', path: '/doctor/patients' },
+   { label: 'Hồ sơ của tôi', icon: 'person-circle', path: '/doctor/profile' }
 ]))
 
 const go = (path: string) => {
