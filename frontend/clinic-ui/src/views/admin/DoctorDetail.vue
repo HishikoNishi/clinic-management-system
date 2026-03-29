@@ -29,14 +29,15 @@ onMounted(async () => {
 })
 
 async function loadDoctor() {
-  try {
-    const resDoctor = await api.get(`/Doctor/${doctorId}`)
-    doctor.value = resDoctor.data
-    editForm.value = { ...doctor.value }
-  } catch (err:any) {
-    alert("Không thể tải thông tin bác sĩ")
+  const resDoctor = await api.get(`/Doctor/${doctorId}`)
+  doctor.value = resDoctor.data
+  editForm.value = {
+    ...doctor.value,
+    departmentId: doctor.value.departmentId?.toString() || '',
+    specialtyId: doctor.value.specialtyId?.toString() || ''   // ✅ thêm dòng này
   }
 }
+
 
 async function loadAppointments() {
   try {
@@ -86,16 +87,20 @@ function openEdit() {
     loadSpecialties(editForm.value.departmentId)
   }
 }
-
-watch(() => editForm.value.departmentId, async (newVal) => {
+watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
   if (newVal) {
     await loadSpecialties(newVal)
-    editForm.value.specialtyId = ''
+    // Chỉ reset nếu department thực sự thay đổi khác với cũ
+    if (newVal !== oldVal) {
+      editForm.value.specialtyId = ''
+    }
   } else {
     specialties.value = []
     editForm.value.specialtyId = ''
   }
 })
+
+
 
 const filteredAppointments = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
@@ -211,16 +216,16 @@ const appointmentStatusLabel = (status: string) => {
 
         <select v-model="editForm.departmentId" class="form-select mb-2">
           <option value="">Chọn khoa</option>
-          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-            {{ dep.name }}
-          </option>
+         <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+  {{ dep.name }}
+</option>
         </select>
 
         <select v-model="editForm.specialtyId" class="form-select mb-2" :disabled="!editForm.departmentId">
           <option value="">Chọn chuyên khoa</option>
-          <option v-for="s in specialties" :key="s.id" :value="s.id">
-            {{ s.name }}
-          </option>
+         <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">
+  {{ s.name }}
+</option>
         </select>
 
         <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
