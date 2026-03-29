@@ -9,7 +9,6 @@
       <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
-      <!-- Chọn khoa để lọc -->
       <select v-model="selectedDepartment" @change="loadDoctorsByDepartment(null)">
         <option value="">Chọn khoa</option>
         <option v-for="dep in departments" :key="dep.id" :value="dep.id">
@@ -17,15 +16,12 @@
         </option>
       </select>
 
-      <!-- Chọn bác sĩ để lọc -->
       <select v-model="selectedDoctor" :disabled="!selectedDepartment">
         <option value="">Chọn bác sĩ</option>
         <option v-for="d in doctors" :key="d.id" :value="d.id">
           {{ d.fullName }}
         </option>
       </select>
-
-    
     </div>
 
     <!-- FILTER STATUS -->
@@ -56,11 +52,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr
-          v-for="a in filteredAppointments"
-          :key="a.id"
-          @click="$router.push(`/staff/appointments/${a.id}`)"
-        >
+        <tr v-for="a in filteredAppointments" :key="a.id">
           <td>{{ a.appointmentCode }}</td>
           <td>{{ a.fullName }}</td>
           <td>{{ a.phone }}</td>
@@ -73,35 +65,55 @@
           </td>
           <td>{{ a.reason }}</td>
           <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
-          <td @click.stop class="assign-cell">
+          <td @click.stop>
             <template v-if="a.statusDetail.value === 'Pending'">
-              <select v-model="assignDepartments[a.id]" @change="loadDoctorsByDepartment(a.id)">
-                <option value="">Chọn khoa</option>
-                <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-                  {{ dep.name }}
-                </option>
-              </select>
-              <select @change="assignDoctor(a.id, $event)" :disabled="!assignDepartments[a.id]">
-                <option value="">Chọn bác sĩ</option>
-                <option v-for="d in assignDoctors[a.id] || []" :key="d.id" :value="d.id">
-                  {{ d.fullName }}
-                </option>
-              </select>
+              <button class="btn btn-sm btn-primary" @click="openAssignModal(a)">Gán bác sĩ</button>
             </template>
-            <template v-else>
-              —
-            </template>
+            <template v-else>—</template>
           </td>
         </tr>
       </tbody>
     </table>
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
+
+    <!-- Modal gán bác sĩ -->
+    <div v-if="showAssignModal" class="modal-backdrop">
+      <div class="modal-content p-4">
+        <h4>Gán bác sĩ cho lịch khám</h4>
+        <select v-model="assignForm.departmentId" class="form-select mb-2">
+          <option value="">Chọn khoa</option>
+          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+            {{ dep.name }}
+          </option>
+        </select>
+
+        <select v-model="assignForm.specialtyId" class="form-select mb-2" :disabled="!assignForm.departmentId">
+          <option value="">Chọn chuyên khoa</option>
+          <option v-for="s in assignSpecialties" :key="s.id" :value="s.id">
+            {{ s.name }}
+          </option>
+        </select>
+
+        <select v-model="assignForm.doctorId" class="form-select mb-2" :disabled="!assignForm.specialtyId">
+          <option value="">Chọn bác sĩ</option>
+          <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id">
+            {{ d.fullName }}
+          </option>
+        </select>
+
+        <div class="text-end mt-3">
+          <button class="btn btn-secondary me-2" @click="showAssignModal=false">Hủy</button>
+          <button class="btn btn-success" @click="confirmAssignDoctor">Xác nhận</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import axios from 'axios'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -118,7 +130,7 @@ interface Appointment {
   statusDetail: {
     value: string
     doctorName: string
-      doctorId?: string
+    doctorId?: string
     doctorCode?: string
     doctorDepartmentName?: string
   }
@@ -135,9 +147,6 @@ const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
 const departments = ref<any[]>([])
 
-const assignDepartments = ref<{ [key: string]: string }>({})
-const assignDoctors = ref<{ [key: string]: any[] }>({})
-
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
 
@@ -146,6 +155,57 @@ const api = axios.create({
   headers: { Authorization: `Bearer ${auth.token}` }
 })
 
+const showAssignModal = ref(false)
+const assignForm = ref({
+  appointmentId: '',
+  departmentId: '',
+  specialtyId: '',
+  doctorId: ''
+})
+const assignSpecialties = ref<any[]>([])
+const assignDoctorsList = ref<any[]>([])
+
+function openAssignModal(appointment: Appointment) {
+  assignForm.value = {
+    appointmentId: appointment.id,
+    departmentId: '',
+    specialtyId: '',
+    doctorId: ''
+  }
+  showAssignModal.value = true
+  loadDepartments()
+}
+
+watch(() => assignForm.value.departmentId, async (newVal) => {
+  if (newVal) {
+    const res = await api.get(`/Doctor/departments/${newVal}/specialties`)
+    assignSpecialties.value = res.data
+    assignForm.value.specialtyId = ''
+    assignDoctorsList.value = []
+  }
+})
+
+watch(() => assignForm.value.specialtyId, async (newVal) => {
+  if (newVal) {
+    const res = await api.get(`/Doctor/by-specialty/${newVal}`)
+    assignDoctorsList.value = res.data
+    assignForm.value.doctorId = ''
+  }
+})
+
+async function confirmAssignDoctor() {
+  if (!assignForm.value.doctorId) {
+    alert("Vui lòng chọn bác sĩ")
+    return
+  }
+  await api.post('/staff/StaffAppointments/assign-doctor', {
+    appointmentId: assignForm.value.appointmentId,
+    doctorId: assignForm.value.doctorId
+  })
+  alert('Bác sĩ đã được gán ✅')
+  showAssignModal.value = false
+  loadAppointments()
+}
 
 const filteredAppointments = computed(() => {
   return appointments.value.filter(a => {
@@ -168,16 +228,9 @@ const filteredAppointments = computed(() => {
   })
 })
 
-
-
 const getDepartmentName = (depId: string) => {
   const dep = departments.value.find(d => d.id === depId)
   return dep ? dep.name : ''
-}
-
-const getDoctorCode = (docId: string) => {
-  const doc = doctors.value.find(d => d.id === docId)
-  return doc ? doc.code : ''
 }
 
 const loadDepartments = async () => {
@@ -192,32 +245,13 @@ const loadAppointments = async () => {
   } else {
     res = await api.get<Appointment[]>(`/staff/StaffAppointments/filter?status=${currentStatus.value}`)
   }
-
   appointments.value = res.data
-
-  appointments.value.forEach(a => {
-    assignDepartments.value[a.id] = ''
-    assignDoctors.value[a.id] = []
-  })
-}
-
-const loadDoctorsByDepartment = async (appointmentId: string | null) => {
-  const depId = appointmentId ? assignDepartments.value[appointmentId] : selectedDepartment.value
-  if (!depId) {
-    if (appointmentId) assignDoctors.value[appointmentId] = []
-    else doctors.value = []
-    return
-  }
-  const res = await api.get(`/Doctor/by-department/${depId}`)
-  if (appointmentId) assignDoctors.value[appointmentId] = res.data
-  else doctors.value = res.data
 }
 
 const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
-
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
@@ -229,21 +263,6 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   const date = new Date(dateStr)
   const [hours, minutes] = timeStr.split(':')
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${hours}:${minutes}`
-}
-
-const assignDoctor = async (appointmentId: string, e: Event) => {
-  const doctorId = (e.target as HTMLSelectElement).value
-  if (!doctorId) return
-  const appointment = appointments.value.find(a => a.id === appointmentId)
-  const doctor = (assignDoctors.value[appointmentId] || []).find(d => d.id === doctorId)
-  const message = `Bạn có chắc chắn muốn gán bác sĩ ${doctor?.fullName} khoa ${doctor?.departmentName} cho bệnh nhân ${appointment?.fullName} với triệu chứng: ${appointment?.reason}?`
-  if (!confirm(message)) {
-    (e.target as HTMLSelectElement).value = ''
-    return
-  }
-  await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
-  alert('Bác sĩ đã được gán ✅')
-  loadAppointments()
 }
 
 const statusLabel = (status: string) => {
@@ -262,5 +281,4 @@ onMounted(() => {
   loadAppointments()
 })
 </script>
-
 <style src="@/styles/layouts/staff-appointment.css"></style>
