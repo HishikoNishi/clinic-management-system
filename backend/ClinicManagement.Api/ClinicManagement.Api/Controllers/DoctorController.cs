@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Doctor;
@@ -8,6 +9,7 @@ using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -22,6 +24,7 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
         }
 
+        /* ================= GET DEPARTMENTS ================= */
         [HttpGet("departments")]
         [Authorize(Roles = "Admin,Staff,Doctor")]
         public async Task<IActionResult> GetDepartments()
@@ -104,10 +107,17 @@ namespace ClinicManagement.Api.Controllers
                 return BadRequest(new { message = "User not found." });
 
             if (await _context.Doctors.AnyAsync(d => d.UserId == dto.UserId))
-                return BadRequest(new { message = "This user already has a doctor profile." });
+                return BadRequest(new { message = "User already has doctor profile." });
 
             if (await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
                 return BadRequest(new { message = "Doctor code already exists." });
+
+            // ✅ CHECK Specialty thuộc Department
+            var specialty = await _context.Specialties
+                .FirstOrDefaultAsync(s => s.Id == dto.SpecialtyId && s.DepartmentId == dto.DepartmentId);
+
+            if (specialty == null)
+                return BadRequest(new { message = "Specialty does not belong to this department." });
 
             var doctor = new Doctor
             {
@@ -128,7 +138,7 @@ namespace ClinicManagement.Api.Controllers
 
             return CreatedAtAction(nameof(Get), new { id = doctor.Id }, new
             {
-                message = "Doctor profile created successfully",
+                message = "Doctor created successfully",
                 doctorId = doctor.Id
             });
         }
@@ -141,10 +151,23 @@ namespace ClinicManagement.Api.Controllers
             var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null) return NotFound();
 
+            // ✅ Lấy user hiện tại
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // ✅ Nếu là Doctor thì chỉ update chính mình
+            if (User.IsInRole("Doctor") && doctor.UserId.ToString() != currentUserId)
+            {
+                return Forbid();
+            }
+
             doctor.Status = dto.Status;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor status updated successfully.", status = doctor.Status.ToString() });
+            return Ok(new
+            {
+                message = "Status updated successfully",
+                status = doctor.Status.ToString()
+            });
         }
 
         /* ================= UPDATE ================= */
@@ -163,6 +186,13 @@ namespace ClinicManagement.Api.Controllers
                 await _context.Doctors.AnyAsync(d => d.Code == dto.Code))
                 return BadRequest(new { message = "Doctor code already exists." });
 
+            // ✅ CHECK Specialty thuộc Department
+            var specialty = await _context.Specialties
+                .FirstOrDefaultAsync(s => s.Id == dto.SpecialtyId && s.DepartmentId == dto.DepartmentId);
+
+            if (specialty == null)
+                return BadRequest(new { message = "Specialty does not belong to this department." });
+
             doctor.Code = dto.Code;
             doctor.FullName = dto.FullName;
             doctor.SpecialtyId = dto.SpecialtyId;
@@ -172,7 +202,7 @@ namespace ClinicManagement.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor profile updated successfully." });
+            return Ok(new { message = "Doctor updated successfully." });
         }
 
         /* ================= DELETE ================= */
@@ -184,10 +214,20 @@ namespace ClinicManagement.Api.Controllers
             if (doctor == null)
                 return NotFound();
 
+            // ✅ Check có appointment không
+            var hasAppointments = await _context.Appointments
+                .AnyAsync(a => a.DoctorId == id);
+
+            if (hasAppointments)
+                return BadRequest(new
+                {
+                    message = "Cannot delete doctor with existing appointments."
+                });
+
             _context.Doctors.Remove(doctor);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor profile deleted successfully." });
+            return Ok(new { message = "Doctor deleted successfully." });
         }
 
         /* ================= GET BY DEPARTMENT ================= */
@@ -210,7 +250,7 @@ namespace ClinicManagement.Api.Controllers
             return Ok(doctors);
         }
 
-        /* ================= GET SPECIALTIES BY DEPARTMENT ================= */
+        /* ================= GET SPECIALTIES ================= */
         [HttpGet("departments/{departmentId}/specialties")]
         [Authorize(Roles = "Admin,Staff,Doctor")]
         public async Task<IActionResult> GetSpecialtiesByDepartment(Guid departmentId)
@@ -221,12 +261,12 @@ namespace ClinicManagement.Api.Controllers
                 .ToListAsync();
 
             if (!specialties.Any())
-                return NotFound(new { message = "Không tìm thấy chuyên khoa cho khoa này." });
+                return NotFound(new { message = "Không có chuyên khoa." });
 
             return Ok(specialties);
         }
 
-        /* ================= GET APPOINTMENTS BY DOCTOR ================= */
+        /* ================= GET APPOINTMENTS ================= */
         [HttpGet("{id}/appointments")]
         [Authorize(Roles = "Admin,Staff")]
         public async Task<ActionResult<IEnumerable<AppointmentDetailDto>>> GetAppointmentsByDoctor(Guid id)
