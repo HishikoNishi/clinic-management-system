@@ -19,13 +19,14 @@ const editingId = ref<string | null>(null)
 const searchTerm = ref('')
 const filterDepartmentId = ref<string>('')
 
+// ✅ FIX TYPE (bỏ null)
 const form = reactive({
   userId: '',
   fullName: '',
   code: '',
-  specialtyId: '' as string | null,
+  specialtyId: '' as string,
   licenseNumber: '',
-  departmentId: '' as string | null,
+  departmentId: '' as string,
   status: 'Active'
 })
 
@@ -60,32 +61,28 @@ const statusMap: Record<DoctorUI['status'], number> = {
   Inactive: 2,
   Deleted: 3
 }
-const reverseStatusMap: Record<number, DoctorUI['status']> = {
-  0: 'Active',
-  1: 'Busy',
-  2: 'Inactive',
-  3: 'Deleted'
-}
 
 async function loadDoctors() {
   loading.value = true
   const res = await doctorService.getAll()
-  doctors.value = res.map(d => ({
-    ...d,
-    status: reverseStatusMap[d.status]
-  }))
+ doctors.value = res.map(d => ({
+  ...d,
+  status: d.status // backend đã trả về "Active"/"Busy"/"Inactive"/"Deleted"
+}))
+
   loading.value = false
 }
 
-async function updateStatus(id: string, status: DoctorUI['status']) {
+async function updateStatus(id: string, status: string) {
   try {
-    await api.put(`/Doctor/${id}/status`, { status: statusMap[status] })
-    const doctor = doctors.value.find(d => d.id === id)
-    if (doctor) doctor.status = status
-  } catch {
+    await api.put(`/Doctor/${id}/status`, { status }) // gửi "Active", "Busy", "Inactive"
+    await loadDoctors()
+  } catch (err:any) {
     alert("Không thể cập nhật trạng thái bác sĩ")
   }
 }
+
+
 
 function openCreate() {
   editingId.value = null
@@ -102,19 +99,23 @@ function openCreate() {
   showModal.value = true
 }
 
-function openEdit(doctor: DoctorUI) {
+async function openEdit(doctor: DoctorUI) {
   editingId.value = doctor.id
+
   Object.assign(form, {
     userId: doctor.userId,
     fullName: doctor.fullName || '',
     code: doctor.code,
-    specialtyId: doctor.specialtyId,
+    specialtyId: doctor.specialtyId?.toString() || '',
     licenseNumber: doctor.licenseNumber || '',
     departmentId: doctor.departmentId?.toString() || '',
     status: doctor.status || 'Active'
   })
+
+  // ✅ FIX QUAN TRỌNG
+  await loadSpecialties(form.departmentId)
+
   showModal.value = true
-  loadSpecialties(form.departmentId || '')
 }
 
 async function save() {
@@ -123,28 +124,41 @@ async function save() {
       alert("Vui lòng chọn khoa và chuyên khoa")
       return
     }
+
     if (!editingId.value && !form.userId) {
       alert("Vui lòng chọn người dùng")
       return
     }
-const payload = {
-  userId: form.userId,
-  fullName: form.fullName,
-  code: form.code,
-  specialtyId: form.specialtyId,
-  licenseNumber: form.licenseNumber,
-  departmentId: form.departmentId,
-  status: statusMap[form.status] // 🔥 FIX QUAN TRỌNG
-}
+
+    // ✅ TÁCH CREATE vs UPDATE (QUAN TRỌNG)
     if (editingId.value) {
+      const payload = {
+        fullName: form.fullName,
+        code: form.code,
+        specialtyId: form.specialtyId,
+        licenseNumber: form.licenseNumber,
+        departmentId: form.departmentId,
+              status: form.status
+      }
+
       await doctorService.update(editingId.value, payload)
     } else {
+      const payload = {
+        userId: form.userId,
+        fullName: form.fullName,
+        code: form.code,
+        specialtyId: form.specialtyId,
+        licenseNumber: form.licenseNumber,
+        departmentId: form.departmentId
+      }
+
       await doctorService.create(payload)
     }
+
     showModal.value = false
     await loadDoctors()
   } catch (error: any) {
-    console.log(error)
+    console.log(error.response?.data)
     alert(error.response?.data?.message || "Có lỗi xảy ra")
   }
 }
@@ -155,7 +169,7 @@ async function remove(id: string) {
   }
 }
 
-// 🔥 thêm watch để load chuyên khoa khi chọn khoa
+// ✅ WATCH CHUẨN
 watch(() => form.departmentId, async (newVal) => {
   if (newVal) {
     await loadSpecialties(newVal)
@@ -276,12 +290,7 @@ onMounted(async () => {
         </option>
       </select>
 
-      <!-- chọn trạng thái -->
-      <select class="form-select" v-model="form.status">
-        <option value="Active">Hoạt động</option>
-        <option value="Busy">Đang khám</option>
-        <option value="Inactive">Không hoạt động</option>
-      </select>
+
 
       <div class="modal-actions d-flex justify-content-end gap-2">
         <button class="btn-primary" @click="save">Lưu</button>
