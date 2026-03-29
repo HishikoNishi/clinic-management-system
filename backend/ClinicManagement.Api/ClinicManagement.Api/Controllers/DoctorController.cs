@@ -285,7 +285,8 @@ namespace ClinicManagement.Api.Controllers
                     d.Id,
                     d.FullName,
                     DepartmentId = d.DepartmentId,
-                    DepartmentName = d.Department.Name
+                    DepartmentName = d.Department.Name,
+                    SpecialtyName = d.Specialty.Name  
                 })
                 .ToListAsync();
 
@@ -314,10 +315,59 @@ namespace ClinicManagement.Api.Controllers
                     FullName = a.Patient.FullName,
                     Phone = a.Patient.Phone,
                     Email = a.Patient.Email,
+                    Note = a.Patient.Note
                 })
                 .ToListAsync();
 
             return Ok(appointments);
         }
+        [HttpGet("profile")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var doctor = await _context.Doctors
+                .Include(d => d.Department)
+                .Include(d => d.Specialty)
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.UserId.ToString() == currentUserId);
+
+            if (doctor == null) return NotFound();
+
+            return Ok(new DoctorDto
+            {
+                Id = doctor.Id,
+                Code = doctor.Code,
+                FullName = doctor.FullName,
+                SpecialtyId = doctor.SpecialtyId,
+                SpecialtyName = doctor.Specialty?.Name ?? "",
+                LicenseNumber = doctor.LicenseNumber,
+                Username = doctor.User.Username,
+                Status = doctor.Status.ToString(),
+                DepartmentId = doctor.DepartmentId,
+                DepartmentName = doctor.Department.Name,
+                AvatarUrl = doctor.AvatarUrl
+            });
+        }
+
+        [HttpPut("profile")]
+        [Authorize(Roles = "Doctor")]
+        public async Task<IActionResult> UpdateProfile(UpdateDoctorDto dto)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId.ToString() == currentUserId);
+            if (doctor == null) return NotFound();
+
+            doctor.FullName = dto.FullName;
+            doctor.Code = dto.Code;
+            doctor.SpecialtyId = dto.SpecialtyId;
+            doctor.DepartmentId = dto.DepartmentId;
+            doctor.LicenseNumber = dto.LicenseNumber ?? "";
+            doctor.AvatarUrl = dto.AvatarUrl;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Profile updated successfully." });
+        }
+
     }
 }
