@@ -1,27 +1,39 @@
 import api from "./api"
 export interface Doctor {
   id: string
-  code: string
-  specialty: string
-  licenseNumber?: string
-  status: number
   userId: string
+  code: string
+  fullName: string
+  specialtyId: string
+  specialtyName: string
+  departmentId: string
+  departmentName: string
+  licenseNumber?: string
+  status: number 
+  avatarUrl?: string
+  username?: string
 }
 
 export interface CreateDoctorDto {
   userId: string
   fullName: string
   code: string
-  specialty: string
+  specialtyId: string
   licenseNumber?: string
+  departmentId: string
+  avatarUrl?: string
 }
 
 export interface UpdateDoctorDto {
   code: string
-  specialty: string
+  fullName: string
+  specialtyId: string
   licenseNumber?: string
-  status: number
+  departmentId: string
+  status: string
+  avatarUrl?: string
 }
+
 
 /* ========================= */
 
@@ -32,9 +44,19 @@ export const doctorService = {
     return res.data
   },
 
-  async create(data: CreateDoctorDto) {
-    return api.post("/Doctor", data)
-  },
+async create(data: CreateDoctorDto) {
+  return api.post("/Doctor", {
+    userId: data.userId,
+    fullName: data.fullName,
+    code: data.code,
+    specialtyId: data.specialtyId,
+    licenseNumber: data.licenseNumber,
+    departmentId: data.departmentId,
+    avatarUrl: data.avatarUrl
+  })
+}
+
+,
 
   async update(id: string, data: UpdateDoctorDto) {
     return api.put(`/Doctor/${id}`, data)
