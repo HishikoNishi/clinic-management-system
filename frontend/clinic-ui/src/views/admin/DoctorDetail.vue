@@ -46,14 +46,15 @@ async function loadAppointments() {
 
 async function saveDoctor() {
   try {
-    await api.put(`/Doctor/${doctorId}`, {
-      fullName: editForm.value.fullName,
-      code: editForm.value.code,
-      specialty: editForm.value.specialty,
-      licenseNumber: editForm.value.licenseNumber,
-      departmentId: editForm.value.departmentId, 
-      avatarUrl: editForm.value.avatarUrl
-    })
+ await api.put(`/Doctor/${doctorId}`, {
+  fullName: editForm.value.fullName,
+  code: editForm.value.code,
+  specialtyId: editForm.value.specialtyId,   
+  licenseNumber: editForm.value.licenseNumber,
+  departmentId: editForm.value.departmentId,
+  avatarUrl: editForm.value.avatarUrl
+})
+
 
     showEdit.value = false
     await loadDoctor()
