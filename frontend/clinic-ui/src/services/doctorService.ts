@@ -12,7 +12,7 @@ export interface Doctor {
   departmentId: string
   departmentName: string
   licenseNumber?: string
-  status: number
+   status: 'Active' | 'Busy' | 'Inactive' | 'Deleted'   // 🔥 đổi từ number sang string union
   avatarUrl?: string
   username?: string
 }
@@ -33,19 +33,12 @@ export interface UpdateDoctorDto {
   specialtyId: string
   licenseNumber?: string
   departmentId: string
-  status: string
+    status: 'Active' | 'Busy' | 'Inactive' | 'Deleted'   // 🔥 đổi từ number sang string union
   avatarUrl?: string
 }
 
 /* ========================= */
 
-// 🔥 đặt ngoài
-const statusMap: any = {
-  Active: 0,
-  Busy: 1,
-  Inactive: 2,
-  Deleted: 3
-}
 
 export const doctorService = {
 
@@ -54,25 +47,29 @@ export const doctorService = {
     return res.data
   },
 
-  async create(data: CreateDoctorDto & { status: string }) {
-    return api.post("/Doctor", {
-      userId: data.userId,
-      fullName: data.fullName,
-      code: data.code,
-      specialtyId: data.specialtyId,
-      licenseNumber: data.licenseNumber,
-      departmentId: data.departmentId,
-      avatarUrl: data.avatarUrl,
-      status: statusMap[data.status] // ✅ FIX
-    })
-  },
+  async create(data: CreateDoctorDto) {
+  return api.post("/Doctor", {
+    userId: data.userId,
+    fullName: data.fullName,
+    code: data.code,
+    specialtyId: data.specialtyId,
+    licenseNumber: data.licenseNumber,
+    departmentId: data.departmentId,
+    avatarUrl: data.avatarUrl
+  })
+},
 
   async update(id: string, data: UpdateDoctorDto) {
-    return api.put(`/Doctor/${id}`, {
-      ...data,
-      status: statusMap[data.status] // ✅ FIX
-    })
-  },
+  return api.put(`/Doctor/${id}`, {
+    code: data.code,
+    fullName: data.fullName,
+    specialtyId: data.specialtyId,
+    licenseNumber: data.licenseNumber,
+    departmentId: data.departmentId,
+    avatarUrl: data.avatarUrl
+
+  })
+},
 
   async delete(id: string) {
     return api.delete(`/Doctor/${id}`)
