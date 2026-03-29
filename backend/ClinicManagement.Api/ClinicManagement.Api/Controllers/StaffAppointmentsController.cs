@@ -116,8 +116,44 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(appointments);
         }
+        // StaffAppointmentsController.cs
+        [HttpGet("specialties-by-department/{departmentId}")]
+        public async Task<IActionResult> GetSpecialtiesByDepartment(Guid departmentId)
+        {
+            // giả sử bạn có DbSet<Specialty> với DepartmentId
+            var specialties = await _context.Specialties
+                .Where(s => s.DepartmentId == departmentId)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name
+                })
+                .ToListAsync();
 
+            return Ok(specialties);
+        }
+        [HttpGet("by-specialty/{specialtyId}")]
+        public async Task<IActionResult> GetDoctorsBySpecialty(Guid specialtyId)
+        {
+            var doctors = await _context.Doctors
+                .Include(d => d.Department)
+                .Include(d => d.Specialty)
+                .Where(d => d.SpecialtyId == specialtyId
+                            && d.Status == DoctorStatus.Active)
+                .Select(d => new
+                {
+                    d.Id,
+                    d.FullName,
+                    d.Code,
+                    d.SpecialtyId,
+                    SpecialtyName = d.Specialty.Name,
+                    d.DepartmentId,
+                    DepartmentName = d.Department.Name
+                })
+                .ToListAsync();
 
+            return Ok(doctors);
+        }
 
         [HttpPost("assign-doctor")]
         public async Task<IActionResult> AssignDoctor([FromBody] AssignDoctorDto dto)
@@ -129,10 +165,20 @@ namespace ClinicManagement.Api.Controllers
                 return NotFound("Appointment not found");
 
             var doctor = await _context.Doctors
-                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId);
+       .FirstOrDefaultAsync(d => d.Id == dto.DoctorId
+                              && d.Status == DoctorStatus.Active);
 
             if (doctor == null)
-                return NotFound("Doctor not found");
+                return BadRequest("Doctor is not available");
+            var isBusy = await _context.Appointments.AnyAsync(a =>
+    a.DoctorId == dto.DoctorId &&
+    a.AppointmentDate == appointment.AppointmentDate &&
+    a.AppointmentTime == appointment.AppointmentTime &&
+    a.Status == AppointmentStatus.Confirmed
+);
+
+            if (isBusy)
+                return BadRequest("Doctor is already booked at this time");
 
             appointment.DoctorId = doctor.Id;
             appointment.Status = AppointmentStatus.Confirmed;
