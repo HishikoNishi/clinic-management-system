@@ -169,16 +169,19 @@ async function remove(id: string) {
   }
 }
 
-// ✅ WATCH CHUẨN
-watch(() => form.departmentId, async (newVal) => {
+watch(() => form.departmentId, async (newVal, oldVal) => {
   if (newVal) {
     await loadSpecialties(newVal)
-    form.specialtyId = ''
+   
+    if (newVal !== oldVal) {
+      form.specialtyId = ''
+    }
   } else {
     specialties.value = []
     form.specialtyId = ''
   }
 })
+
 
 onMounted(async () => {
   const res = await getUsers()
