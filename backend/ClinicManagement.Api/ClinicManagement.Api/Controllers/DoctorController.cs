@@ -273,7 +273,27 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(specialties);
         }
+        // GET doctors by specialty
+        [HttpGet("by-specialty/{specialtyId:guid}")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> GetDoctorsBySpecialty(Guid specialtyId)
+        {
+            var doctors = await _context.Doctors
+                .Where(d => d.SpecialtyId == specialtyId)
+                .Select(d => new
+                {
+                    d.Id,
+                    d.FullName,
+                    DepartmentId = d.DepartmentId,
+                    DepartmentName = d.Department.Name
+                })
+                .ToListAsync();
 
+            if (!doctors.Any())
+                return NotFound(new { message = "Không có bác sĩ cho chuyên khoa này." });
+
+            return Ok(doctors);
+        }
         /* ================= GET APPOINTMENTS ================= */
         [HttpGet("{id}/appointments")]
         [Authorize(Roles = "Admin,Staff")]
