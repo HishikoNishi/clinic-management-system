@@ -11,14 +11,14 @@
 
       <select v-model="selectedDepartment" @change="loadDoctorsByDepartment(null)">
         <option value="">Chọn khoa</option>
-        <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+        <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
           {{ dep.name }}
         </option>
       </select>
 
       <select v-model="selectedDoctor" :disabled="!selectedDepartment">
         <option value="">Chọn bác sĩ</option>
-        <option v-for="d in doctors" :key="d.id" :value="d.id">
+        <option v-for="d in doctors" :key="d.id" :value="d.id.toString()">
           {{ d.fullName }}
         </option>
       </select>
@@ -48,7 +48,7 @@
           <th>Trạng thái</th>
           <th>Triệu chứng</th>
           <th>Bác sĩ</th>
-          <th>Gán bác sĩ</th>
+          <th>Gán/Đổi bác sĩ</th>
         </tr>
       </thead>
       <tbody>
@@ -66,11 +66,16 @@
           <td>{{ a.reason }}</td>
           <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
           <td @click.stop>
-            <template v-if="a.statusDetail.value === 'Pending'">
-              <button class="btn btn-sm btn-primary" @click="openAssignModal(a)">Gán bác sĩ</button>
-            </template>
-            <template v-else>—</template>
-          </td>
+  <template v-if="a.statusDetail.value === 'Pending' || a.statusDetail.value === 'Confirmed'">
+    <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
+      {{ a.statusDetail.value === 'Pending' ? 'Gán bác sĩ' : 'Đổi bác sĩ' }}
+    </button>
+  </template>
+  <button class="btn btn-sm btn-info" @click="$router.push(`/staff/appointments/${a.id}`)">
+    Chi tiết
+  </button>
+</td>
+
         </tr>
       </tbody>
     </table>
@@ -80,26 +85,26 @@
     <!-- Modal gán bác sĩ -->
     <div v-if="showAssignModal" class="modal-backdrop">
       <div class="modal-content p-4">
-        <h4>Gán bác sĩ cho lịch khám</h4>
+        <h4>Gán/Đổi bác sĩ cho lịch khám</h4>
         <select v-model="assignForm.departmentId" class="form-select mb-2">
           <option value="">Chọn khoa</option>
-          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
-            {{ dep.name }}
-          </option>
+        <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+  {{ dep.name }}
+</option>
         </select>
 
         <select v-model="assignForm.specialtyId" class="form-select mb-2" :disabled="!assignForm.departmentId">
           <option value="">Chọn chuyên khoa</option>
-          <option v-for="s in assignSpecialties" :key="s.id" :value="s.id">
-            {{ s.name }}
-          </option>
+        <option v-for="s in assignSpecialties" :key="s.id" :value="s.id.toString()">
+  {{ s.name }}
+</option>
         </select>
 
         <select v-model="assignForm.doctorId" class="form-select mb-2" :disabled="!assignForm.specialtyId">
           <option value="">Chọn bác sĩ</option>
-          <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id">
-            {{ d.fullName }}
-          </option>
+          <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id.toString()">
+  {{ d.fullName }}
+</option>
         </select>
 
         <div class="text-end mt-3">
@@ -202,7 +207,7 @@ async function confirmAssignDoctor() {
     appointmentId: assignForm.value.appointmentId,
     doctorId: assignForm.value.doctorId
   })
-  alert('Bác sĩ đã được gán ✅')
+  alert('Bác sĩ đã được gán/đổi ✅')
   showAssignModal.value = false
   loadAppointments()
 }
@@ -234,9 +239,10 @@ const getDepartmentName = (depId: string) => {
 }
 
 const loadDepartments = async () => {
-  const res = await api.get('/departments')
+  const res = await api.get('/Doctor/departments')
   departments.value = res.data
 }
+
 
 const loadAppointments = async () => {
   let res
@@ -252,6 +258,7 @@ const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
 }
+
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
@@ -281,4 +288,5 @@ onMounted(() => {
   loadAppointments()
 })
 </script>
+
 <style src="@/styles/layouts/staff-appointment.css"></style>
