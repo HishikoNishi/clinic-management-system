@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
@@ -19,6 +19,9 @@ const appointments = ref<any[]>([])
 const searchTerm = ref('')
 const showEdit = ref(false)
 const editForm = ref<any>({})
+
+const departments = ref<any[]>([])
+const specialties = ref<any[]>([])
 
 onMounted(async () => {
   await loadDoctor()
@@ -44,17 +47,30 @@ async function loadAppointments() {
   }
 }
 
+async function loadDepartments() {
+  const res = await api.get('/Doctor/departments')
+  departments.value = res.data
+}
+
+async function loadSpecialties(departmentId: string) {
+  if (!departmentId) {
+    specialties.value = []
+    return
+  }
+  const res = await api.get(`/Doctor/departments/${departmentId}/specialties`)
+  specialties.value = res.data
+}
+
 async function saveDoctor() {
   try {
- await api.put(`/Doctor/${doctorId}`, {
-  fullName: editForm.value.fullName,
-  code: editForm.value.code,
-  specialtyId: editForm.value.specialtyId,   
-  licenseNumber: editForm.value.licenseNumber,
-  departmentId: editForm.value.departmentId,
-  avatarUrl: editForm.value.avatarUrl
-})
-
+    await api.put(`/Doctor/${doctorId}`, {
+      fullName: editForm.value.fullName,
+      code: editForm.value.code,
+      specialtyId: editForm.value.specialtyId,   
+      licenseNumber: editForm.value.licenseNumber,
+      departmentId: editForm.value.departmentId,
+      avatarUrl: editForm.value.avatarUrl
+    })
 
     showEdit.value = false
     await loadDoctor()
@@ -62,6 +78,24 @@ async function saveDoctor() {
     alert("Không thể cập nhật bác sĩ: " + err.message)
   }
 }
+
+function openEdit() {
+  showEdit.value = true
+  loadDepartments()
+  if (editForm.value.departmentId) {
+    loadSpecialties(editForm.value.departmentId)
+  }
+}
+
+watch(() => editForm.value.departmentId, async (newVal) => {
+  if (newVal) {
+    await loadSpecialties(newVal)
+    editForm.value.specialtyId = ''
+  } else {
+    specialties.value = []
+    editForm.value.specialtyId = ''
+  }
+})
 
 const filteredAppointments = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
@@ -75,7 +109,6 @@ const filteredAppointments = computed(() => {
     })
 })
 
-// badge class cho trạng thái bác sĩ
 const doctorBadgeClass = (status: string) => {
   if (status === "Active") return "bg-success"
   if (status === "Busy") return "bg-warning"
@@ -83,7 +116,6 @@ const doctorBadgeClass = (status: string) => {
   return "bg-light"
 }
 
-// dịch trạng thái bác sĩ sang tiếng Việt
 const doctorStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     Active: "Hoạt động",
@@ -93,7 +125,6 @@ const doctorStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
-// dịch trạng thái lịch hẹn sang tiếng Việt
 const appointmentStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     Pending: "Chờ xác nhận",
@@ -117,15 +148,14 @@ const appointmentStatusLabel = (status: string) => {
         <div class="col-md-9">
           <h3 class="doctor-name">Tên: {{ doctor?.fullName }}</h3>
           <p><strong>Mã:</strong> {{ doctor?.code }}</p>
-          <p><strong>Chuyên khoa:</strong> {{ doctor?.specialty }}</p>
+          <p><strong>Chuyên khoa:</strong> {{ doctor?.specialtyName }}</p>
           <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
           <p><strong>Số giấy phép:</strong> {{ doctor?.licenseNumber }}</p>
-          <!-- 🔥 Hiển thị trạng thái bằng tiếng Việt -->
           <span :class="['badge', doctorBadgeClass(doctor?.status)]">
             {{ doctorStatusLabel(doctor?.status) }}
           </span>
           <div class="mt-3">
-            <button class="btn btn-primary" @click="showEdit = true">Sửa thông tin</button>
+            <button class="btn btn-primary" @click="openEdit">Sửa thông tin</button>
           </div>
         </div>
       </div>
@@ -178,10 +208,25 @@ const appointmentStatusLabel = (status: string) => {
         <h4>Cập nhật thông tin bác sĩ</h4>
         <input v-model="editForm.fullName" class="form-control mb-2" placeholder="Tên bác sĩ" />
         <input v-model="editForm.code" class="form-control mb-2" placeholder="Mã bác sĩ" />
-        <input v-model="editForm.specialty" class="form-control mb-2" placeholder="Chuyên khoa" />
+
+        <select v-model="editForm.departmentId" class="form-select mb-2">
+          <option value="">Chọn khoa</option>
+          <option v-for="dep in departments" :key="dep.id" :value="dep.id">
+            {{ dep.name }}
+          </option>
+        </select>
+
+        <select v-model="editForm.specialtyId" class="form-select mb-2" :disabled="!editForm.departmentId">
+          <option value="">Chọn chuyên khoa</option>
+          <option v-for="s in specialties" :key="s.id" :value="s.id">
+            {{ s.name }}
+          </option>
+        </select>
+
         <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
         <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh avatar" />
         <img v-if="editForm.avatarUrl" :src="editForm.avatarUrl" class="avatar-preview mt-2" />
+
         <div class="text-end mt-3">
           <button class="btn btn-secondary me-2" @click="showEdit=false">Hủy</button>
           <button class="btn btn-success" @click="saveDoctor">Lưu</button>
