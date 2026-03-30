@@ -341,10 +341,19 @@ const validateBookingForm = () => {
   return ok
 }
 
+const mapGenderToOption = (value: any) => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'number') return String(value)
+  const normalized = value.toString().toLowerCase()
+  if (normalized.startsWith('m')) return '1'
+  if (normalized.startsWith('f')) return '2'
+  return ''
+}
+
 const applyPrefill = (data: any) => {
   bookingForm.fullName = data.fullName || ''
   bookingForm.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
-  bookingForm.gender = data.gender != null ? String(data.gender) : ''
+  bookingForm.gender = mapGenderToOption(data.gender)
   bookingForm.phone = data.phone || ''
   bookingForm.email = data.email || ''
   bookingForm.address = data.address || ''

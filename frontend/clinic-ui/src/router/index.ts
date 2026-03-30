@@ -138,6 +138,12 @@ const routes: RouteRecordRaw[] = [
     name: "CashierInvoices",
     component: () => import("@/views/cashier/CashierInvoices.vue"),
     meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/invoices/list",
+    name: "CashierInvoiceList",
+    component: () => import("@/views/cashier/CashierInvoiceList.vue"),
+    meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
   }
 ]
 
@@ -153,7 +159,8 @@ router.beforeEach((to) => {
     Admin: "/dashboard",
     Staff: "/staff/appointments",
     Doctor: "/doctor/appointments",
-    Cashier: "/cashier/invoices"
+    Cashier: "/cashier/invoices",
+    Technician: "/technician/tests"
   }
 
 

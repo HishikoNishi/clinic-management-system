@@ -46,7 +46,7 @@
             <p class="form-subtitle">Đăng nhập vào tài khoản của bạn</p>
           </div>
 
-          <div v-if="errorMessage" class="alert alert-error">
+          <div v-if="errorMessage" class="alert alert-error text-danger">
             {{ errorMessage }}
           </div>
 
@@ -83,13 +83,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.ts'
 import api from '@/services/api.ts'
 import '@/styles/layouts/login.css'
-
+import type { AxiosError } from 'axios'
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -115,31 +115,32 @@ const handleLogin = async () => {
     })
 
     authStore.login({
-  token: response.data.token,
-  role: response.data.role,
-  expiresAt: response.data.expiresAt
-})
+      token: response.data.token,
+      role: response.data.role,
+      expiresAt: response.data.expiresAt,
+      refreshToken: response.data.refreshToken,
+      refreshExpiresAt: response.data.refreshExpiresAt
+    })
 
 // ✅ redirect theo role
-const role = response.data.role
+const role = response.data.role?.trim()
 
-if (role === 'Staff') {
-  router.push('/staff/appointments')
+const roleRedirect: Record<string, string> = {
+  Admin: '/dashboard',
+  Staff: '/staff/appointments',
+  Doctor: '/doctor/appointments',
+  Cashier: '/cashier/invoices',
+  Technician: '/technician/tests'
 }
-else if (role === 'Doctor') {
-  router.push('/doctor/appointments')
-}
-else if (role === 'Admin') {
-  router.push('/dashboard')
-}
-else {
-  router.push('/login')
-}
+
+router.push(roleRedirect[role] || '/home')
+
+
   } catch (error) {
-    console.error('Login error:', error)
-    errorMessage.value = error.response?.data?.message || 'Invalid username or password. Please try again.'
-  } finally {
-    loading.value = false
+    const err = error as AxiosError<any>
+    errorMessage.value =
+      err.response?.data?.message ||
+      'Invalid username or password. Please try again.'
   }
 }
 </script>

@@ -9,7 +9,8 @@ const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 
 const navItems = computed(() => ([
-  { label: 'Hóa đơn & thanh toán', icon: 'receipt', path: '/cashier/invoices' }
+  { label: 'Hóa đơn & thanh toán', icon: 'receipt', path: '/cashier/invoices' },
+  { label: 'Danh sách hóa đơn', icon: 'list-ul', path: '/cashier/invoices/list' }
 ]))
 
 const go = (path: string) => {
