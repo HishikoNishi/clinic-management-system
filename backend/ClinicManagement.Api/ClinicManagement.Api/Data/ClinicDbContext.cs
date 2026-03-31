@@ -356,8 +356,8 @@ namespace ClinicManagement.Api.Data
                 new Specialty { Id = Guid.Parse("eeee1111-5555-5555-5555-555555555555"), Name = "Nha tổng quát", DepartmentId = depRang },
                 new Specialty { Id = Guid.Parse("eeee2222-5555-5555-5555-555555555555"), Name = "Niềng răng", DepartmentId = depRang },
                 new Specialty { Id = Guid.Parse("ffff1111-6666-6666-6666-666666666666"), Name = "Khám TMH", DepartmentId = depTmh },
-                new Specialty { Id = Guid.Parse("gggg1111-7777-7777-7777-777777777777"), Name = "Khám sức khỏe", DepartmentId = depKham },
-                new Specialty { Id = Guid.Parse("gggg2222-7777-7777-7777-777777777777"), Name = "Tiêm chủng", DepartmentId = depKham }
+                new Specialty { Id = Guid.Parse("aaaa4444-7777-7777-7777-777777777777"), Name = "Khám sức khỏe", DepartmentId = depKham },
+                new Specialty { Id = Guid.Parse("aaaa5555-7777-7777-7777-777777777777"), Name = "Tiêm chủng", DepartmentId = depKham }
             );
 
 

@@ -2,28 +2,27 @@
   <div class="staff-container">
     <h2>Quản lý lịch khám</h2>
 
-    <!-- SEARCH BAR -->
     <div class="search-bar">
       <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
       <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
       <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
-      <!-- Chọn bác sĩ -->
-      <select v-model="selectedDoctor" @change="loadAppointments">
-        <option value="">Tất cả bác sĩ</option>
-        <option v-for="d in doctors" :key="d.id" :value="d.id">
-   {{ d.name }}
-
+      <select v-model="selectedDepartment" @change="handleDepartmentFilter">
+        <option value="">Chọn khoa</option>
+        <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+          {{ dep.name }}
         </option>
       </select>
 
-      <!-- Nút kính lúp -->
-      <button class="search-btn" @click="loadAppointments">🔍</button>
-      <button class="clear-btn" @click="clearFilters">Xóa</button>
+      <select v-model="selectedDoctor" :disabled="!selectedDepartment">
+        <option value="">Chọn bác sĩ</option>
+        <option v-for="d in doctorOptions" :key="d.id" :value="d.id.toString()">
+          {{ d.fullName }}
+        </option>
+      </select>
     </div>
 
-    <!-- FILTER STATUS -->
     <div class="filter">
       <button
         v-for="s in statuses"
@@ -35,69 +34,140 @@
       </button>
     </div>
 
-    <!-- TABLE -->
-  <table>
-  <thead>
-    <tr>
-      <th>Mã</th>
-      <th>Bệnh nhân</th>
-      <th>Điện thoại</th> <!-- thêm cột -->
-      <th>Ngày</th>
-      <th>Trạng thái</th>
-      <th>Bác sĩ</th>
-      <th v-if="currentStatus === 'Pending'">Gán bác sĩ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr
-      v-for="a in filteredAppointments"
-      :key="a.id"
-      @click="$router.push(`/staff/appointments/${a.id}`)"
-    >
-      <td>{{ a.appointmentCode }}</td>
-      <td>{{ a.fullName }}</td>
-      <td>{{ a.phone }}</td> <!-- thêm dữ liệu -->
-      <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-      <td>
-        <span :class="'status ' + a.statusDetail.value.toLowerCase()">
-          {{ statusLabel(a.statusDetail.value) }}
-        </span>
-      </td>
-      <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
-      <td v-if="a.statusDetail.value === 'Pending'">
-        <select @change="assignDoctor(a.id, $event)" @click.stop>
-          <option value="">Chọn bác sĩ</option>
-          <option v-for="d in doctors" :key="d.id" :value="d.id">
-            {{ d.username }}
-          </option>
-        </select>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
+    <table>
+      <thead>
+        <tr>
+          <th>Mã</th>
+          <th>Bệnh nhân</th>
+          <th>Điện thoại</th>
+          <th>Ngày sinh</th>
+          <th>Ngày</th>
+          <th>Trạng thái</th>
+          <th>Triệu chứng</th>
+          <th>Bác sĩ</th>
+          <th>Gán/Đổi bác sĩ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="a in filteredAppointments" :key="a.id">
+          <td>{{ a.appointmentCode }}</td>
+          <td>{{ a.fullName }}</td>
+          <td>{{ a.phone }}</td>
+          <td>{{ formatDate(a.dateOfBirth) }}</td>
+          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+          <td>
+            <span :class="'status ' + a.statusDetail.value.toLowerCase()">
+              {{ statusLabel(a.statusDetail.value) }}
+            </span>
+          </td>
+          <td>{{ a.reason }}</td>
+          <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
+          <td @click.stop>
+            <template v-if="a.statusDetail.value === 'Pending' || a.statusDetail.value === 'Confirmed'">
+              <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
+                {{ a.statusDetail.value === 'Pending' ? 'Gán bác sĩ' : 'Đổi bác sĩ' }}
+              </button>
+            </template>
+            <button class="btn btn-sm btn-info" @click="$router.push(`/staff/appointments/${a.id}`)">
+              Chi tiết
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
+
+    <div v-if="showAssignModal" class="modal-backdrop" @click="showAssignModal = false">
+      <div class="modal-content assign-modal" @click.stop>
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <span class="icon-doctor">👨‍⚕️</span> Gán/Đổi bác sĩ cho lịch khám
+          </h4>
+          <button class="modal-close" @click="showAssignModal = false">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="departmentSelect">Chọn khoa *</label>
+            <select 
+              id="departmentSelect"
+              v-model="assignForm.departmentId" 
+              class="form-select form-control"
+            >
+              <option value="">-- Chọn khoa --</option>
+              <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+                {{ dep.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="specialtySelect">Chọn chuyên khoa *</label>
+            <select 
+              id="specialtySelect"
+              v-model="assignForm.specialtyId" 
+              class="form-select form-control"
+              :disabled="!assignForm.departmentId"
+            >
+              <option value="">-- Chọn chuyên khoa --</option>
+              <option v-for="s in assignSpecialties" :key="s.id" :value="s.id.toString()">
+                {{ s.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="doctorSelect">Chọn bác sĩ *</label>
+            <select 
+              id="doctorSelect"
+              v-model="assignForm.doctorId" 
+              class="form-select form-control"
+              :disabled="!assignForm.specialtyId"
+            >
+              <option value="">-- Chọn bác sĩ --</option>
+              <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id.toString()">
+                {{ d.fullName }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="showAssignModal = false">
+            ✕ Hủy
+          </button>
+          <button class="btn btn-success" @click="confirmAssignDoctor">
+            ✓ Xác nhận gán bác sĩ
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
 
-const auth = useAuthStore()
+useAuthStore()
 
 interface Appointment {
   id: string
   appointmentCode: string
   fullName: string
   phone: string
+  dateOfBirth: string
   appointmentDate: string
   appointmentTime: string
+  reason: string
   statusDetail: {
     value: string
     doctorName: string
+    doctorId?: string
+    doctorCode?: string
+    doctorDepartmentName?: string
   }
 }
 
@@ -106,12 +176,29 @@ const searchName = ref('')
 const searchPhone = ref('')
 const searchDate = ref('')
 const selectedDoctor = ref('')
+const selectedDepartment = ref('')
 
 const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
+const departments = ref<any[]>([])
 
 const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
+
+const showAssignModal = ref(false)
+const assignForm = ref({
+  appointmentId: '',
+  departmentId: '',
+  specialtyId: '',
+  doctorId: ''
+})
+const assignSpecialties = ref<any[]>([])
+const assignDoctorsList = ref<any[]>([])
+
+const doctorOptions = computed(() => {
+  if (!selectedDepartment.value) return doctors.value
+  return doctors.value.filter(d => d.departmentId?.toString() === selectedDepartment.value)
+})
 
 const filteredAppointments = computed(() => {
   return appointments.value.filter(a => {
@@ -119,46 +206,75 @@ const filteredAppointments = computed(() => {
     const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
     const matchDate = !searchDate.value || a.appointmentDate?.startsWith(searchDate.value)
-    return matchCode && matchName && matchPhone && matchDate
+    const matchDept = !selectedDepartment.value || a.statusDetail.doctorDepartmentName === getDepartmentName(selectedDepartment.value)
+    const matchDoctor = !selectedDoctor.value || a.statusDetail.doctorId === selectedDoctor.value
+    return matchCode && matchName && matchPhone && matchDate && matchDept && matchDoctor
   })
 })
 
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-  headers: { Authorization: `Bearer ${auth.token}` }
-})
+const getDepartmentName = (depId: string) => departments.value.find(d => d.id === depId)?.name || ''
 
-const loadAppointments = async () => {
-  let res
-
-  if (selectedDoctor.value) {
-    res = await api.get<Appointment[]>(
-      `/staff/StaffAppointments/by-doctor?doctorId=${selectedDoctor.value}`
-    )
-
-    let data: Appointment[] = res.data
-
-    if (currentStatus.value !== 'All') {
-      data = data.filter(a => a.statusDetail.value === currentStatus.value)
-    }
-
-    appointments.value = data
-  } else {
-    if (currentStatus.value === 'All') {
-      res = await api.get<Appointment[]>(`/staff/StaffAppointments`)
-    } else {
-      res = await api.get<Appointment[]>(
-        `/staff/StaffAppointments/filter?status=${currentStatus.value}`
-      )
-    }
-
-    appointments.value = res.data
-  }
+const loadDepartments = async () => {
+  const res = await api.get('/Departments')
+  departments.value = res.data ?? []
 }
 
 const loadDoctors = async () => {
   const res = await api.get('/Doctor')
-  doctors.value = res.data
+  doctors.value = res.data ?? []
+}
+
+const loadAppointments = async () => {
+  const url = currentStatus.value === 'All'
+    ? '/staff/StaffAppointments'
+    : `/staff/StaffAppointments/filter?status=${currentStatus.value}`
+  const res = await api.get<Appointment[]>(url)
+  appointments.value = res.data
+}
+
+const loadAssignSpecialties = async (departmentId: string) => {
+  if (!departmentId) { assignSpecialties.value = []; return }
+  const res = await api.get(`/Doctor/departments/${departmentId}/specialties`)
+  assignSpecialties.value = res.data ?? []
+}
+
+const loadAssignDoctorsBySpecialty = async (specialtyId: string) => {
+  if (!specialtyId) { assignDoctorsList.value = []; return }
+  const res = await api.get(`/Doctor/by-specialty/${specialtyId}`)
+  assignDoctorsList.value = res.data ?? []
+}
+
+function openAssignModal(appointment: Appointment) {
+  assignForm.value = {
+    appointmentId: appointment.id,
+    departmentId: '',
+    specialtyId: '',
+    doctorId: ''
+  }
+  showAssignModal.value = true
+  loadDepartments()
+}
+
+watch(() => assignForm.value.departmentId, async (newVal) => {
+  await loadAssignSpecialties(newVal)
+})
+
+watch(() => assignForm.value.specialtyId, async (newVal) => {
+  await loadAssignDoctorsBySpecialty(newVal)
+})
+
+async function confirmAssignDoctor() {
+  if (!assignForm.value.doctorId) {
+    alert('Vui lòng chọn bác sĩ')
+    return
+  }
+  await api.post('/staff/StaffAppointments/assign-doctor', {
+    appointmentId: assignForm.value.appointmentId,
+    doctorId: assignForm.value.doctorId
+  })
+  alert('Bác sĩ đã được gán/đổi ✅')
+  showAssignModal.value = false
+  loadAppointments()
 }
 
 const changeStatus = (s: string) => {
@@ -166,32 +282,10 @@ const changeStatus = (s: string) => {
   loadAppointments()
 }
 
-const assignDoctor = async (appointmentId: string, e: Event) => {
-  const doctorId = (e.target as HTMLSelectElement).value
-  if (!doctorId) return
-  await api.post('/staff/StaffAppointments/assign-doctor', { appointmentId, doctorId })
-  alert('Bác sĩ đã được gán ✅')
-  loadAppointments()
-}
-
-const statusLabel = (status: string) => {
-  const labels: { [key: string]: string } = {
-    'All': 'Tất cả',
-    'Pending': 'Chờ xử lý',
-    'Confirmed': 'Đã xác nhận',
-    'Completed': 'Hoàn thành',
-    'Cancelled': 'Đã hủy'
-  }
-  return labels[status] || status
-}
-
-const clearFilters = () => {
-  searchCode.value = ''
-  searchName.value = ''
-  searchPhone.value = ''
-  searchDate.value = ''
-  selectedDoctor.value = ''
-  loadAppointments()
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()}`
 }
 
 const formatDateTime = (dateStr: string, timeStr: string) => {
@@ -201,9 +295,25 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   return `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${hours}:${minutes}`
 }
 
+const statusLabel = (status: string) => {
+  const labels: { [key: string]: string } = {
+    All: 'Tất cả',
+    Pending: 'Chờ xử lý',
+    Confirmed: 'Đã xác nhận',
+    Completed: 'Hoàn thành',
+    Cancelled: 'Đã hủy'
+  }
+  return labels[status] || status
+}
+
+const handleDepartmentFilter = () => {
+  selectedDoctor.value = ''
+}
+
 onMounted(() => {
-  loadAppointments()
+  loadDepartments()
   loadDoctors()
+  loadAppointments()
 })
 </script>
 

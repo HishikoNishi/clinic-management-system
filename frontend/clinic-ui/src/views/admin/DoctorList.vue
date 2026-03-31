@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { doctorService, type Doctor } from '@/services/doctorService'
-import '@/styles/layouts/doctor.css'
 import { getUsers } from '@/services/userService'
+import api from '@/services/api'
+import '@/styles/layouts/doctor.css'
 
 const users = ref<any[]>([])
 const doctors = ref<Doctor[]>([])
+const departments = ref<any[]>([])
+const specialties = ref<any[]>([])
 const loading = ref(false)
 const showModal = ref(false)
 const editingId = ref<string | null>(null)
@@ -15,15 +18,17 @@ const form = reactive({
   userId: '',
   fullName: '',
   code: '',
-  specialty: '',
-  licenseNumber: ''
+  departmentId: '',
+  specialtyId: '',
+  licenseNumber: '',
+  avatarUrl: ''
 })
 
 const filteredDoctors = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
   if (!term) return doctors.value
   return doctors.value.filter((d) => {
-    const text = `${d.code} ${d.specialty} ${d.licenseNumber || ''}`.toLowerCase()
+    const text = `${d.code} ${d.fullName ?? ''} ${d.specialtyName ?? ''} ${d.departmentName ?? ''} ${d.licenseNumber ?? ''}`.toLowerCase()
     return text.includes(term)
   })
 })
@@ -34,24 +39,49 @@ async function loadDoctors() {
   loading.value = false
 }
 
+async function loadDepartments() {
+  const res = await api.get('/Departments')
+  departments.value = res.data ?? []
+}
+
+async function loadSpecialties(departmentId: string) {
+  specialties.value = []
+  form.specialtyId = ''
+  if (!departmentId) return
+  try {
+    const res = await api.get(`/Doctor/departments/${departmentId}/specialties`)
+    specialties.value = res.data ?? []
+  } catch {
+    specialties.value = []
+  }
+}
+
 function openCreate() {
   editingId.value = null
   form.userId = ''
   form.fullName = ''
   form.code = ''
-  form.specialty = ''
+  form.departmentId = ''
+  form.specialtyId = ''
   form.licenseNumber = ''
+  form.avatarUrl = ''
+  specialties.value = []
   showModal.value = true
 }
 
 function openEdit(doctor: Doctor) {
   editingId.value = doctor.id
   form.userId = doctor.userId
-  form.fullName = (doctor as any).fullName || ''
+  form.fullName = doctor.fullName || ''
   form.code = doctor.code
-  form.specialty = doctor.specialty
+  form.departmentId = doctor.departmentId
+  form.specialtyId = doctor.specialtyId
   form.licenseNumber = doctor.licenseNumber || ''
+  form.avatarUrl = doctor.avatarUrl || ''
   showModal.value = true
+  if (form.departmentId) {
+    loadSpecialties(form.departmentId)
+  }
 }
 
 async function save() {
@@ -59,17 +89,22 @@ async function save() {
     if (editingId.value) {
       await doctorService.update(editingId.value, {
         code: form.code,
-        specialty: form.specialty,
+        fullName: form.fullName,
+        specialtyId: form.specialtyId,
         licenseNumber: form.licenseNumber,
-        status: 1
+        departmentId: form.departmentId,
+        status: 'Active',
+        avatarUrl: form.avatarUrl
       })
     } else {
       await doctorService.create({
         userId: form.userId,
         fullName: form.fullName,
         code: form.code,
-        specialty: form.specialty,
-        licenseNumber: form.licenseNumber
+        specialtyId: form.specialtyId,
+        departmentId: form.departmentId,
+        licenseNumber: form.licenseNumber,
+        avatarUrl: form.avatarUrl
       })
     }
 
@@ -80,7 +115,6 @@ async function save() {
       const errors = Object.values(error.response.data.errors)
         .flat()
         .join("\n")
-
       alert(errors)
       return
     }
@@ -90,17 +124,17 @@ async function save() {
       return
     }
 
-    if (typeof error.response?.data === "string") {
+    if (typeof error.response?.data === 'string') {
       alert(error.response.data)
       return
     }
 
-    alert("Something went wrong")
+    alert('Something went wrong')
   }
 }
 
 async function remove(id: string) {
-  if (confirm("Bạn có chắc muốn xóa bác sĩ này?")) {
+  if (confirm('Bạn có chắc chắn muốn xóa bác sĩ này?')) {
     await doctorService.delete(id)
     await loadDoctors()
   }
@@ -108,7 +142,8 @@ async function remove(id: string) {
 
 onMounted(async () => {
   const res = await getUsers()
-  users.value = res.data.filter((u: any) => u.role === "Doctor")
+  users.value = res.data.filter((u: any) => u.role === 'Doctor')
+  await loadDepartments()
   await loadDoctors()
 })
 </script>
@@ -127,7 +162,7 @@ onMounted(async () => {
             type="search"
             class="form-control"
             style="min-width: 260px"
-            placeholder="Tìm theo mã, chuyên khoa, giấy phép"
+            placeholder="Tìm theo mã, chuyên khoa, khoa, giấy phép"
           />
           <button class="btn btn-primary" @click="openCreate">+ Thêm bác sĩ</button>
         </div>
@@ -139,31 +174,29 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th>Mã</th>
+                <th>Họ tên</th>
+                <th>Khoa</th>
                 <th>Chuyên khoa</th>
                 <th>Giấy phép</th>
-                <th>Trạng thái</th>
                 <th style="text-align:right">Hành động</th>
               </tr>
             </thead>
 
             <tbody>
               <tr v-if="loading">
-                <td colspan="5" class="text-center py-4">Đang tải...</td>
+                <td colspan="6" class="text-center py-4">Đang tải...</td>
               </tr>
               <tr v-else-if="filteredDoctors.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted">
+                <td colspan="6" class="text-center py-4 text-muted">
                   Không có bác sĩ nào phù hợp
                 </td>
               </tr>
               <tr v-else v-for="d in filteredDoctors" :key="d.id">
                 <td class="fw-semibold">{{ d.code }}</td>
-                <td>{{ d.specialty }}</td>
+                <td>{{ d.fullName }}</td>
+                <td>{{ d.departmentName || '-' }}</td>
+                <td>{{ d.specialtyName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
-                <td>
-                  <span class="badge bg-success-subtle text-success px-3 py-2">
-                    Hoạt động
-                  </span>
-                </td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary me-2" @click="openEdit(d)">
                     Chỉnh sửa
@@ -181,7 +214,7 @@ onMounted(async () => {
 
     <div v-if="showModal" class="modal-backdrop-custom">
       <div class="modal-modern">
-        <h3>{{ editingId ? "Chỉnh sửa bác sĩ" : "Tạo bác sĩ mới" }}</h3>
+        <h3>{{ editingId ? 'Chỉnh sửa bác sĩ' : 'Tạo bác sĩ mới' }}</h3>
 
         <div class="vstack gap-3">
           <div v-if="!editingId">
@@ -196,12 +229,30 @@ onMounted(async () => {
 
           <input class="form-control" v-model="form.fullName" placeholder="Họ và tên" />
           <input class="form-control" v-model="form.code" placeholder="Mã" />
-          <input class="form-control" v-model="form.specialty" placeholder="Chuyên khoa" />
-          <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
 
-          <div class="modal-actions d-flex justify-content-end gap-2">
-            <button class="btn-primary" @click="save">Lưu</button>
-            <button class="btn-cancel" @click="showModal = false">Hủy</button>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Khoa</label>
+              <select class="form-select" v-model="form.departmentId" @change="loadSpecialties(form.departmentId)">
+                <option value="">Chọn khoa</option>
+                <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Chuyên khoa</label>
+              <select class="form-select" v-model="form.specialtyId">
+                <option value="">Chọn chuyên khoa</option>
+                <option v-for="s in specialties" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+            </div>
+          </div>
+
+          <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
+          <input class="form-control" v-model="form.avatarUrl" placeholder="Avatar URL (tùy chọn)" />
+
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-secondary" @click="showModal = false">Hủy</button>
+            <button class="btn btn-primary" @click="save">Lưu</button>
           </div>
         </div>
       </div>
