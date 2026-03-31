@@ -20,5 +20,6 @@ namespace ClinicManagement.Api.DTOs.Appointments
         public DateTime AppointmentDate { get; set; }
         public TimeSpan AppointmentTime { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string Note { get; set; }
     }
 }

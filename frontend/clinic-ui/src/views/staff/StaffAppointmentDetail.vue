@@ -14,8 +14,14 @@
         <span class="label">Trạng thái:</span>
         <span :class="'status ' + appointment.status.toLowerCase()">{{ appointment.status }}</span>
       </div>
-      <div v-if="appointment.statusDetail.doctorName" class="detail-row">
-        <span class="label">Bác sĩ:</span> {{ appointment.statusDetail.doctorName }} ({{ appointment.statusDetail.doctorCode }})
+      <div class="detail-row">
+        <span class="label text-primary">Bác sĩ:</span>
+        <template v-if="appointment.statusDetail?.doctorName">
+          {{ appointment.statusDetail.doctorName }} <span v-if="appointment.statusDetail.doctorCode">({{ appointment.statusDetail.doctorCode }})</span>
+        </template>
+        <template v-else>
+          <span class="text-muted">Chưa gán</span>
+        </template>
       </div>
     </div>
     <p v-else-if="error" class="error">{{ error }}</p>
