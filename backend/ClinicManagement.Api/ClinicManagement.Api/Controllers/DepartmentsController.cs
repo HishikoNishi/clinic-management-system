@@ -38,6 +38,13 @@ namespace ClinicManagement.Api.Controllers
             return Ok(departments);
         }
 
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var dep = await _context.Departments.FindAsync(id);
+            if (dep == null) return NotFound(new { message = "Department not found." });
+            return Ok(new { id = dep.Id, dep.Name, dep.Description });
+        }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
@@ -45,6 +52,10 @@ namespace ClinicManagement.Api.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var exists = await _context.Departments.AnyAsync(d => d.Name == dto.Name);
+            if (exists)
+                return BadRequest(new { message = "Department name already exists." });
 
             var department = new Department
             {
@@ -70,12 +81,35 @@ namespace ClinicManagement.Api.Controllers
             if (department == null)
                 return NotFound(new { message = "Department not found." });
 
+            var exists = await _context.Departments.AnyAsync(d => d.Name == dto.Name && d.Id != id);
+            if (exists)
+                return BadRequest(new { message = "Department name already exists." });
+
             department.Name = dto.Name;
             department.Description = dto.Description;
 
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Department updated successfully." });
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var department = await _context.Departments
+                .Include(d => d.Doctors)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (department == null)
+                return NotFound(new { message = "Department not found." });
+
+            if (department.Doctors.Any())
+                return BadRequest(new { message = "Cannot delete: there are doctors assigned to this department." });
+
+            _context.Departments.Remove(department);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Department deleted successfully." });
         }
     }
 }
