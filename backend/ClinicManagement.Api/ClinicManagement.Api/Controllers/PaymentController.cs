@@ -55,7 +55,9 @@ namespace ClinicManagement.Api.Controllers
 
             // nạp lại invoice kèm lines để UI hiển thị breakdown
             var invoiceWithLines = await _context.Invoices
+                .Include(i => i.Appointment).ThenInclude(a => a.Patient)
                 .Include(i => i.InvoiceLines)
+                .Include(i => i.Payments)
                 .FirstOrDefaultAsync(i => i.Id == invoice.Id);
 
             return Ok(new
@@ -69,7 +71,40 @@ namespace ClinicManagement.Api.Controllers
                     payment.Method,
                     payment.PaymentDate
                 },
-                invoice = invoiceWithLines ?? invoice
+                invoice = invoiceWithLines == null ? null : new
+                {
+                    invoiceWithLines.Id,
+                    invoiceWithLines.AppointmentId,
+                    PatientName = invoiceWithLines.Appointment?.Patient?.FullName,
+                    invoiceWithLines.Amount,
+                    invoiceWithLines.IsPaid,
+                    invoiceWithLines.CreatedAt,
+                    invoiceWithLines.PaymentDate,
+                    appointment = invoiceWithLines.Appointment == null ? null : new
+                    {
+                        invoiceWithLines.Appointment.Id,
+                        patient = invoiceWithLines.Appointment.Patient == null ? null : new
+                        {
+                            invoiceWithLines.Appointment.Patient.FullName,
+                            invoiceWithLines.Appointment.Patient.Phone,
+                            invoiceWithLines.Appointment.Patient.Email
+                        }
+                    },
+                    payments = invoiceWithLines.Payments?.Select(p => new
+                    {
+                        p.Id,
+                        p.Amount,
+                        p.Method,
+                        p.PaymentDate
+                    }),
+                    invoiceLines = invoiceWithLines.InvoiceLines?.Select(l => new
+                    {
+                        l.Id,
+                        l.Description,
+                        l.ItemType,
+                        l.Amount
+                    })
+                }
             });
 
         }

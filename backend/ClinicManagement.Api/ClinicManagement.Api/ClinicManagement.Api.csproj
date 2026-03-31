@@ -23,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Dtos\Appointments\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 </Project>

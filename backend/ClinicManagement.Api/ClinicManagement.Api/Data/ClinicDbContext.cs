@@ -26,6 +26,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<Payment> Payments { get; set; } = null!;
         public DbSet<InvoiceLine> InvoiceLines { get; set; } = null!;
         public DbSet<InsurancePlan> InsurancePlans { get; set; } = null!;
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -250,7 +251,19 @@ namespace ClinicManagement.Api.Data
                 entity.Property(p => p.Code).IsRequired().HasMaxLength(50);
                 entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
                 entity.Property(p => p.CoveragePercent).HasColumnType("decimal(5,4)");
+                entity.Property(p => p.ExpiryDate);
                 entity.HasIndex(p => p.Code).IsUnique();
+            });
+
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Token).IsRequired().HasMaxLength(200);
+                entity.HasIndex(r => r.Token).IsUnique();
+                entity.HasOne(r => r.User)
+                      .WithMany()
+                      .HasForeignKey(r => r.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             /* ================================

@@ -62,6 +62,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var invoice = await _context.Invoices
                 .Include(i => i.Appointment)
+                    .ThenInclude(a => a.Patient)
                 .Include(i => i.Payments)
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.Id == id);
@@ -69,7 +70,37 @@ namespace ClinicManagement.Api.Controllers
             if (invoice == null)
                 return NotFound(new { message = "Không tìm thấy hóa đơn" });
 
-            return Ok(invoice);
+            return Ok(MapInvoice(invoice));
+        }
+
+        // ==============================
+        // Danh sách hóa đơn (lọc trạng thái)
+        // ==============================
+        [HttpGet("list")]
+        public async Task<IActionResult> List([FromQuery] bool? isPaid)
+        {
+            var query = _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Appointment).ThenInclude(a => a.Patient)
+                .OrderByDescending(i => i.CreatedAt)
+                .Select(i => new
+                {
+                    i.Id,
+                    i.AppointmentId,
+                    PatientName = i.Appointment != null ? i.Appointment.Patient.FullName : null,
+                    i.Amount,
+                    i.IsPaid,
+                    i.CreatedAt,
+                    i.PaymentDate
+                });
+
+            if (isPaid.HasValue)
+            {
+                query = query.Where(i => i.IsPaid == isPaid.Value);
+            }
+
+            var items = await query.ToListAsync();
+            return Ok(items);
         }
 
         // ==============================
@@ -148,10 +179,50 @@ namespace ClinicManagement.Api.Controllers
                 return NotFound(new { message = "Không tạo được hóa đơn" });
 
             var result = await _context.Invoices
+                .Include(i => i.Appointment).ThenInclude(a => a.Patient)
+                .Include(i => i.Payments)
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.Id == invoice.Id);
 
-            return Ok(result);
+            return Ok(MapInvoice(result!));
+        }
+
+        private object MapInvoice(Invoice invoice)
+        {
+            return new
+            {
+                invoice.Id,
+                invoice.AppointmentId,
+                PatientName = invoice.Appointment?.Patient?.FullName,
+                invoice.Amount,
+                invoice.IsPaid,
+                invoice.CreatedAt,
+                invoice.PaymentDate,
+                appointment = invoice.Appointment == null ? null : new
+                {
+                    invoice.Appointment.Id,
+                    patient = invoice.Appointment.Patient == null ? null : new
+                    {
+                        invoice.Appointment.Patient.FullName,
+                        invoice.Appointment.Patient.Phone,
+                        invoice.Appointment.Patient.Email
+                    }
+                },
+                payments = invoice.Payments?.Select(p => new
+                {
+                    p.Id,
+                    p.Amount,
+                    p.Method,
+                    p.PaymentDate
+                }),
+                invoiceLines = invoice.InvoiceLines?.Select(l => new
+                {
+                    l.Id,
+                    l.Description,
+                    l.ItemType,
+                    l.Amount
+                })
+            };
         }
     }
 }
