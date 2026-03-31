@@ -113,6 +113,18 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
   },
   {
+    path: "/departments",
+    name: "Departments",
+    component: () => import("@/views/admin/DepartmentList.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
+    path: "/specialties",
+    name: "Specialties",
+    component: () => import("@/views/admin/SpecialtyList.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
   path: '/doctors/:id',
   name: 'DoctorDetail',
   component: () => import('@/views/admin/DoctorDetail.vue')
