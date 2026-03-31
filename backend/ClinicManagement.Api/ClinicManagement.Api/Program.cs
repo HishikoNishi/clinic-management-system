@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
 using ClinicManagement.Api.Services;
@@ -8,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,8 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
@@ -57,13 +58,17 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=MSI;Database=ClinicManagement;Trusted_Connection=true;";
+    ?? "Server=DESKTOP-0Q90AUE;Database=ClinicManagement;Trusted_Connection=true;";
 
 builder.Services.AddDbContext<ClinicDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IUserRepository, EFUserRepository>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<OtpService>();
+builder.Services.AddScoped<BillingService>();
+builder.Services.AddSingleton<FakeInsuranceService>();
 
 var jwtKey = configuration["Jwt:Key"]
     ?? throw new ArgumentNullException("Jwt:Key is missing in appsettings.json");
@@ -108,16 +113,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<PrescriptionService>();
-builder.Services.AddScoped<EmailService>();
-builder.Services.AddScoped<OtpService>();
-builder.Services.AddScoped<BillingService>();
-builder.Services.AddSingleton<FakeInsuranceService>();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
+
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 var app = builder.Build();
 app.UseCors("AllowAll");
@@ -130,15 +126,12 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ClinicManagement API v1");
     });
 }
-
 
 app.UseHttpsRedirection();
 

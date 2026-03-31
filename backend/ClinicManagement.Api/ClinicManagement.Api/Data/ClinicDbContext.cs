@@ -27,6 +27,8 @@ namespace ClinicManagement.Api.Data
         public DbSet<InvoiceLine> InvoiceLines { get; set; } = null!;
         public DbSet<InsurancePlan> InsurancePlans { get; set; } = null!;
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+        public DbSet<Department> Departments { get; set; } = null!;
+        public DbSet<Specialty> Specialties { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,10 +96,6 @@ namespace ClinicManagement.Api.Data
                       .IsRequired()
                       .HasMaxLength(30);
 
-                entity.Property(d => d.Specialty)
-                      .IsRequired()
-                      .HasMaxLength(100);
-
                 entity.Property(d => d.LicenseNumber)
                       .HasMaxLength(50);
 
@@ -109,6 +107,39 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(d => d.UserId).IsUnique();
+
+                entity.HasOne(d => d.Department)
+                      .WithMany(dep => dep.Doctors)
+                      .HasForeignKey(d => d.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.Specialty)
+                      .WithMany()
+                      .HasForeignKey(d => d.SpecialtyId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            /* ================================
+             * DEPARTMENT
+             * ================================ */
+            modelBuilder.Entity<Department>(entity =>
+            {
+                entity.HasKey(d => d.Id);
+                entity.Property(d => d.Name).IsRequired().HasMaxLength(150);
+                entity.HasIndex(d => d.Name).IsUnique();
+            });
+
+            /* ================================
+             * SPECIALTY
+             * ================================ */
+            modelBuilder.Entity<Specialty>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.Name).IsRequired().HasMaxLength(150);
+                entity.HasOne(s => s.Department)
+                      .WithMany(d => d.Specialties)
+                      .HasForeignKey(s => s.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             /* ================================
@@ -290,6 +321,44 @@ namespace ClinicManagement.Api.Data
                       .HasForeignKey(p => p.InvoiceId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+
+
+            /* ================================
+             * DEPARTMENTS & SPECIALTIES SEED
+             * ================================ */
+            var depNoi   = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            var depNgoai = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var depSan   = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var depNhi   = Guid.Parse("44444444-4444-4444-4444-444444444444");
+            var depRang  = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var depTmh   = Guid.Parse("66666666-6666-6666-6666-666666666666");
+            var depKham  = Guid.Parse("77777777-7777-7777-7777-777777777777");
+
+            modelBuilder.Entity<Department>().HasData(
+                new Department { Id = depNoi, Name = "Khoa Nội" },
+                new Department { Id = depNgoai, Name = "Khoa Ngoại" },
+                new Department { Id = depSan, Name = "Khoa Sản" },
+                new Department { Id = depNhi, Name = "Khoa Nhi" },
+                new Department { Id = depRang, Name = "Răng Hàm Mặt" },
+                new Department { Id = depTmh, Name = "Tai Mũi Họng" },
+                new Department { Id = depKham, Name = "Khám tổng quát" }
+            );
+
+            modelBuilder.Entity<Specialty>().HasData(
+                new Specialty { Id = Guid.Parse("aaaa1111-1111-1111-1111-111111111111"), Name = "Nội tổng quát", DepartmentId = depNoi },
+                new Specialty { Id = Guid.Parse("aaaa2222-1111-1111-1111-111111111111"), Name = "Nội tim mạch", DepartmentId = depNoi },
+                new Specialty { Id = Guid.Parse("aaaa3333-1111-1111-1111-111111111111"), Name = "Nội tiêu hóa", DepartmentId = depNoi },
+                new Specialty { Id = Guid.Parse("bbbb1111-2222-2222-2222-222222222222"), Name = "Ngoại tổng quát", DepartmentId = depNgoai },
+                new Specialty { Id = Guid.Parse("bbbb2222-2222-2222-2222-222222222222"), Name = "Chấn thương chỉnh hình", DepartmentId = depNgoai },
+                new Specialty { Id = Guid.Parse("cccc1111-3333-3333-3333-333333333333"), Name = "Sản phụ khoa", DepartmentId = depSan },
+                new Specialty { Id = Guid.Parse("cccc2222-3333-3333-3333-333333333333"), Name = "Khám thai", DepartmentId = depSan },
+                new Specialty { Id = Guid.Parse("dddd1111-4444-4444-4444-444444444444"), Name = "Nhi tổng quát", DepartmentId = depNhi },
+                new Specialty { Id = Guid.Parse("eeee1111-5555-5555-5555-555555555555"), Name = "Nha tổng quát", DepartmentId = depRang },
+                new Specialty { Id = Guid.Parse("eeee2222-5555-5555-5555-555555555555"), Name = "Niềng răng", DepartmentId = depRang },
+                new Specialty { Id = Guid.Parse("ffff1111-6666-6666-6666-666666666666"), Name = "Khám TMH", DepartmentId = depTmh },
+                new Specialty { Id = Guid.Parse("gggg1111-7777-7777-7777-777777777777"), Name = "Khám sức khỏe", DepartmentId = depKham },
+                new Specialty { Id = Guid.Parse("gggg2222-7777-7777-7777-777777777777"), Name = "Tiêm chủng", DepartmentId = depKham }
+            );
 
 
             /* ================================
