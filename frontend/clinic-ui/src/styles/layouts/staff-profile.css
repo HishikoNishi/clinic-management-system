@@ -40,7 +40,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(90deg, #6a9bcd, #73a4d7);
+  background: linear-gradient(90deg, #4b94dd, #4b7bae);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -88,4 +88,3 @@
   justify-content: flex-end;
   gap: 0.75rem;
 }
-
