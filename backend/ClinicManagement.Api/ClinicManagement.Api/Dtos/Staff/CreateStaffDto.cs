@@ -11,7 +11,8 @@ public class CreateStaffDto
     [Required]
     public string FullName { get; set; } = null!;
     public bool IsActive { get; set; } = true;
-    public string? Position { get; set; }  
+
+
     public string? AvatarUrl { get; set; }
     [Required]
     public string Role { get; set; } = null!;

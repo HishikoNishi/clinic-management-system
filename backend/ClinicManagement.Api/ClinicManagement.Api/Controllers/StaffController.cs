@@ -1,4 +1,5 @@
 ﻿using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Dtos.Staff;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,16 +25,19 @@ namespace ClinicManagement.Api.Controllers
         {
             var staffs = await _context.Staffs
                 .Include(s => s.User)
-                .Select(s => new StaffDto
-                {
-                    Id = s.Id,
-                    Code = s.Code,
-                    FullName = s.FullName,
-                    Role = s.Role,
-                    IsActive = s.IsActive,
-                    Username = s.User.Username,
-                    CreatedAt = s.CreatedAt
-                })
+               .Select(s => new StaffDto
+               {
+                   Id = s.Id,
+                   Code = s.Code,
+                   FullName = s.FullName,
+                   Role = s.Role,
+                   IsActive = s.IsActive,
+                   Username = s.User.Username,
+                   CreatedAt = s.CreatedAt,
+                   
+                   AvatarUrl = s.AvatarUrl    
+               })
+
                 .ToListAsync();
 
             return Ok(staffs);
@@ -59,6 +63,8 @@ namespace ClinicManagement.Api.Controllers
                 Role = staff.Role,
                 IsActive = staff.IsActive,
                 Username = staff.User.Username,
+               
+                AvatarUrl = staff.AvatarUrl,
                 CreatedAt = staff.CreatedAt
             });
         }
@@ -91,6 +97,8 @@ namespace ClinicManagement.Api.Controllers
                 FullName = dto.FullName,
                 Role = dto.Role,
                 UserId = dto.UserId,
+                AvatarUrl = dto.AvatarUrl,
+
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -126,6 +134,8 @@ namespace ClinicManagement.Api.Controllers
             staff.Role = dto.Role;
             staff.UserId = dto.UserId;
             staff.IsActive = dto.IsActive;
+            staff.AvatarUrl = dto.AvatarUrl;
+
             staff.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -172,14 +182,15 @@ namespace ClinicManagement.Api.Controllers
                 Role = staff.Role,
                 IsActive = staff.IsActive,
                 Username = staff.User.Username,
-                CreatedAt = staff.CreatedAt
+                CreatedAt = staff.CreatedAt,
+               
+                AvatarUrl = staff.AvatarUrl
             });
         }
-
         // PUT api/Staffs/profile
         [HttpPut("profile")]
         [Authorize(Roles = "Staff")]
-        public async Task<IActionResult> UpdateMyProfile(UpdateStaffDto dto)
+        public async Task<IActionResult> UpdateMyProfile(UpdateMyStaffDto dto)
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
@@ -192,12 +203,15 @@ namespace ClinicManagement.Api.Controllers
             staff.Code = dto.Code;
             staff.FullName = dto.FullName;
             staff.IsActive = dto.IsActive;
+            staff.AvatarUrl = dto.AvatarUrl;
             staff.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Profile updated successfully" });
         }
+
+
 
     }
 }
