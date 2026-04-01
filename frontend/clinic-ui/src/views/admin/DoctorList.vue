@@ -198,6 +198,9 @@ onMounted(async () => {
                 <td>{{ d.specialtyName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
                 <td class="text-end">
+                  <button class="btn btn-sm btn-info me-2" @click="$router.push(`/doctors/${d.id}`)">
+    Chi tiết
+  </button>
                   <button class="btn btn-sm btn-outline-primary me-2" @click="openEdit(d)">
                     Chỉnh sửa
                   </button>

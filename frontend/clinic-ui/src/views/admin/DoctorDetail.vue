@@ -19,7 +19,6 @@ const appointments = ref<any[]>([])
 const searchTerm = ref('')
 const showEdit = ref(false)
 const editForm = ref<any>({})
-
 const departments = ref<any[]>([])
 const specialties = ref<any[]>([])
 
@@ -80,12 +79,18 @@ async function saveDoctor() {
   }
 }
 
-function openEdit() {
-  showEdit.value = true
-  loadDepartments()
-  if (editForm.value.departmentId) {
-    loadSpecialties(editForm.value.departmentId)
+async function openEdit() {
+  // Reset editForm từ doctor mới nhất
+  editForm.value = {
+    ...doctor.value,
+    departmentId: doctor.value.departmentId?.toString() || '',
+    specialtyId: doctor.value.specialtyId?.toString() || ''
   }
+  await loadDepartments()
+  if (editForm.value.departmentId) {
+    await loadSpecialties(editForm.value.departmentId)
+  }
+  showEdit.value = true
 }
 watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
   if (newVal) {
@@ -141,11 +146,20 @@ const appointmentStatusLabel = (status: string) => {
 </script>
 
 <template>
-  <div class="doctor-detail-page container py-4">
-    <h2 class="page-title">Chi tiết bác sĩ</h2>
+  <div class="doctor-page">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <div>
+          <h2 class="mb-1">Chi tiết bác sĩ</h2>
+          <p class="text-muted mb-0">Xem và chỉnh sửa thông tin bác sĩ.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <button class="btn btn-primary" @click="openEdit">Sửa thông tin</button>
+        </div>
+      </div>
 
-    <!-- Thông tin bác sĩ -->
-    <div class="doctor-info card mb-4">
+      <!-- Thông tin bác sĩ -->
+      <div class="doctor-info card mb-4">
       <div class="row g-4 align-items-center">
         <div class="col-md-3 text-center">
           <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
@@ -159,9 +173,6 @@ const appointmentStatusLabel = (status: string) => {
           <span :class="['badge', doctorBadgeClass(doctor?.status)]">
             {{ doctorStatusLabel(doctor?.status) }}
           </span>
-          <div class="mt-3">
-            <button class="btn btn-primary" @click="openEdit">Sửa thông tin</button>
-          </div>
         </div>
       </div>
     </div>
@@ -237,6 +248,7 @@ const appointmentStatusLabel = (status: string) => {
           <button class="btn btn-success" @click="saveDoctor">Lưu</button>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
