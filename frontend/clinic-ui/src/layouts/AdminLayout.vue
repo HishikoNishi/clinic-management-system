@@ -23,16 +23,11 @@ const navItems = computed(() => {
     ]
   }
 
-<<<<<<< Updated upstream
-if (role.value === 'Staff') {
-=======
- if (role.value === 'Staff') {
->>>>>>> Stashed changes
-  return [
-    { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' },
-    { label: 'Tài khoản của tôi', icon: 'person-circle', path: '/staff/profile' }
-  ]
-}
+  if (role.value === 'Staff') {
+    return [
+      { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' }
+    ]
+  }
 
   if (role.value === 'Doctor') {
     return [
