@@ -8,7 +8,6 @@ namespace ClinicManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
     public class StaffsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
@@ -20,6 +19,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET ALL ================= */
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var staffs = await _context.Staffs
@@ -41,6 +41,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET BY ID ================= */
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Get(Guid id)
         {
             var staff = await _context.Staffs
@@ -64,6 +65,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= CREATE ================= */
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(CreateStaffDto dto)
         {
             if (!ModelState.IsValid)
@@ -105,6 +107,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= UPDATE ================= */
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(Guid id, UpdateStaffDto dto)
         {
             if (!ModelState.IsValid)
@@ -132,6 +135,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= DELETE ================= */
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var staff = await _context.Staffs.FindAsync(id);
@@ -143,5 +147,57 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Staff profile deleted successfully." });
         }
+        // GET api/Staffs/profile
+        [HttpGet("profile")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            // Lấy userId từ token (claim NameIdentifier)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var staff = await _context.Staffs
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            if (staff == null) return NotFound(new { message = "Staff profile not found" });
+
+            return Ok(new StaffDto
+            {
+                Id = staff.Id,
+                Code = staff.Code,
+                FullName = staff.FullName,
+                Role = staff.Role,
+                IsActive = staff.IsActive,
+                Username = staff.User.Username,
+                CreatedAt = staff.CreatedAt
+            });
+        }
+
+        // PUT api/Staffs/profile
+        [HttpPut("profile")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> UpdateMyProfile(UpdateStaffDto dto)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (staff == null) return NotFound();
+
+            staff.Code = dto.Code;
+            staff.FullName = dto.FullName;
+            staff.IsActive = dto.IsActive;
+            staff.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Profile updated successfully" });
+        }
+
     }
 }
