@@ -1,0 +1,88 @@
+import api from '@/services/api'
+
+export type PaymentMethod = 'cash' | 'banker' | 'card'
+
+export interface InvoiceLine {
+  id: string
+  description: string
+  itemType: string
+  amount: number
+}
+
+export interface InvoiceDetail {
+  id: string
+  appointmentId: string
+  patientName?: string
+  amount: number
+  isPaid: boolean
+  createdAt?: string
+  paymentDate?: string
+  appointment?: {
+    id: string
+    patient?: {
+      fullName?: string
+      phone?: string
+      email?: string
+    }
+  }
+  payments?: {
+    id: string
+    amount: number
+    method: PaymentMethod
+    paymentDate: string
+  }[]
+  invoiceLines?: InvoiceLine[]
+}
+
+export interface InvoiceListItem {
+  id: string
+  appointmentId: string
+  amount: number
+  isPaid: boolean
+  createdAt?: string
+  paymentDate?: string
+  patientName?: string
+}
+
+export const invoiceApi = {
+  async lookupAppointment(code: string) {
+    const { data } = await api.get(`/appointments/${code}`)
+    return data
+  },
+
+  async createInvoice(payload: { appointmentId: string; amount: number }) {
+    const { data } = await api.post('/invoicemanagement', payload)
+    return data
+  },
+
+  async recalcInvoice(payload: {
+    appointmentId: string
+    insuranceCoverPercent?: number
+    insuranceCode?: string | null
+    surcharge?: number
+    discount?: number
+  }): Promise<InvoiceDetail> {
+    const { data } = await api.post('/invoicemanagement/recalculate', payload)
+    return data
+  },
+
+  async getInvoice(id: string): Promise<InvoiceDetail> {
+    const { data } = await api.get(`/invoicemanagement/${id}`)
+    return data
+  },
+
+  async listInvoices(params: { isPaid?: boolean; page?: number; pageSize?: number } = {}): Promise<InvoiceListItem[]> {
+    const { data } = await api.get('/invoicemanagement/list', { params })
+    return data
+  },
+
+  async payInvoice(payload: { invoiceId: string; amount: number; method: PaymentMethod }) {
+    const { data } = await api.post('/payment', payload)
+    return data
+  },
+
+  async validateInsurance(code: string) {
+    const { data } = await api.get('/insurance/validate', { params: { code } })
+    return data
+  }
+}

@@ -46,7 +46,7 @@
             <p class="form-subtitle">Đăng nhập vào tài khoản của bạn</p>
           </div>
 
-          <div v-if="errorMessage" class="alert alert-error">
+          <div v-if="errorMessage" class="alert alert-error text-danger">
             {{ errorMessage }}
           </div>
 
@@ -83,13 +83,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.ts'
 import api from '@/services/api.ts'
 import '@/styles/layouts/login.css'
-
+import type { AxiosError } from 'axios'
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -102,51 +102,45 @@ const showPassword = ref(false)
 const rememberMe = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
+
 const handleLogin = async () => {
   try {
     loading.value = true
     errorMessage.value = ''
 
+    // Call the login API
     const response = await api.post('/Auth/login', {
       username: credentials.value.username,
       password: credentials.value.password
     })
 
-    // ✅ lưu vào store (giữ nguyên)
     authStore.login({
       token: response.data.token,
       role: response.data.role,
-      expiresAt: response.data.expiresAt
+      expiresAt: response.data.expiresAt,
+      refreshToken: response.data.refreshToken,
+      refreshExpiresAt: response.data.refreshExpiresAt
     })
 
-    // 🔥 THÊM ĐOẠN NÀY (QUAN TRỌNG NHẤT)
-    if (response.data.doctorId) {
-      localStorage.setItem("doctorId", response.data.doctorId)
-      console.log("✅ saved doctorId:", response.data.doctorId)
-    }
+// ✅ redirect theo role
+const role = response.data.role?.trim()
 
-    // ✅ redirect theo role
-    const role = response.data.role
-
-    if (role === 'Staff') {
-      router.push('/staff/appointments')
-    }
-    else if (role === 'Doctor') {
-      router.push('/doctorappointment')
-    }
-    else if (role === 'Admin') {
-      router.push('/dashboard')
-    }
-    else {
-      router.push('/login')
-    }
-
-  } catch (error) {
-    console.error('Login error:', error)
-    errorMessage.value = error.response?.data?.message || 'Invalid username or password. Please try again.'
-  } finally {
-    loading.value = false
-  }
+const roleRedirect: Record<string, string> = {
+  Admin: '/dashboard',
+  Staff: '/staff/appointments',
+  Doctor: '/doctor/appointments',
+  Cashier: '/cashier/invoices',
+  Technician: '/technician/tests'
 }
 
+router.push(roleRedirect[role] || '/home')
+
+
+  } catch (error) {
+    const err = error as AxiosError<any>
+    errorMessage.value =
+      err.response?.data?.message ||
+      'Invalid username or password. Please try again.'
+  }
+}
 </script>

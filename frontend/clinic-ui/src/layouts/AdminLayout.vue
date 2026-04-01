@@ -16,16 +16,23 @@ const navItems = computed(() => {
       { label: 'Tổng quan', icon: 'speedometer2', path: '/dashboard' },
       { label: 'Lịch khám', icon: 'calendar-event', path: '/appointment' },
       { label: 'Bác sĩ', icon: 'person-workspace', path: '/doctors' },
+      { label: 'Khoa', icon: 'building', path: '/departments' },
+      { label: 'Chuyên khoa', icon: 'layers', path: '/specialties' },
       { label: 'Nhân viên', icon: 'people', path: '/staff' },
       { label: 'Tạo tài khoản', icon: 'person-plus', path: '/admin/users/create' }
     ]
   }
 
-  if (role.value === 'Staff') {
-    return [
-      { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' }
-    ]
-  }
+<<<<<<< Updated upstream
+if (role.value === 'Staff') {
+=======
+ if (role.value === 'Staff') {
+>>>>>>> Stashed changes
+  return [
+    { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' },
+    { label: 'Tài khoản của tôi', icon: 'person-circle', path: '/staff/profile' }
+  ]
+}
 
   if (role.value === 'Doctor') {
     return [

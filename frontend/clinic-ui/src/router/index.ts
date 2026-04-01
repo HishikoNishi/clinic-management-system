@@ -58,7 +58,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/staff/StaffAppointmentDetail.vue"),
     meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
   },
-
+  {
+    path: "/staff/profile",
+    name: "StaffProfile",
+    component: () => import("@/views/staff/StaffProfile.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
+  },
   {
     path: "/doctor/appointments",
     name: "DoctorAppointment",
@@ -100,24 +105,44 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: "/doctor/profile",
+    name: "DoctorProfile",
+    component: () => import("@/views/doctor/DoctorProfile.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
+
+  {
     path: "/doctors",
     name: "Doctors",
     component: () => import("@/views/admin/DoctorList.vue"),
     meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
   },
   {
-  path: '/doctors/:id',
-  name: 'DoctorDetail',
-  component: () => import('@/views/admin/DoctorDetail.vue')
-},
+    path: "/departments",
+    name: "Departments",
+    component: () => import("@/views/admin/DepartmentList.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
+    path: "/specialties",
+    name: "Specialties",
+    component: () => import("@/views/admin/SpecialtyList.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
+    path: '/doctors/:id',
+    name: 'DoctorDetail',
+    component: () => import('@/views/admin/DoctorDetail.vue'),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
 
-{
-  path: "/doctor/profile",
-  name: "DoctorProfile",
-  component: () => import("@/views/doctor/DoctorProfile.vue"),
-  meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
-},
 
+  {
+    path: "/staff",
+    name: "StaffList",
+    component: () => import("@/views/admin/StaffList.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
 
   {
     path: "/staff",
@@ -144,7 +169,19 @@ const routes: RouteRecordRaw[] = [
     path: "/technician/tests",
     name: "TechnicianTests",
     component: () => import("@/views/technician/TechnicianTests.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
+    meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
+  },
+  {
+    path: "/cashier/invoices",
+    name: "CashierInvoices",
+    component: () => import("@/views/cashier/CashierInvoices.vue"),
+    meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/invoices/list",
+    name: "CashierInvoiceList",
+    component: () => import("@/views/cashier/CashierInvoiceList.vue"),
+    meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
   }
 ]
 
@@ -153,15 +190,16 @@ const router = createRouter({
   routes
 })
 
+const roleFallback: Record<string, string> = {
+  Admin: "/dashboard",
+  Staff: "/staff/appointments",
+  Doctor: "/doctor/appointments",
+  Technician: "/technician/tests",
+  Cashier: "/cashier/invoices",
+}
+
 router.beforeEach((to) => {
   const authStore = useAuthStore()
-
-  const roleFallback: Record<string, string> = {
-    Admin: "/dashboard",
-    Staff: "/staff/appointments",
-    Doctor: "/doctor/appointments"
-  }
-
 
   if (to.meta.requiresAuth) {
     if (!authStore.token) {

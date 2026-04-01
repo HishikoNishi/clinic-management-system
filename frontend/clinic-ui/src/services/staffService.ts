@@ -1,4 +1,3 @@
-
 import api from "./api"
 
 export const getStaffs = () => api.get("/Staffs")

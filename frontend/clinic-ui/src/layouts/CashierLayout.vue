@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -9,10 +9,8 @@ const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 
 const navItems = computed(() => ([
-  { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' },
-  { label: 'Khám bệnh', icon: 'stethoscope', path: '/doctor/appointments' },
-  { label: 'Bệnh nhân', icon: 'people', path: '/doctor/patients' },
-  { label: 'Hồ sơ cá nhân', icon: 'person-circle', path: '/doctor/profile' }
+  { label: 'Hóa đơn & thanh toán', icon: 'receipt', path: '/cashier/invoices' },
+  { label: 'Danh sách hóa đơn', icon: 'list-ul', path: '/cashier/invoices/list' }
 ]))
 
 const go = (path: string) => {
@@ -30,11 +28,11 @@ const logout = () => {
 </script>
 
 <template>
-  <div class="doctor-layout">
+  <div class="dashboard-layout">
     <header class="topbar">
-      <div class="brand" @click="go('/doctor/appointments')">
+      <div class="brand" @click="go('/cashier/invoices')">
         <i class="bi bi-hospital me-2"></i>
-        Bác sĩ
+        Thu ngân
       </div>
       <button class="sidebar-toggle d-lg-none" type="button" @click="isSidebarOpen = !isSidebarOpen">
         <i :class="`bi ${isSidebarOpen ? 'bi-x-lg' : 'bi-list'}`"></i>
@@ -75,5 +73,4 @@ const logout = () => {
   </div>
 </template>
 
-<style src="@/styles/layouts/doctor-layout.css"></style>
-
+<style src="@/styles/layouts/admin-layout.css"></style>

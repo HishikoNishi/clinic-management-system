@@ -45,10 +45,28 @@
             <label class="form-check-label" for="testReq">Yêu cầu xét nghiệm</label>
           </div>
           <div v-if="form.requestClinicalTest" class="mt-2">
-            <input v-model="form.clinicalTestName" type="text" class="form-control" placeholder="Tên xét nghiệm (tuỳ chọn)" />
+            <div class="row g-2">
+              <div class="col-12 col-md-5">
+                <select v-model="form.clinicalTestType" class="form-select">
+                  <option value="Blood">Xét nghiệm máu</option>
+                  <option value="XRay">X-quang</option>
+                  <option value="Ultrasound">Siêu âm</option>
+                  <option value="Other">Khác</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-7">
+                <input
+                  v-model="form.clinicalTestName"
+                  type="text"
+                  class="form-control"
+                  :placeholder="form.clinicalTestType === 'Other' ? 'Mô tả xét nghiệm' : 'Ghi chú (ví dụ: công thức máu, tim phổi...)'"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
 
       <div class="card shadow-sm">
         <div class="card-header">
@@ -148,6 +166,7 @@ const form = reactive({
   diagnosis: "",
   notes: "",
   requestClinicalTest: false,
+  clinicalTestType: "Blood",
   clinicalTestName: "",
   vitals: {
     heartRate: "",
@@ -186,6 +205,16 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   return `${date.toLocaleDateString()} ${h}:${m}`
 }
 
+const testTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    Blood: "Xét nghiệm máu",
+    XRay: "X-quang",
+    Ultrasound: "Siêu âm",
+    Other: "Xét nghiệm"
+  }
+  return map[type] || "Xét nghiệm"
+}
+
 const loadDetail = async () => {
   try {
     const res = await api.get(`/doctor/DoctorAppointments/${appointmentId}/examination`)
@@ -209,8 +238,8 @@ const submit = async () => {
     return
   }
 
-  if (form.requestClinicalTest && !form.clinicalTestName.trim()) {
-    alert("Vui lòng nhập tên xét nghiệm cần thực hiện")
+  if (form.requestClinicalTest && form.clinicalTestType === "Other" && !form.clinicalTestName.trim()) {
+    alert("Vui lòng mô tả xét nghiệm cần thực hiện")
     return
   }
 
@@ -240,7 +269,7 @@ const submit = async () => {
       notes: combinedNotes,
       requestClinicalTest: form.requestClinicalTest,
       clinicalTestName: form.requestClinicalTest
-        ? (form.clinicalTestName?.trim() || "Xét nghiệm")
+        ? `${testTypeLabel(form.clinicalTestType)}${form.clinicalTestName ? ": " + form.clinicalTestName.trim() : ""}`
         : null,
       prescriptionItems
     })

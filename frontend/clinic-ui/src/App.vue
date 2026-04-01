@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import GuestLayout from '@/layouts/GuestLayout.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DoctorLayout from '@/layouts/DoctorLayout.vue'
+import CashierLayout from '@/layouts/CashierLayout.vue'
 
 const route = useRoute()
 
@@ -16,9 +17,9 @@ const currentLayout = computed(() => {
 const layoutComponents = {
   guest: GuestLayout,
   admin: AdminLayout,
-
   dashboard: AdminLayout,
-  doctor: DoctorLayout
+  doctor: DoctorLayout,
+  cashier: CashierLayout
 }
 
 // Get current layout component
