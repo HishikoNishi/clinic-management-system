@@ -16,5 +16,4 @@ public class UpdateStaffDto
     public string Role { get; set; } = null!;
 
     public bool IsActive { get; set; }
-    public string? AvatarUrl { get; set; }
 }

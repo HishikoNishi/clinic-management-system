@@ -14,5 +14,4 @@ public class CreateStaffDto
 
     [Required]
     public string Role { get; set; } = null!;
-    public string? AvatarUrl { get; set; }
 }
