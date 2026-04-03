@@ -1,4 +1,5 @@
 ﻿using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Dtos.Staff;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,6 @@ namespace ClinicManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
     public class StaffsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
@@ -19,6 +19,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= GET ALL ================= */
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -32,7 +33,8 @@ namespace ClinicManagement.Api.Controllers
                     Role = s.Role,
                     IsActive = s.IsActive,
                     Username = s.User.Username,
-                    CreatedAt = s.CreatedAt
+                    CreatedAt = s.CreatedAt,
+                    AvatarUrl = s.AvatarUrl
                 })
                 .ToListAsync();
 
@@ -40,6 +42,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= GET BY ID ================= */
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {
@@ -63,6 +66,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= CREATE ================= */
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateStaffDto dto)
         {
@@ -104,6 +108,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= UPDATE ================= */
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, UpdateStaffDto dto)
         {
@@ -131,6 +136,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= DELETE ================= */
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -143,5 +149,58 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Staff profile deleted successfully." });
         }
+        [HttpGet("profile")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            // Lấy userId từ token (claim NameIdentifier)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var staff = await _context.Staffs
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+
+            if (staff == null) return NotFound(new { message = "Staff profile not found" });
+
+            return Ok(new StaffDto
+            {
+                Id = staff.Id,
+                Code = staff.Code,
+                FullName = staff.FullName,
+                Role = staff.Role,
+                IsActive = staff.IsActive,
+                Username = staff.User.Username,
+                CreatedAt = staff.CreatedAt,
+               
+                AvatarUrl = staff.AvatarUrl
+            });
+        }
+        // PUT api/Staffs/profile
+        [HttpPut("profile")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> UpdateMyProfile(UpdateMyStaffDto dto)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim);
+
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (staff == null) return NotFound();
+
+            staff.Code = dto.Code;
+            staff.FullName = dto.FullName;
+            staff.IsActive = dto.IsActive;
+            staff.AvatarUrl = dto.AvatarUrl;
+            staff.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Profile updated successfully" });
+        }
+
     }
 }

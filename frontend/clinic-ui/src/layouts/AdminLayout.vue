@@ -25,7 +25,8 @@ const navItems = computed(() => {
 
   if (role.value === 'Staff') {
     return [
-      { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' }
+      { label: 'Lịch khám', icon: 'calendar-check', path: '/staff/appointments' },
+      { label: 'Tài khoản của tôi', icon: 'person-circle', path: '/staff/profile' }
     ]
   }
 

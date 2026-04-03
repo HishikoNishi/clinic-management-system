@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 import { useAuthStore } from "@/stores/auth"
+import path from "path/win32"
 
 const routes: RouteRecordRaw[] = [
   {
@@ -131,12 +132,11 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
   },
 
-
-  {
-    path: "/staff",
-    name: "StaffList",
-    component: () => import("@/views/admin/StaffList.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+{
+    path: "/staff/profile",
+    name: "StaffProfile",
+    component: () => import("@/views/staff/StaffProfile.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
   },
 
   {

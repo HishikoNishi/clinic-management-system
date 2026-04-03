@@ -156,7 +156,8 @@ namespace ClinicManagement.Api.Data
                 entity.Property(s => s.FullName)
                       .IsRequired()
                       .HasMaxLength(100);
-
+                entity.Property(s => s.AvatarUrl)
+                      .HasMaxLength(255);
                 entity.Property(s => s.Position)
                       .HasMaxLength(100);
 
