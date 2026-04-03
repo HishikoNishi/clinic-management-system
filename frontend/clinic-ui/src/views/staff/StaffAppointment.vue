@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div class="staff-container">
-    <h2>Quản lý lịch khám</h2>
+    <h2>Quáº£n lÃ½ lá»‹ch khÃ¡m</h2>
 
     <div class="search-bar">
       <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
@@ -41,11 +41,11 @@
           <th>Bệnh nhân</th>
           <th>Điện thoại</th>
           <th>Ngày sinh</th>
-          <th>Ngày</th>
+          <th>Ngày khám</th>
           <th>Trạng thái</th>
           <th>Triệu chứng</th>
           <th>Bác sĩ</th>
-          <th>Gán/Đổi bác sĩ</th>
+          <th>Gán/Điều phối bác sĩ</th>
         </tr>
       </thead>
       <tbody>
@@ -63,39 +63,43 @@
           <td>{{ a.reason }}</td>
           <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
           <td @click.stop>
-            <template v-if="a.statusDetail.value === 'Pending' || a.statusDetail.value === 'Confirmed'">
+            <template v-if="canAssignDoctor(a)">
               <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
-                {{ a.statusDetail.value === 'Pending' ? 'Gán bác sĩ' : 'Đổi bác sĩ' }}
+                {{ a.statusDetail.doctorId ? "Đổi bác sĩ" : "Gán bác sĩ" }}
               </button>
+              <button v-if="a.statusDetail.doctorId" class="btn btn-sm btn-success me-2" @click="checkInAppointment(a)">
+                Check-in + tam ung
+              </button>
+              <span v-else class="text-muted small">(gán bác sĩ trước)</span>
             </template>
             <button class="btn btn-sm btn-info" @click="$router.push(`/staff/appointments/${a.id}`)">
-              Chi tiết
+              Chi tiet
             </button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <p v-if="appointments.length === 0">Không có lịch khám</p>
+    <p v-if="appointments.length === 0">KhÃ´ng cÃ³ lịch khám</p>
 
     <div v-if="showAssignModal" class="modal-backdrop" @click="showAssignModal = false">
       <div class="modal-content assign-modal" @click.stop>
         <div class="modal-header">
           <h4 class="modal-title">
-            <span class="icon-doctor">👨‍⚕️</span> Gán/Đổi bác sĩ cho lịch khám
+            <span class="icon-doctor">ðŸ‘¨â€âš•ï¸</span> GÃ¡n/Äá»•i bÃ¡c sÄ© cho lá»‹ch khÃ¡m
           </h4>
           <button class="modal-close" @click="showAssignModal = false">&times;</button>
         </div>
 
         <div class="modal-body">
           <div class="form-group">
-            <label for="departmentSelect">Chọn khoa *</label>
+            <label for="departmentSelect">Chọn khoa khoa *</label>
             <select 
               id="departmentSelect"
               v-model="assignForm.departmentId" 
               class="form-select form-control"
             >
-              <option value="">-- Chọn khoa --</option>
+              <option value="">-- Chá»n khoa --</option>
               <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
                 {{ dep.name }}
               </option>
@@ -110,7 +114,7 @@
               class="form-select form-control"
               :disabled="!assignForm.departmentId"
             >
-              <option value="">-- Chọn chuyên khoa --</option>
+              <option value="">-- Chá»n chuyÃªn khoa --</option>
               <option v-for="s in assignSpecialties" :key="s.id" :value="s.id.toString()">
                 {{ s.name }}
               </option>
@@ -118,14 +122,14 @@
           </div>
 
           <div class="form-group">
-            <label for="doctorSelect">Chọn bác sĩ *</label>
+            <label for="doctorSelect">Chá»n bÃ¡c sÄ© *</label>
             <select 
               id="doctorSelect"
               v-model="assignForm.doctorId" 
               class="form-select form-control"
               :disabled="!assignForm.specialtyId"
             >
-              <option value="">-- Chọn bác sĩ --</option>
+              <option value="">-- Chá»n bÃ¡c sÄ© --</option>
               <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id.toString()">
                 {{ d.fullName }}
               </option>
@@ -135,10 +139,10 @@
 
         <div class="modal-footer">
           <button class="btn btn-secondary" @click="showAssignModal = false">
-            ✕ Hủy
+            âœ• Há»§y
           </button>
           <button class="btn btn-success" @click="confirmAssignDoctor">
-            ✓ Xác nhận gán bác sĩ
+            âœ“ Xác nhận gán bác sĩ
           </button>
         </div>
       </div>
@@ -182,7 +186,7 @@ const appointments = ref<Appointment[]>([])
 const doctors = ref<any[]>([])
 const departments = ref<any[]>([])
 
-const statuses = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled']
+const statuses = ['All', 'Pending', 'Confirmed', 'CheckedIn', 'Completed', 'Cancelled']
 const currentStatus = ref('All')
 
 const showAssignModal = ref(false)
@@ -265,18 +269,38 @@ watch(() => assignForm.value.specialtyId, async (newVal) => {
 
 async function confirmAssignDoctor() {
   if (!assignForm.value.doctorId) {
-    alert('Vui lòng chọn bác sĩ')
+    alert('Vui lÃ²ng chá»n bÃ¡c sÄ©')
     return
   }
   await api.post('/staff/StaffAppointments/assign-doctor', {
     appointmentId: assignForm.value.appointmentId,
     doctorId: assignForm.value.doctorId
   })
-  alert('Bác sĩ đã được gán/đổi ✅')
+  alert('BÃ¡c sÄ© Ä‘Ã£ Ä‘Æ°á»£c gÃ¡n/Ä‘á»•i âœ…')
   showAssignModal.value = false
   loadAppointments()
 }
 
+async function checkInAppointment(a: Appointment) {
+  const input = prompt("Nh?p s? ti?n t?m ?ng (VND)", "300000")
+  const amount = Number(input ?? "0")
+  if (!amount || amount <= 0) {
+    alert("S? ti?n t?m ?ng không h?p l?")
+    return
+  }
+  await api.post("/staff/StaffAppointments/checkin", {
+    appointmentId: a.id,
+    depositAmount: amount,
+    method: "cash"
+  })
+  alert("Check-in & thu t?m ?ng thành công")
+  loadAppointments()
+}
+const canAssignDoctor = (a: Appointment) => {
+  if (!a) return false
+  const status = a.statusDetail?.value
+  return status === 'Pending' || status === 'Confirmed' || (status === 'CheckedIn' && !a.statusDetail?.doctorId)
+}
 const changeStatus = (s: string) => {
   currentStatus.value = s
   loadAppointments()
@@ -297,17 +321,17 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 
 const statusLabel = (status: string) => {
   const labels: { [key: string]: string } = {
-    All: 'Tất cả',
-    Pending: 'Chờ xử lý',
-    Confirmed: 'Đã xác nhận',
+    All: 'T?t c?',
+    Pending: 'Ch? x? lý',
+    Confirmed: 'Ðã xác nh?n',
+    CheckedIn: 'Ðã check-in',
     Completed: 'Hoàn thành',
-    Cancelled: 'Đã hủy'
+    Cancelled: 'Ðã h?y',
   }
   return labels[status] || status
 }
-
 const handleDepartmentFilter = () => {
-  selectedDoctor.value = ''
+  selectedDoctor.value = ""
 }
 
 onMounted(() => {
@@ -318,3 +342,6 @@ onMounted(() => {
 </script>
 
 <style src="@/styles/layouts/staff-appointment.css"></style>
+
+
+

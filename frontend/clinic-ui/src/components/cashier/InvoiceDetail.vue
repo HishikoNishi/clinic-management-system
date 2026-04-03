@@ -8,16 +8,16 @@ const props = defineProps<{
 
 const prettyType = (t: string) => {
   const map: Record<string, string> = {
-    Consultation: 'Khám',
-    Drug: 'Thuốc',
-    Test: 'Xét nghiệm',
-    Surcharge: 'Phụ thu',
-    Discount: 'Giảm trừ',
-    Insurance: 'Bảo hiểm'
+    Consultation: 'Kh�m',
+    Drug: 'Thu?c',
+    Test: 'X�t nghi?m',
+    Surcharge: 'Ph? thu',
+    Discount: 'Gi?m tr?',
+    Insurance: 'B?o hi?m',
+    Deposit: "T?m ?ng"
   }
   return map[t] || t
 }
-
 const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning text-dark'
 </script>
 
@@ -33,7 +33,8 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
           Trạng thái: <span :class="`badge ${statusBadge(invoice.isPaid)}`">{{ invoice.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span><br />
           Ngày tạo: {{ formatDateTime(invoice.createdAt) }}<br />
           Ngày thanh toán: {{ formatDateTime(invoice.paymentDate) }}<br />
-          Phương thức: {{ invoice.payments?.[0]?.method ?? '—' }}
+          Phuong th?c: {{ invoice.payments?.[0]?.method ?? "�" }}<br />
+          T?m ?ng: {{ formatCurrency(invoice.totalDeposit ?? 0) }} | C?n thu: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}
         </div>
 
         <div class="mb-3">
@@ -49,9 +50,8 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
             </li>
           </ul>
         </div>
-
-        <div class="fw-semibold">Tổng tiền: {{ formatCurrency(invoice.amount) }}</div>
-        <div class="text-muted small">* Đã bao gồm phí dịch vụ và các khoản phụ thu/giảm trừ.</div>
+        <div class="fw-semibold">T?ng sau tr? t?m ?ng: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</div>
+        <div class="text-muted small">* �� bao g?m ph� d?ch v?, ph? thu/gi?m tr? v� t?m ?ng.</div>
       </div>
       <div v-else class="text-muted">Chọn một hóa đơn để xem chi tiết.</div>
     </div>

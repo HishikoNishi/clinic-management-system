@@ -131,6 +131,26 @@ namespace ClinicManagement.Api.Services
             var total = subtotal - insuranceDiscount + medicalRecord.Surcharge - Math.Abs(medicalRecord.Discount);
             if (total < 0) total = 0;
 
+            // Deposits thu trước
+            var deposits = await _context.Payments
+                .Where(p => p.AppointmentId == appointmentId && p.IsDeposit)
+                .ToListAsync();
+            var totalDeposit = deposits.Sum(d => d.Amount);
+
+            if (totalDeposit > 0)
+            {
+                lines.Add(new InvoiceLine
+                {
+                    Description = "Tạm ứng đã thu",
+                    ItemType = "Deposit",
+                    Amount = -totalDeposit
+                });
+            }
+
+            var balanceDue = total - totalDeposit;
+            if (balanceDue < 0) balanceDue = 0;
+            var fullyCovered = balanceDue == 0;
+
             // Upsert invoice by appointment
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
@@ -142,9 +162,12 @@ namespace ClinicManagement.Api.Services
                 {
                     Id = Guid.NewGuid(),
                     AppointmentId = appointmentId,
-                    Amount = total,
+                    Amount = balanceDue,
+                    BalanceDue = balanceDue,
+                    TotalDeposit = totalDeposit,
                     CreatedAt = DateTime.UtcNow,
-                    IsPaid = false
+                    IsPaid = fullyCovered,
+                    PaymentDate = fullyCovered ? DateTime.UtcNow : null
                 };
                 _context.Invoices.Add(invoice);
             }
@@ -155,8 +178,11 @@ namespace ClinicManagement.Api.Services
                     // không tự động cập nhật hóa đơn đã thanh toán
                     return invoice;
                 }
-                invoice.Amount = total;
-                invoice.PaymentDate = null;
+                invoice.Amount = balanceDue;
+                invoice.BalanceDue = balanceDue;
+                invoice.TotalDeposit = totalDeposit;
+                invoice.PaymentDate = fullyCovered ? invoice.PaymentDate ?? DateTime.UtcNow : null;
+                invoice.IsPaid = fullyCovered;
 
                 // refresh lines
                 _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
@@ -167,6 +193,12 @@ namespace ClinicManagement.Api.Services
             {
                 line.InvoiceId = invoice.Id;
                 _context.InvoiceLines.Add(line);
+            }
+
+            // gán invoiceId cho các khoản tạm ứng chưa gán
+            foreach (var deposit in deposits.Where(d => d.InvoiceId == null))
+            {
+                deposit.InvoiceId = invoice.Id;
             }
 
             await _context.SaveChangesAsync();
@@ -194,3 +226,4 @@ namespace ClinicManagement.Api.Services
         }
     }
 }
+

@@ -21,7 +21,4 @@
   <ItemGroup>
     <None Remove="Dtos\Appointments\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Dtos\Appointments\" />
-  </ItemGroup>
 </Project>
