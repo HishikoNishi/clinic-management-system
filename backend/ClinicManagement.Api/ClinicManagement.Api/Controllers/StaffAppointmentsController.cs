@@ -172,11 +172,11 @@ namespace ClinicManagement.Api.Controllers
             if (doctor == null)
                 return BadRequest("Doctor is not available");
             var isBusy = await _context.Appointments.AnyAsync(a =>
-    a.DoctorId == dto.DoctorId &&
-    a.AppointmentDate == appointment.AppointmentDate &&
-    a.AppointmentTime == appointment.AppointmentTime &&
-    a.Status == AppointmentStatus.Confirmed
-);
+                a.DoctorId == dto.DoctorId &&
+                a.AppointmentDate == appointment.AppointmentDate &&
+                a.AppointmentTime == appointment.AppointmentTime &&
+                a.Status == AppointmentStatus.Confirmed
+            );
 
             if (isBusy)
                 return BadRequest("Doctor is already booked at this time");

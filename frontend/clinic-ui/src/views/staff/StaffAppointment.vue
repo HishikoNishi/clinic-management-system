@@ -3,20 +3,20 @@
     <h2>Quáº£n lÃ½ lá»‹ch khÃ¡m</h2>
 
     <div class="search-bar">
-      <input v-model="searchCode" placeholder="TÃ¬m kiáº¿m theo mÃ£..." />
-      <input v-model="searchName" placeholder="TÃ¬m kiáº¿m theo tÃªn bá»‡nh nhÃ¢n..." />
-      <input v-model="searchPhone" placeholder="TÃ¬m kiáº¿m theo sá»‘ Ä‘iá»‡n thoáº¡i..." />
+      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
+      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
+      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
       <input type="date" v-model="searchDate" />
 
       <select v-model="selectedDepartment" @change="handleDepartmentFilter">
-        <option value="">Chá»n khoa</option>
+        <option value="">Chọn khoa</option>
         <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
           {{ dep.name }}
         </option>
       </select>
 
       <select v-model="selectedDoctor" :disabled="!selectedDepartment">
-        <option value="">Chá»n bÃ¡c sÄ©</option>
+        <option value="">Chọn bác sĩ</option>
         <option v-for="d in doctorOptions" :key="d.id" :value="d.id.toString()">
           {{ d.fullName }}
         </option>
@@ -37,15 +37,15 @@
     <table>
       <thead>
         <tr>
-          <th>MÃ£</th>
-          <th>Bá»‡nh nhÃ¢n</th>
-          <th>Äiá»‡n thoáº¡i</th>
-          <th>NgÃ y sinh</th>
-          <th>NgÃ y</th>
-          <th>Tráº¡ng thÃ¡i</th>
-          <th>Triá»‡u chá»©ng</th>
-          <th>BÃ¡c sÄ©</th>
-          <th>GÃ¡n/Äá»•i bÃ¡c sÄ©</th>
+          <th>Mã</th>
+          <th>Bệnh nhân</th>
+          <th>Điện thoại</th>
+          <th>Ngày sinh</th>
+          <th>Ngày khám</th>
+          <th>Trạng thái</th>
+          <th>Triệu chứng</th>
+          <th>Bác sĩ</th>
+          <th>Gán/Điều phối bác sĩ</th>
         </tr>
       </thead>
       <tbody>
@@ -61,16 +61,16 @@
             </span>
           </td>
           <td>{{ a.reason }}</td>
-          <td>{{ a.statusDetail.doctorName || 'ChÆ°a gÃ¡n' }}</td>
+          <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
           <td @click.stop>
             <template v-if="canAssignDoctor(a)">
               <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
-                {{ a.statusDetail.doctorId ? "Doi bac si" : "Gan bac si" }}
+                {{ a.statusDetail.doctorId ? "Đổi bác sĩ" : "Gán bác sĩ" }}
               </button>
               <button v-if="a.statusDetail.doctorId" class="btn btn-sm btn-success me-2" @click="checkInAppointment(a)">
                 Check-in + tam ung
               </button>
-              <span v-else class="text-muted small">(Gan bac si truoc)</span>
+              <span v-else class="text-muted small">(gán bác sĩ trước)</span>
             </template>
             <button class="btn btn-sm btn-info" @click="$router.push(`/staff/appointments/${a.id}`)">
               Chi tiet
@@ -80,7 +80,7 @@
       </tbody>
     </table>
 
-    <p v-if="appointments.length === 0">KhÃ´ng cÃ³ lá»‹ch khÃ¡m</p>
+    <p v-if="appointments.length === 0">KhÃ´ng cÃ³ lịch khám</p>
 
     <div v-if="showAssignModal" class="modal-backdrop" @click="showAssignModal = false">
       <div class="modal-content assign-modal" @click.stop>
@@ -93,7 +93,7 @@
 
         <div class="modal-body">
           <div class="form-group">
-            <label for="departmentSelect">Chá»n khoa *</label>
+            <label for="departmentSelect">Chọn khoa khoa *</label>
             <select 
               id="departmentSelect"
               v-model="assignForm.departmentId" 
@@ -107,7 +107,7 @@
           </div>
 
           <div class="form-group">
-            <label for="specialtySelect">Chá»n chuyÃªn khoa *</label>
+            <label for="specialtySelect">Chọn chuyên khoa *</label>
             <select 
               id="specialtySelect"
               v-model="assignForm.specialtyId" 
@@ -142,7 +142,7 @@
             âœ• Há»§y
           </button>
           <button class="btn btn-success" @click="confirmAssignDoctor">
-            âœ“ XÃ¡c nháº­n gÃ¡n bÃ¡c sÄ©
+            âœ“ Xác nhận gán bác sĩ
           </button>
         </div>
       </div>
