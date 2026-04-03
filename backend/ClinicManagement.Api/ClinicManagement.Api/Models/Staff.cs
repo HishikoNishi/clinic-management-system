@@ -8,12 +8,10 @@ namespace ClinicManagement.Api.Models
 
         public string Code { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-
-        // GIỮ LẠI Position (theo leader)
         public string? Position { get; set; }
 
         public string Role { get; set; } = "Staff";
-
+        public string? AvatarUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
         public Guid UserId { get; set; }
