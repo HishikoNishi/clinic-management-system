@@ -6,7 +6,8 @@ export const useAuthStore = defineStore('auth', {
     role: localStorage.getItem('role') as string | null,
     expiresAt: localStorage.getItem('expiresAt') as string | null,
     refreshToken: localStorage.getItem('refreshToken') as string | null,
-    refreshExpiresAt: localStorage.getItem('refreshExpiresAt') as string | null
+    refreshExpiresAt: localStorage.getItem('refreshExpiresAt') as string | null,
+    doctorId: localStorage.getItem('doctorId') as string | null
   }),
 
   getters: {
@@ -21,18 +22,21 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    login(payload: { token: string; role: string; expiresAt: string; refreshToken?: string; refreshExpiresAt?: string }) {
+    login(payload: { token: string; role: string; expiresAt: string; refreshToken?: string; refreshExpiresAt?: string; doctorId?: string }) {
       this.token = payload.token
       this.role = payload.role
       this.expiresAt = payload.expiresAt
       this.refreshToken = payload.refreshToken || null
       this.refreshExpiresAt = payload.refreshExpiresAt || null
+      this.doctorId = payload.doctorId || null
 
       localStorage.setItem('token', payload.token)
       localStorage.setItem('role', payload.role)
       localStorage.setItem('expiresAt', payload.expiresAt)
       if (payload.refreshToken) localStorage.setItem('refreshToken', payload.refreshToken)
       if (payload.refreshExpiresAt) localStorage.setItem('refreshExpiresAt', payload.refreshExpiresAt)
+      if (payload.doctorId) localStorage.setItem('doctorId', payload.doctorId)
+
     },
 
     logout() {
@@ -41,12 +45,13 @@ export const useAuthStore = defineStore('auth', {
       this.expiresAt = null
       this.refreshToken = null
       this.refreshExpiresAt = null
-
+      this.doctorId = null
       localStorage.removeItem('token')
       localStorage.removeItem('role')
       localStorage.removeItem('expiresAt')
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('refreshExpiresAt')
+      localStorage.removeItem('doctorId')
     },
 
     isTokenExpired(): boolean {
@@ -77,7 +82,8 @@ export const useAuthStore = defineStore('auth', {
           role: data.role,
           expiresAt: data.expiresAt,
           refreshToken: data.refreshToken,
-          refreshExpiresAt: data.refreshExpiresAt
+          refreshExpiresAt: data.refreshExpiresAt,
+          doctorId: data.doctorId
         })
         return true
       } catch {

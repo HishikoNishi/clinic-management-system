@@ -55,7 +55,14 @@ async function loadSpecialties(departmentId: string) {
     specialties.value = []
   }
 }
-
+async function updateStatus(id: string, status: string) {
+  try {
+    await api.put(`/doctor/${id}/status`, { status })
+    await loadDoctors()
+  } catch (err:any) {
+    alert("Không thể cập nhật trạng thái bác sĩ")
+  }
+}
 function openCreate() {
   editingId.value = null
   form.userId = ''
@@ -178,6 +185,7 @@ onMounted(async () => {
                 <th>Khoa</th>
                 <th>Chuyên khoa</th>
                 <th>Giấy phép</th>
+                <th>Trạng thái</th>
                 <th style="text-align:right">Hành động</th>
               </tr>
             </thead>
@@ -197,6 +205,17 @@ onMounted(async () => {
                 <td>{{ d.departmentName || '-' }}</td>
                 <td>{{ d.specialtyName || '-' }}</td>
                 <td>{{ d.licenseNumber || '-' }}</td>
+                <td>
+                <select
+                  v-model="d.status"
+                  @change="updateStatus(d.id, d.status)"
+                  class="form-select form-select-sm"
+                >
+                  <option value="Active">Hoạt động</option>
+                  <option value="Busy">Đang khám</option>
+                  <option value="Inactive">Không hoạt động</option>
+                </select>
+              </td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-info me-2" @click="$router.push(`/doctors/${d.id}`)">
     Chi tiết
