@@ -6,6 +6,7 @@ using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ClinicManagement.Api.Dtos.Appointments;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -49,18 +50,18 @@ namespace ClinicManagement.Api.Controllers
                     StatusDetail = new AppointmentStatusDto
                     {
                         Value = a.Status.ToString(),
-                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Id
-        : null,
-                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.FullName
-        : null,
-                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Code
-        : null,
-                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Department.Name
-        : null
+                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Id
+                            : null,
+                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.FullName
+                            : null,
+                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Code
+                            : null,
+                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Department.Name
+                            : null
                     }
 
 
@@ -97,18 +98,18 @@ namespace ClinicManagement.Api.Controllers
                     StatusDetail = new AppointmentStatusDto
                     {
                         Value = a.Status.ToString(),
-                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Id
-        : null,
-                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.FullName
-        : null,
-                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Code
-        : null,
-                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed) && a.Doctor != null
-        ? a.Doctor.Department.Name
-        : null
+                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Id
+                            : null,
+                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.FullName
+                            : null,
+                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Code
+                            : null,
+                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null
+                            ? a.Doctor.Department.Name
+                            : null
                     }
 
                 })
@@ -191,6 +192,68 @@ namespace ClinicManagement.Api.Controllers
                 doctorCode = doctor.Code
             });
         }
+
+        [HttpPost("checkin")]
+        public async Task<IActionResult> CheckIn([FromBody] CheckInRequestDto dto)
+        {
+            var appointment = await _context.Appointments
+                .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
+
+            if (appointment == null) return NotFound("Appointment not found");
+            if (appointment.Status == AppointmentStatus.Cancelled || appointment.Status == AppointmentStatus.Completed)
+                return BadRequest("Cannot check-in cancelled/completed appointment");
+
+            // Optional assign doctor during check-in
+            if (dto.DoctorId.HasValue)
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
+                if (doctor == null) return BadRequest("Doctor is not available");
+                appointment.DoctorId = doctor.Id;
+            }
+            else if (appointment.DoctorId == null)
+            {
+                return BadRequest("Please assign a doctor before check-in");
+            }
+
+            appointment.Status = AppointmentStatus.CheckedIn;
+            appointment.CheckedInAt = DateTime.UtcNow;
+            appointment.CheckInChannel = "Staff";
+
+            Payment? depositPayment = null;
+            // create deposit
+            if (dto.DepositAmount > 0)
+            {
+                // nếu đã có invoice cho appointment thì gắn luôn
+                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.AppointmentId == appointment.Id);
+
+                depositPayment = new Payment
+                {
+                    AppointmentId = appointment.Id,
+                    InvoiceId = invoice?.Id,
+                    Amount = dto.DepositAmount,
+                    DepositAmount = dto.DepositAmount,
+                    IsDeposit = true,
+                    Method = dto.Method,
+                    PaymentDate = DateTime.UtcNow
+                };
+
+                _context.Payments.Add(depositPayment);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var totalDeposit = await _context.Payments
+                .Where(p => p.AppointmentId == appointment.Id && p.IsDeposit)
+                .SumAsync(p => p.Amount);
+
+            return Ok(new
+            {
+                message = "Checked in successfully",
+                appointment.Status,
+                totalDeposit,
+                depositPaymentId = depositPayment?.Id
+            });
+        }
         [HttpGet("{id}")]
         public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
         {
@@ -222,13 +285,13 @@ namespace ClinicManagement.Api.Controllers
                 StatusDetail = new AppointmentStatusDto
                 {
                     Value = appointment.Status.ToString(),
-                    DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                    DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn)
                         ? appointment.Doctor?.FullName
                         : null,
-                    DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                    DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn)
                         ? appointment.Doctor?.Code
                         : null,
-                    DoctorDepartmentName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed)
+                    DoctorDepartmentName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn)
                         ? appointment.Doctor?.Department?.Name
                         : null
                 }
