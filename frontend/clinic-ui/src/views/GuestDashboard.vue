@@ -166,7 +166,14 @@
             </div>
             <div class="form-group">
               <label class="form-label">Thời gian khám *</label>
-              <input v-model="bookingForm.appointmentTime" type="time" class="form-input" required />
+              <input
+                v-model="bookingForm.appointmentTime"
+                type="text"
+                class="form-input"
+                required
+                placeholder="HH:MM (24h, ví dụ 09:00 hoặc 21:30)"
+                inputmode="numeric"
+              />
               <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
             </div>
           </div>
@@ -327,6 +334,7 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 const validateBookingForm = () => {
   Object.keys(bookingErrors).forEach((k) => (bookingErrors[k] = ''))
   let ok = true
+  const todayStr = new Date().toISOString().slice(0, 10)
   if (!bookingForm.fullName.trim()) { bookingErrors.fullName = 'Họ và tên là bắt buộc'; ok = false }
   if (!bookingForm.dateOfBirth) { bookingErrors.dateOfBirth = 'Ngày sinh là bắt buộc'; ok = false }
   if (!bookingForm.gender) { bookingErrors.gender = 'Giới tính là bắt buộc'; ok = false }
@@ -336,7 +344,32 @@ const validateBookingForm = () => {
   else if (!/\S+@\S+\.\S+/.test(bookingForm.email)) { bookingErrors.email = 'Định dạng email không hợp lệ'; ok = false }
   if (!bookingForm.address.trim()) { bookingErrors.address = 'Địa chỉ là bắt buộc'; ok = false }
   if (!bookingForm.appointmentDate) { bookingErrors.appointmentDate = 'Ngày khám là bắt buộc'; ok = false }
+  else if (bookingForm.appointmentDate < todayStr) { bookingErrors.appointmentDate = 'Chỉ được đặt từ hôm nay trở đi'; ok = false }
   if (!bookingForm.appointmentTime) { bookingErrors.appointmentTime = 'Thời gian khám là bắt buộc'; ok = false }
+  else {
+    const parts = bookingForm.appointmentTime.split(':')
+    if (parts.length !== 2) {
+      bookingErrors.appointmentTime = 'Thời gian phải có định dạng HH:MM'
+      ok = false
+    } else {
+
+    const [h, m] = parts.map(Number)
+
+    if (h === undefined || m === undefined) {
+      bookingErrors.appointmentTime = 'Thời gian không hợp lệ'
+      ok = false
+    } else {
+      const minutes = h * 60 + m
+      const start = 7 * 60
+      const end = 22 * 60
+
+      if (minutes < start || minutes > end) {
+        bookingErrors.appointmentTime = 'Chỉ nhận đặt trong giờ làm việc (07:00-22:00)'
+        ok = false
+      }
+    }
+    }
+  }
   if (!bookingForm.reason.trim()) { bookingErrors.reason = 'Lý do khám là bắt buộc'; ok = false }
   return ok
 }

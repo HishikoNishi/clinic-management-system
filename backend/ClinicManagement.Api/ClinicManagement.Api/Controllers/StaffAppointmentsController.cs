@@ -175,11 +175,10 @@ namespace ClinicManagement.Api.Controllers
                 a.DoctorId == dto.DoctorId &&
                 a.AppointmentDate == appointment.AppointmentDate &&
                 a.AppointmentTime == appointment.AppointmentTime &&
-                a.Status == AppointmentStatus.Confirmed
-            );
+                (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.CheckedIn));
 
             if (isBusy)
-                return BadRequest("Doctor is already booked at this time");
+                return BadRequest(new { message = "Doctor is already booked/checked-in at this time slot" });
 
             appointment.DoctorId = doctor.Id;
             appointment.Status = AppointmentStatus.Confirmed;
@@ -196,12 +195,17 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("checkin")]
         public async Task<IActionResult> CheckIn([FromBody] CheckInRequestDto dto)
         {
+            const decimal depositCap = 300000m;
+
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
             if (appointment == null) return NotFound("Appointment not found");
             if (appointment.Status == AppointmentStatus.Cancelled || appointment.Status == AppointmentStatus.Completed)
                 return BadRequest("Cannot check-in cancelled/completed appointment");
+
+            if (dto.DepositAmount > depositCap)
+                return BadRequest($"Deposit cannot exceed {depositCap:N0} VND");
 
             // Optional assign doctor during check-in
             if (dto.DoctorId.HasValue)

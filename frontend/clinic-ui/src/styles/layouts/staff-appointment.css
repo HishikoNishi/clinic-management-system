@@ -432,3 +432,52 @@ p{
     justify-content: center;
   }
 }
+
+.assign-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 16px;
+}
+
+.assign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doctor-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.doctor-chip {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--color-bg-soft);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.doctor-chip:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.doctor-chip.selected {
+  background: rgba(46, 204, 113, 0.12);
+  border-color: var(--color-primary);
+}
+
+.insurance-box {
+  margin: 12px 24px 0 24px;
+}
+
+@media (max-width: 900px) {
+  .assign-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -103,7 +103,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
-import axios from "axios"
+import api from "@/services/api"
 
 const router = useRouter()
 
@@ -119,9 +119,7 @@ onMounted(async () => {
   if (!appointmentCode) return
 
   try {
-    const res = await axios.get(
-      `https://localhost:7235/api/Appointments/${appointmentCode}`
-    )
+    const res = await api.get(`/Appointments/${appointmentCode}`)
 
     appointment.value = res.data
   } catch (err) {
@@ -147,9 +145,7 @@ const searchAppointment = async () => {
   }
 
   try {
-    const res = await axios.get(
-      `https://localhost:7235/api/Appointments/${searchCode.value}`
-    )
+    const res = await api.get(`/Appointments/${searchCode.value}`)
 
     if (res.data.phone === searchPhone.value) {
       appointment.value = res.data
@@ -188,10 +184,7 @@ const confirmCancel = async () => {
       phone: appointment.value.phone
     }
 
-    await axios.post(
-      "https://localhost:7235/api/Appointments/cancel",
-      payload
-    )
+    await api.post("/Appointments/cancel", payload)
 
     appointment.value.status = "Cancelled"
     showCancelForm.value = false

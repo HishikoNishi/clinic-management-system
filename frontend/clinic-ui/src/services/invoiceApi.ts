@@ -12,6 +12,7 @@ export interface InvoiceLine {
 export interface InvoiceDetail {
   id: string
   appointmentId: string
+  appointmentCode?: string
   patientName?: string
   amount: number
   totalDeposit?: number
@@ -21,6 +22,7 @@ export interface InvoiceDetail {
   paymentDate?: string
   appointment?: {
     id: string
+    appointmentCode?: string
     patient?: {
       fullName?: string
       phone?: string
@@ -47,7 +49,10 @@ export interface InvoiceDetail {
 export interface InvoiceListItem {
   id: string
   appointmentId: string
+  appointmentCode?: string
   amount: number
+  balanceDue?: number
+  totalDeposit?: number
   isPaid: boolean
   createdAt?: string
   paymentDate?: string

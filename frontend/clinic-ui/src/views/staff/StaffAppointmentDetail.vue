@@ -30,18 +30,11 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const route = useRoute()
-const auth = useAuthStore()
-
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-  headers: { Authorization: `Bearer ${auth.token}` }
-})
 
 const appointment = ref<any>(null)
 const error = ref<string | null>(null)
