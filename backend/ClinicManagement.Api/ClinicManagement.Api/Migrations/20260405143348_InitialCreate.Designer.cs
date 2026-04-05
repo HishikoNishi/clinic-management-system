@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManagement.Api.Migrations
 {
     [DbContext(typeof(ClinicDbContext))]
-    [Migration("20260401170601_InitialCreate")]
+    [Migration("20260405143348_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,12 @@ namespace ClinicManagement.Api.Migrations
 
                     b.Property<TimeSpan>("AppointmentTime")
                         .HasColumnType("time");
+
+                    b.Property<string>("CheckInChannel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -341,6 +347,9 @@ namespace ClinicManagement.Api.Migrations
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("BalanceDue")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -349,6 +358,9 @@ namespace ClinicManagement.Api.Migrations
 
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalDeposit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -495,8 +507,21 @@ namespace ClinicManagement.Api.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("InvoiceId")
+                    b.Property<Guid>("AppointmentId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("DepositAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeposit")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Method")
                         .IsRequired()
@@ -506,6 +531,8 @@ namespace ClinicManagement.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
 
                     b.HasIndex("InvoiceId");
 
@@ -726,7 +753,8 @@ namespace ClinicManagement.Api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AvatarUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -821,11 +849,11 @@ namespace ClinicManagement.Api.Migrations
                         new
                         {
                             Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                            CreatedAt = new DateTime(2026, 4, 1, 17, 6, 1, 690, DateTimeKind.Utc).AddTicks(7470),
+                            CreatedAt = new DateTime(2026, 4, 5, 14, 33, 48, 801, DateTimeKind.Utc).AddTicks(4490),
                             Email = "",
                             FullName = "",
                             IsActive = true,
-                            PasswordHash = "AQAAAAIAAYagAAAAEEeHcGfGHUog7e6uV46uh+sSC20vnkkID99KcMuVPSnaP4DwcJkgLCMJJ//4hSGdYA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENuvJTh4zqRgGPqiwR0xQWX/zL2UhSl/EgfqTuFdu7sFk4WXx6dMy1FHJ33MnTgngQ==",
                             PhoneNumber = "",
                             RoleId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Username = "admin"
@@ -949,11 +977,18 @@ namespace ClinicManagement.Api.Migrations
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Payment", b =>
                 {
+                    b.HasOne("ClinicManagement.Api.Models.Appointment", "Appointment")
+                        .WithMany("Payments")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ClinicManagement.Api.Models.Invoice", "Invoice")
                         .WithMany("Payments")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Appointment");
 
                     b.Navigation("Invoice");
                 });
@@ -1022,6 +1057,11 @@ namespace ClinicManagement.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Prescription");
+                });
+
+            modelBuilder.Entity("ClinicManagement.Api.Models.Appointment", b =>
+                {
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("ClinicManagement.Api.Models.Department", b =>

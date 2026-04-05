@@ -156,7 +156,8 @@ namespace ClinicManagement.Api.Data
                 entity.Property(s => s.FullName)
                       .IsRequired()
                       .HasMaxLength(100);
-
+                entity.Property(s => s.AvatarUrl)
+                      .HasMaxLength(255);
                 entity.Property(s => s.Position)
                       .HasMaxLength(100);
 
@@ -309,8 +310,18 @@ namespace ClinicManagement.Api.Data
                       .HasColumnType("decimal(18,2)")
                       .IsRequired();
 
+                entity.Property(p => p.DepositAmount)
+                      .HasColumnType("decimal(18,2)")
+                      .HasDefaultValue(0m);
+
+                entity.Property(p => p.IsDeposit)
+                      .HasDefaultValue(false);
+
+                entity.Property(p => p.AppointmentId)
+                      .IsRequired();
+
                 entity.Property(p => p.Method)
-                      .HasConversion<string>() // enum lưu dạng string
+                      .HasConversion<string>()
                       .IsRequired();
 
                 entity.Property(p => p.PaymentDate)
@@ -319,6 +330,11 @@ namespace ClinicManagement.Api.Data
                 entity.HasOne(p => p.Invoice)
                       .WithMany(i => i.Payments)
                       .HasForeignKey(p => p.InvoiceId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(p => p.Appointment)
+                      .WithMany(a => a.Payments)
+                      .HasForeignKey(p => p.AppointmentId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -405,3 +421,6 @@ namespace ClinicManagement.Api.Data
         }
     }
 }
+
+
+

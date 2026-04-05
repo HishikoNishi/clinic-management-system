@@ -8,16 +8,15 @@ namespace ClinicManagement.Api.Models
 
         public string Code { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-
         public string? Position { get; set; }
 
         public string Role { get; set; } = "Staff";
-
+        public string? AvatarUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
-        public string? AvatarUrl { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }

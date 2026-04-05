@@ -291,9 +291,9 @@ namespace ClinicManagement.Api.Migrations
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Position = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
@@ -321,7 +321,9 @@ namespace ClinicManagement.Api.Migrations
                     AppointmentCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CheckedInAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CheckInChannel = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -352,6 +354,8 @@ namespace ClinicManagement.Api.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AppointmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalDeposit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BalanceDue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -393,8 +397,11 @@ namespace ClinicManagement.Api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InvoiceId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    AppointmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DepositAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false, defaultValue: 0m),
+                    IsDeposit = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     Method = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -402,11 +409,17 @@ namespace ClinicManagement.Api.Migrations
                 {
                     table.PrimaryKey("PK_Payments", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Payments_Appointments_AppointmentId",
+                        column: x => x.AppointmentId,
+                        principalTable: "Appointments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Payments_Invoices_InvoiceId",
                         column: x => x.InvoiceId,
                         principalTable: "Invoices",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.InsertData(
@@ -469,7 +482,7 @@ namespace ClinicManagement.Api.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "Id", "CreatedAt", "Email", "FullName", "IsActive", "PasswordHash", "PhoneNumber", "RoleId", "Username" },
-                values: new object[] { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), new DateTime(2026, 4, 1, 17, 6, 1, 690, DateTimeKind.Utc).AddTicks(7470), "", "", true, "AQAAAAIAAYagAAAAEEeHcGfGHUog7e6uV46uh+sSC20vnkkID99KcMuVPSnaP4DwcJkgLCMJJ//4hSGdYA==", "", new Guid("11111111-1111-1111-1111-111111111111"), "admin" });
+                values: new object[] { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), new DateTime(2026, 4, 5, 14, 33, 48, 801, DateTimeKind.Utc).AddTicks(4490), "", "", true, "AQAAAAIAAYagAAAAENuvJTh4zqRgGPqiwR0xQWX/zL2UhSl/EgfqTuFdu7sFk4WXx6dMy1FHJ33MnTgngQ==", "", new Guid("11111111-1111-1111-1111-111111111111"), "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_AppointmentCode",
@@ -546,6 +559,11 @@ namespace ClinicManagement.Api.Migrations
                 table: "Invoices",
                 column: "AppointmentId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_AppointmentId",
+                table: "Payments",
+                column: "AppointmentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_InvoiceId",

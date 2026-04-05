@@ -43,6 +43,8 @@ namespace ClinicManagement.Api.Controllers
             {
                 AppointmentId = dto.AppointmentId,
                 Amount = dto.Amount,
+                BalanceDue = dto.Amount,
+                TotalDeposit = 0,
                 CreatedAt = DateTime.UtcNow,
                 IsPaid = false
 
@@ -89,6 +91,8 @@ namespace ClinicManagement.Api.Controllers
                     i.AppointmentId,
                     PatientName = i.Appointment != null ? i.Appointment.Patient.FullName : null,
                     i.Amount,
+                    i.BalanceDue,
+                    i.TotalDeposit,
                     i.IsPaid,
                     i.CreatedAt,
                     i.PaymentDate
@@ -116,10 +120,21 @@ namespace ClinicManagement.Api.Controllers
             if (invoice.IsPaid)
                 return BadRequest(new { message = "Hóa đơn đã thanh toán" });
 
+            if (invoice.Amount <= 0)
+            {
+                invoice.IsPaid = true;
+                invoice.PaymentDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Hóa đơn không còn số tiền phải thu" });
+            }
+
             var payment = new Payment
             {
                 InvoiceId = invoice.Id,
+                AppointmentId = invoice.AppointmentId,
                 Amount = invoice.Amount,
+                DepositAmount = 0m,
+                IsDeposit = false,
                 Method = PaymentMethod.cash,
                 PaymentDate = DateTime.UtcNow
             };
@@ -195,6 +210,8 @@ namespace ClinicManagement.Api.Controllers
                 invoice.AppointmentId,
                 PatientName = invoice.Appointment?.Patient?.FullName,
                 invoice.Amount,
+                invoice.TotalDeposit,
+                invoice.BalanceDue,
                 invoice.IsPaid,
                 invoice.CreatedAt,
                 invoice.PaymentDate,
@@ -212,9 +229,20 @@ namespace ClinicManagement.Api.Controllers
                 {
                     p.Id,
                     p.Amount,
+                    p.DepositAmount,
+                    p.IsDeposit,
                     p.Method,
                     p.PaymentDate
                 }),
+                depositPayments = invoice.Payments?
+                    .Where(p => p.IsDeposit)
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Amount,
+                        p.Method,
+                        p.PaymentDate
+                    }),
                 invoiceLines = invoice.InvoiceLines?.Select(l => new
                 {
                     l.Id,

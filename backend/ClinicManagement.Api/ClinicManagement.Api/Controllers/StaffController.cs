@@ -19,33 +19,31 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= GET ALL ================= */
-        [HttpGet]
         [Authorize(Roles = "Admin")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var staffs = await _context.Staffs
                 .Include(s => s.User)
-               .Select(s => new StaffDto
-               {
-                   Id = s.Id,
-                   Code = s.Code,
-                   FullName = s.FullName,
-                   Role = s.Role,
-                   IsActive = s.IsActive,
-                   Username = s.User.Username,
-                   CreatedAt = s.CreatedAt,
-                   
-                   AvatarUrl = s.AvatarUrl    
-               })
-
+                .Select(s => new StaffDto
+                {
+                    Id = s.Id,
+                    Code = s.Code,
+                    FullName = s.FullName,
+                    Role = s.Role,
+                    IsActive = s.IsActive,
+                    Username = s.User.Username,
+                    CreatedAt = s.CreatedAt,
+                    AvatarUrl = s.AvatarUrl
+                })
                 .ToListAsync();
 
             return Ok(staffs);
         }
 
         /* ================= GET BY ID ================= */
-        [HttpGet("{id:guid}")]
         [Authorize(Roles = "Admin")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {
             var staff = await _context.Staffs
@@ -61,17 +59,17 @@ namespace ClinicManagement.Api.Controllers
                 Code = staff.Code,
                 FullName = staff.FullName,
                 Role = staff.Role,
+                UserId = staff.UserId,
                 IsActive = staff.IsActive,
                 Username = staff.User.Username,
-               
-                AvatarUrl = staff.AvatarUrl,
-                CreatedAt = staff.CreatedAt
+                CreatedAt = staff.CreatedAt,
+                AvatarUrl = staff.AvatarUrl
             });
         }
 
         /* ================= CREATE ================= */
-        [HttpPost]
         [Authorize(Roles = "Admin")]
+        [HttpPost]
         public async Task<IActionResult> Create(CreateStaffDto dto)
         {
             if (!ModelState.IsValid)
@@ -97,10 +95,9 @@ namespace ClinicManagement.Api.Controllers
                 FullName = dto.FullName,
                 Role = dto.Role,
                 UserId = dto.UserId,
-                AvatarUrl = dto.AvatarUrl,
-
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                AvatarUrl = dto.AvatarUrl
             };
 
             await _context.Staffs.AddAsync(staff);
@@ -114,8 +111,8 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= UPDATE ================= */
-        [HttpPut("{id:guid}")]
         [Authorize(Roles = "Admin")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, UpdateStaffDto dto)
         {
             if (!ModelState.IsValid)
@@ -135,7 +132,6 @@ namespace ClinicManagement.Api.Controllers
             staff.UserId = dto.UserId;
             staff.IsActive = dto.IsActive;
             staff.AvatarUrl = dto.AvatarUrl;
-
             staff.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -144,8 +140,8 @@ namespace ClinicManagement.Api.Controllers
         }
 
         /* ================= DELETE ================= */
-        [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var staff = await _context.Staffs.FindAsync(id);
@@ -157,7 +153,6 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Staff profile deleted successfully." });
         }
-        // GET api/Staffs/profile
         [HttpGet("profile")]
         [Authorize(Roles = "Staff")]
         public async Task<IActionResult> GetMyProfile()
@@ -210,8 +205,6 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Profile updated successfully" });
         }
-
-
 
     }
 }

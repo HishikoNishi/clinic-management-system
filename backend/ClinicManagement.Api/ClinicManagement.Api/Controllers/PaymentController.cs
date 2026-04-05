@@ -42,7 +42,10 @@ namespace ClinicManagement.Api.Controllers
             var payment = new Payment
             {
                 InvoiceId = dto.InvoiceId,
+                AppointmentId = invoice.AppointmentId,
                 Amount = dto.Amount,
+                DepositAmount = 0m,
+                IsDeposit = false,
                 Method = dto.Method,
                 PaymentDate = DateTime.UtcNow
             };
@@ -68,6 +71,8 @@ namespace ClinicManagement.Api.Controllers
                     payment.Id,
                     payment.InvoiceId,
                     payment.Amount,
+                    payment.IsDeposit,
+                    payment.DepositAmount,
                     payment.Method,
                     payment.PaymentDate
                 },
@@ -90,10 +95,14 @@ namespace ClinicManagement.Api.Controllers
                             invoiceWithLines.Appointment.Patient.Email
                         }
                     },
+                    invoiceWithLines.TotalDeposit,
+                    invoiceWithLines.BalanceDue,
                     payments = invoiceWithLines.Payments?.Select(p => new
                     {
                         p.Id,
                         p.Amount,
+                        p.DepositAmount,
+                        p.IsDeposit,
                         p.Method,
                         p.PaymentDate
                     }),

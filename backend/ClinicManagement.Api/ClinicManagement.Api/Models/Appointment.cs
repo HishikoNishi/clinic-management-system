@@ -56,5 +56,11 @@ namespace ClinicManagement.Api.Models
 
         public DateTime CreatedAt { get; set; }
             = DateTime.UtcNow;
+
+        // Theo dõi check-in
+        public DateTime? CheckedInAt { get; set; }
+        public string? CheckInChannel { get; set; }
+
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }

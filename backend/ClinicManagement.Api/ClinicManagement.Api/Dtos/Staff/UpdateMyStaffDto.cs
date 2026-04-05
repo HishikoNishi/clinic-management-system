@@ -1,9 +1,8 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ClinicManagement.Api.Dtos.Staff
 {
-    public class UpdateMyStaffDto 
+    public class UpdateMyStaffDto
     {
         [Required]
         public string Code { get; set; } = null!;
@@ -16,4 +15,3 @@ namespace ClinicManagement.Api.Dtos.Staff
         public string? AvatarUrl { get; set; }
     }
 }
-

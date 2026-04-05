@@ -53,16 +53,22 @@ namespace ClinicManagement.Api.Controllers
                 ExpiresAt = DateTime.UtcNow.AddDays(_refreshDays)
             };
             _context.RefreshTokens.Add(refresh);
+            Guid? doctorId = null;
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == user.Id);
+            if (doctor != null)
+                doctorId = doctor.Id;
             await _context.SaveChangesAsync();
 
             return Ok(new AuthResponse
             {
                 Token = token,
                 Username = user.Username,
+                DoctorId = doctorId,
                 Role = user.RoleNavigation?.Name ?? "Guest",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(60),
                 RefreshToken = refresh.Token,
-                RefreshExpiresAt = refresh.ExpiresAt
+                RefreshExpiresAt = refresh.ExpiresAt,
+                
             });
         }
 
@@ -95,12 +101,17 @@ namespace ClinicManagement.Api.Controllers
             };
 
             _context.RefreshTokens.Add(newRefresh);
+            Guid? doctorId = null;
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == user.Id);
+            if (doctor != null)
+                doctorId = doctor.Id;
             await _context.SaveChangesAsync();
 
             return Ok(new AuthResponse
             {
                 Token = newAccess,
                 Username = user.Username,
+                DoctorId = doctorId,
                 Role = user.RoleNavigation?.Name ?? "Guest",
                 ExpiresAt = DateTime.UtcNow.AddMinutes(60),
                 RefreshToken = newRefresh.Token,

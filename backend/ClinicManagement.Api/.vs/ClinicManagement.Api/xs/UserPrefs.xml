@@ -1,34 +1,37 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Controllers/StaffController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/appsettings.json">
     <Files>
       <File FileName="ClinicManagement.Api/appsettings.json" Line="4" Column="5" />
-      <File FileName="ClinicManagement.Api/Dtos/Staff/CreateStaffDto.cs" Line="15" Column="1" />
-      <File FileName="ClinicManagement.Api/Models/Staff.cs" Line="11" Column="1" />
-      <File FileName="ClinicManagement.Api/Dtos/Staff/StaffDto.cs" Line="6" Column="1" />
-      <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateStaffDto.cs" Line="19" Column="1" />
-      <File FileName="ClinicManagement.Api/Controllers/StaffController.cs" Line="217" Column="2" />
-      <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateMyStaffDto.cs" Line="6" Column="35" />
+      <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/AdminController.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/User/UpdateUserStatusRequest.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/User/UpdateAccountRequest.cs" />
+      <File FileName="ClinicManagement.Api/Controllers/StaffController.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Staff/StaffDto.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateMyStaffDto.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateStaffDto.cs" />
+      <File FileName="ClinicManagement.Api/Dtos/Staff/CreateStaffDto.cs" Line="17" Column="43" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="ClinicManagement.Api" expanded="True">
             <Node name="ClinicManagement.Api">
-              <Node name="Controllers" expanded="True">
-                <Node name="StaffController.cs" selected="True" />
+              <Node name="Dtos" expanded="True">
+                <Node name="Staff" expanded="True" />
               </Node>
-              <Node name="Models" expanded="True" />
+              <Node name="appsettings.json" selected="True" />
             </Node>
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>

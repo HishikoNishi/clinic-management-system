@@ -106,6 +106,37 @@ namespace ClinicManagement.Api.Controllers
                 Role = user.RoleNavigation?.Name ?? "User"
             });
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateAccountRequest request)
+        {
+            var user = await _userRepo.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            user.Username = request.Username ?? user.Username;
+            if (!string.IsNullOrEmpty(request.Password))
+            {
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == request.Role);
+            if (role != null)
+            {
+                user.RoleId = role.Id;
+            }
+
+            await _userRepo.UpdateAsync(user);
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Role = user.RoleNavigation?.Name ?? "User"
+            });
+        }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("{id}/roles/{roleName}")]
