@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 import '@/styles/layouts/doctor-detail.css'
 
 const route = useRoute()
 const doctorId = route.params.id
-const auth = useAuthStore()
-
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-  headers: { Authorization: `Bearer ${auth.token}` }
-})
 
 const doctor = ref<any>(null)
 const appointments = ref<any[]>([])

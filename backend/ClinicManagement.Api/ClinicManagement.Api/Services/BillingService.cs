@@ -128,8 +128,8 @@ namespace ClinicManagement.Api.Services
                 });
             }
 
-            var total = subtotal - insuranceDiscount + medicalRecord.Surcharge - Math.Abs(medicalRecord.Discount);
-            if (total < 0) total = 0;
+            var subtotalAfterInsurance = subtotal - insuranceDiscount + medicalRecord.Surcharge - Math.Abs(medicalRecord.Discount);
+            if (subtotalAfterInsurance < 0) subtotalAfterInsurance = 0;
 
             // Deposits thu trước
             var deposits = await _context.Payments
@@ -137,19 +137,21 @@ namespace ClinicManagement.Api.Services
                 .ToListAsync();
             var totalDeposit = deposits.Sum(d => d.Amount);
 
-            if (totalDeposit > 0)
+            // chỉ khấu trừ tối đa bằng subtotalAfterInsurance
+            var appliedDeposit = Math.Min(totalDeposit, subtotalAfterInsurance);
+
+            if (appliedDeposit > 0)
             {
                 lines.Add(new InvoiceLine
                 {
                     Description = "Tạm ứng đã thu",
                     ItemType = "Deposit",
-                    Amount = -totalDeposit
+                    Amount = -appliedDeposit
                 });
             }
 
-            var balanceDue = total - totalDeposit;
+            var balanceDue = subtotalAfterInsurance - appliedDeposit;
             if (balanceDue < 0) balanceDue = 0;
-            var fullyCovered = balanceDue == 0;
 
             // Upsert invoice by appointment
             var invoice = await _context.Invoices
@@ -162,12 +164,12 @@ namespace ClinicManagement.Api.Services
                 {
                     Id = Guid.NewGuid(),
                     AppointmentId = appointmentId,
-                    Amount = balanceDue,
+                    Amount = subtotalAfterInsurance,
                     BalanceDue = balanceDue,
-                    TotalDeposit = totalDeposit,
+                    TotalDeposit = appliedDeposit,
                     CreatedAt = DateTime.UtcNow,
-                    IsPaid = fullyCovered,
-                    PaymentDate = fullyCovered ? DateTime.UtcNow : null
+                    IsPaid = false,
+                    PaymentDate = null
                 };
                 _context.Invoices.Add(invoice);
             }
@@ -178,11 +180,12 @@ namespace ClinicManagement.Api.Services
                     // không tự động cập nhật hóa đơn đã thanh toán
                     return invoice;
                 }
-                invoice.Amount = balanceDue;
+                invoice.Amount = subtotalAfterInsurance;
                 invoice.BalanceDue = balanceDue;
-                invoice.TotalDeposit = totalDeposit;
-                invoice.PaymentDate = fullyCovered ? invoice.PaymentDate ?? DateTime.UtcNow : null;
-                invoice.IsPaid = fullyCovered;
+                invoice.TotalDeposit = appliedDeposit;
+                // keep PaymentDate/IsPaid as is; only set when thu tiền thật
+                // invoice.PaymentDate = invoice.PaymentDate;
+                // invoice.IsPaid = invoice.IsPaid;
 
                 // refresh lines
                 _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);

@@ -29,6 +29,16 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppointmentDto dto)
         {
+            var today = DateTime.UtcNow.Date;
+            var businessStart = new TimeSpan(7, 0, 0);
+            var businessEnd = new TimeSpan(22, 0, 0);
+
+            if (dto.AppointmentDate.Date < today)
+                return BadRequest(new { message = "Chỉ được đặt lịch từ hôm nay trở đi" });
+
+            if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
+                return BadRequest(new { message = "Chỉ nhận đặt lịch trong khung giờ làm việc (07:00-22:00)" });
+
             if (string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest(new { message = "Email là bắt buộc để xác thực OTP" });
 

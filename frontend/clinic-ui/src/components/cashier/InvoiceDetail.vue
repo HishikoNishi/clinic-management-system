@@ -8,13 +8,13 @@ const props = defineProps<{
 
 const prettyType = (t: string) => {
   const map: Record<string, string> = {
-    Consultation: 'Kh�m',
-    Drug: 'Thu?c',
-    Test: 'X�t nghi?m',
-    Surcharge: 'Ph? thu',
-    Discount: 'Gi?m tr?',
-    Insurance: 'B?o hi?m',
-    Deposit: "T?m ?ng"
+    Consultation: 'Khám',
+    Drug: 'Thuốc',
+    Test: 'Xét nghiệm',
+    Surcharge: 'Phí thu',
+    Discount: 'Giảm trừ',
+    Insurance: 'Bảo hiểm',
+    Deposit: "Tạm ứng"
   }
   return map[t] || t
 }
@@ -29,12 +29,12 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
         <div class="small text-muted mb-3">
           Hóa đơn: <span class="fw-semibold">{{ invoice.id }}</span><br />
           Bệnh nhân: <span class="fw-semibold">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</span><br />
-          Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentId }}</span><br />
+          Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</span><br />
           Trạng thái: <span :class="`badge ${statusBadge(invoice.isPaid)}`">{{ invoice.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span><br />
           Ngày tạo: {{ formatDateTime(invoice.createdAt) }}<br />
           Ngày thanh toán: {{ formatDateTime(invoice.paymentDate) }}<br />
-          Phuong th?c: {{ invoice.payments?.[0]?.method ?? "�" }}<br />
-          T?m ?ng: {{ formatCurrency(invoice.totalDeposit ?? 0) }} | C?n thu: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}
+          Phương thức: {{ invoice.payments?.[0]?.method ?? "-" }}<br />
+          Tạm ứng: {{ formatCurrency(invoice.totalDeposit ?? 0) }} | Còn thu: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}
         </div>
 
         <div class="mb-3">
@@ -50,8 +50,8 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
             </li>
           </ul>
         </div>
-        <div class="fw-semibold">T?ng sau tr? t?m ?ng: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</div>
-        <div class="text-muted small">* �� bao g?m ph� d?ch v?, ph? thu/gi?m tr? v� t?m ?ng.</div>
+        <div class="fw-semibold">Tổng sau trừ tạm ứng: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</div>
+        <div class="text-muted small">* Đã bao gồm phí dịch vụ, phí thu/giảm trừ và tạm ứng.</div>
       </div>
       <div v-else class="text-muted">Chọn một hóa đơn để xem chi tiết.</div>
     </div>

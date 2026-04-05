@@ -22,7 +22,7 @@ const statusBadge = (isPaid: boolean) => (isPaid ? 'bg-success' : 'bg-warning te
           <th>Hóa đơn</th>
           <th>Bệnh nhân</th>
           <th>Mã lịch hẹn</th>
-          <th class="text-end">Số tiền</th>
+          <th class="text-end">Tổng tiền</th>
           <th>Trạng thái</th>
           <th>Ngày tạo</th>
           <th></th>
@@ -32,7 +32,7 @@ const statusBadge = (isPaid: boolean) => (isPaid ? 'bg-success' : 'bg-warning te
         <tr v-for="inv in props.items" :key="inv.id">
           <td class="small text-monospace">{{ inv.id.slice(0, 8) }}...</td>
           <td class="small">{{ inv.patientName || '—' }}</td>
-          <td class="small text-monospace">{{ inv.appointmentId?.slice(0, 8) }}...</td>
+          <td class="small text-monospace">{{ inv.appointmentCode || '—' }}</td>
           <td class="text-end">{{ formatCurrency(inv.amount) }}</td>
           <td><span class="badge" :class="statusBadge(inv.isPaid)">{{ inv.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span></td>
           <td class="small">{{ formatDateTime(inv.createdAt) }}</td>

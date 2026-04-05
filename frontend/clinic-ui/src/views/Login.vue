@@ -55,6 +55,7 @@
             <div class="form-group">
               <label class="form-label">Tên đăng nhập</label>
               <input
+                ref="userInputRef"
                 v-model="credentials.username"
                 class="form-input"
                 type="text"
@@ -84,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.ts'
 import api from '@/services/api.ts'
@@ -97,11 +98,17 @@ const credentials = ref({
   username: '',
   password: ''
 })
+const userInputRef = ref<HTMLInputElement | null>(null)
 
 const showPassword = ref(false)
 const rememberMe = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
+
+onMounted(() => {
+  // focus vào ô username khi vào trang
+  userInputRef.value?.focus()
+})
 
 const handleLogin = async () => {
   try {
@@ -140,8 +147,11 @@ router.push(roleRedirect[role] || '/home')
   } catch (error) {
     const err = error as AxiosError<any>
     errorMessage.value =
-      err.response?.data?.message ||
-      'Invalid username or password. Please try again.'
+      'Sai tên hoặc mật khẩu. Vui lòng thử lại.'
+    // focus lại ô username cho tiện sửa
+    userInputRef.value?.focus()
+  } finally {
+    loading.value = false
   }
 }
 </script>

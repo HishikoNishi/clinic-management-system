@@ -89,6 +89,7 @@ namespace ClinicManagement.Api.Controllers
                 {
                     i.Id,
                     i.AppointmentId,
+                    AppointmentCode = i.Appointment != null ? i.Appointment.AppointmentCode : null,
                     PatientName = i.Appointment != null ? i.Appointment.Patient.FullName : null,
                     i.Amount,
                     i.BalanceDue,
@@ -208,6 +209,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 invoice.Id,
                 invoice.AppointmentId,
+                AppointmentCode = invoice.Appointment?.AppointmentCode,
                 PatientName = invoice.Appointment?.Patient?.FullName,
                 invoice.Amount,
                 invoice.TotalDeposit,

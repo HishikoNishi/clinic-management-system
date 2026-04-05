@@ -137,6 +137,53 @@ namespace ClinicManagement.Api.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateAccountRequest request)
+        {
+            var user = await _userRepo.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Username) &&
+                !string.Equals(user.Username, request.Username, StringComparison.OrdinalIgnoreCase))
+            {
+                var existing = await _userRepo.GetByUsernameAsync(request.Username);
+                if (existing != null && existing.Id != id)
+                {
+                    return Conflict(new { message = "Username already exists." });
+                }
+                user.Username = request.Username.ToLowerInvariant();
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Role))
+            {
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == request.Role);
+                if (role == null)
+                {
+                    return BadRequest(new { message = $"Role '{request.Role}' not found." });
+                }
+                user.RoleId = role.Id;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+            }
+
+            await _userRepo.UpdateAsync(user);
+            user = await _userRepo.GetByIdAsync(user.Id);
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Role = user.RoleNavigation?.Name ?? "User"
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {

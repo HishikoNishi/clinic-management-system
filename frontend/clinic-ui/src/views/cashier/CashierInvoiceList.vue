@@ -28,7 +28,8 @@ const filteredList = () => {
   const term = searchText.value.toLowerCase()
   return list.value.filter(item =>
     item.patientName?.toLowerCase().includes(term) ||
-    item.id.toLowerCase().includes(term)
+    item.id.toLowerCase().includes(term) ||
+    item.appointmentCode?.toLowerCase().includes(term)
   )
 }
 

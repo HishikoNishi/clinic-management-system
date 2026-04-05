@@ -1,22 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
-
-const auth = useAuthStore()
-
-// axios instance
-const api = axios.create({
-  baseURL: 'https://localhost:7235/api',
-})
-
-// interceptor để gắn token mỗi request
-api.interceptors.request.use(config => {
-  if (auth.token) {
-    config.headers.Authorization = `Bearer ${auth.token}`
-  }
-  return config
-})
+import api from '@/services/api'
 
 const staff = ref<any>(null)
 const loading = ref(false)
