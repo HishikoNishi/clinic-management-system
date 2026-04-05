@@ -14,6 +14,8 @@ export interface InvoiceDetail {
   appointmentId: string
   patientName?: string
   amount: number
+  totalDeposit?: number
+  balanceDue?: number
   isPaid: boolean
   createdAt?: string
   paymentDate?: string
@@ -26,6 +28,14 @@ export interface InvoiceDetail {
     }
   }
   payments?: {
+    id: string
+    amount: number
+    depositAmount?: number
+    isDeposit?: boolean
+    method: PaymentMethod
+    paymentDate: string
+  }[]
+  depositPayments?: {
     id: string
     amount: number
     method: PaymentMethod

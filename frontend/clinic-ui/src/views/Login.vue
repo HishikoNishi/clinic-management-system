@@ -119,7 +119,8 @@ const handleLogin = async () => {
       role: response.data.role,
       expiresAt: response.data.expiresAt,
       refreshToken: response.data.refreshToken,
-      refreshExpiresAt: response.data.refreshExpiresAt
+      refreshExpiresAt: response.data.refreshExpiresAt,
+      doctorId: response.data.doctorId
     })
 
 // ✅ redirect theo role

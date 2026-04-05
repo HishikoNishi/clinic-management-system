@@ -18,13 +18,16 @@ const { loading: payLoading, error: payError, message: payMessage, pay } = usePa
 const appointmentId = computed(() => currentAppointment.value?.id ?? '')
 const isPaid = computed(() => invoice.value?.isPaid ?? false)
 
-const autofillPayAmount = computed(() => payAmount.value ?? invoice.value?.amount ?? 0)
+const balanceDue = computed(() => invoice.value?.balanceDue ?? invoice.value?.amount ?? 0)
+const totalDeposit = computed(() => invoice.value?.totalDeposit ?? 0)
+
+const autofillPayAmount = computed(() => payAmount.value ?? balanceDue.value ?? 0)
 
 const onAppointmentFound = async (appt: any) => {
   currentAppointment.value = appt
   if (appt?.id) {
     await recalc({ appointmentId: appt.id })
-    payAmount.value = invoice.value?.amount ?? null
+    payAmount.value = invoice.value?.balanceDue ?? invoice.value?.amount ?? null
   }
 }
 
@@ -33,7 +36,7 @@ const handleCreate = async ({ amount }: { amount: number }) => {
   const res = await create({ appointmentId: appointmentId.value, amount })
   if (res?.invoiceId) {
     await fetchInvoice(res.invoiceId)
-    payAmount.value = invoice.value?.amount ?? amount
+    payAmount.value = invoice.value?.balanceDue ?? invoice.value?.amount ?? amount
   }
 }
 
@@ -43,7 +46,7 @@ const handleRecalc = async (payload: { insuranceCode?: string; insuranceCoverPer
     appointmentId: appointmentId.value,
     ...payload
   })
-  payAmount.value = invoice.value?.amount ?? payAmount.value
+  payAmount.value = invoice.value?.balanceDue ?? invoice.value?.amount ?? payAmount.value
 }
 
 const handlePay = async () => {
@@ -93,15 +96,16 @@ const handlePay = async () => {
             <h5 class="card-title mb-3">Thanh toán</h5>
             <div v-if="invoice">
               <div class="mb-2 text-muted small">
-                Số tiền cần thanh toán: <span class="fw-semibold">{{ formatCurrency(invoice.amount) }}</span>
+                T?m ?ng d� thu: <span class="fw-semibold">{{ formatCurrency(totalDeposit) }}</span><br />
+                C?n thanh to�n: <span class="fw-semibold">{{ formatCurrency(balanceDue) }}</span>
               </div>
               <div class="mb-3">
-                <label class="form-label">Số tiền thanh toán</label>
+                <label class="form-label">S? ti?n thanh to�n</label>
                 <div class="input-group">
                   <input v-model.number="payAmount" type="number" min="0" class="form-control" :disabled="isPaid || payLoading" />
                   <span class="input-group-text">VND</span>
                 </div>
-                <small class="text-muted">Mặc định: {{ formatCurrency(invoice.amount) }}</small>
+                <small class="text-muted">M?c d?nh: {{ formatCurrency(balanceDue) }}</small>
               </div>
               <div class="mb-3">
                 <label class="form-label">Phương thức</label>
@@ -126,3 +130,4 @@ const handlePay = async () => {
     <div v-if="error" class="alert alert-danger mt-3 py-2">{{ error }}</div>
   </div>
 </template>
+

@@ -144,111 +144,129 @@ const appointmentStatusLabel = (status: string) => {
   return labels[status] || status
 }
 </script>
-
 <template>
-  <div class="doctor-page">
+  <div class="doctor-page-container">
     <div class="container">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+      <div class="page-header-box d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="mb-1">Chi tiết bác sĩ</h2>
-          <p class="text-muted mb-0">Xem và chỉnh sửa thông tin bác sĩ.</p>
+          <h1 class="page-title mb-1">Chi tiết bác sĩ</h1>
+          <p class="text-muted mb-0">Quản lý hồ sơ và lịch khám chuyên khoa</p>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <button class="btn btn-primary" @click="openEdit">Sửa thông tin</button>
+        <div class="header-actions" v-if="!showEdit">
+          <button class="btn-primary" @click="openEdit">Sửa thông tin</button>
+        </div>
+        <div class="header-actions d-flex gap-2" v-else>
+          <button class="btn-update" @click="saveDoctor">Lưu thay đổi</button>
+          <button class="btn-cancel" @click="showEdit = false">Quay lại</button>
+        </div>
+      </div>
+
+      <div class="doctor-info-card" :class="{ 'is-editing': showEdit }">
+        <div class="doctor-profile-section">
+          <img :src="(showEdit ? editForm.avatarUrl : doctor?.avatarUrl) || '/default-avatar.png'" class="main-avatar" />
+          
+          <div v-if="!showEdit" class="profile-text text-center">
+            <h2 class="doctor-name-display">{{ doctor?.fullName }}</h2>
+            <span :class="['status-badge-lg', doctorBadgeClass(doctor?.status)]">
+              {{ doctorStatusLabel(doctor?.status) }}
+            </span>
+          </div>
+          <div v-else class="form-group full-width mt-3">
+            <label>Link ảnh đại diện</label>
+            <input v-model="editForm.avatarUrl" placeholder="Dán link ảnh vào đây..." />
+          </div>
+        </div>
+
+        <div class="doctor-details-grid">
+          <template v-if="!showEdit">
+            <div class="detail-box">
+              <label>Mã bác sĩ</label>
+              <p>{{ doctor?.code }}</p>
+            </div>
+            <div class="detail-box">
+              <label>Số giấy phép</label>
+              <p>{{ doctor?.licenseNumber }}</p>
+            </div>
+            <div class="detail-box">
+              <label>Khoa</label>
+              <p>{{ doctor?.departmentName }}</p>
+            </div>
+            <div class="detail-box">
+              <label>Chuyên khoa</label>
+              <p>{{ doctor?.specialtyName }}</p>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="form-group">
+              <label>Họ và tên</label>
+              <input v-model="editForm.fullName" />
+            </div>
+            <div class="form-group">
+              <label>Mã nhân viên</label>
+              <input v-model="editForm.code" />
+            </div>
+            <div class="form-group">
+              <label>Khoa</label>
+              <select v-model="editForm.departmentId">
+                <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">{{ dep.name }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Chuyên khoa</label>
+              <select v-model="editForm.specialtyId" :disabled="!editForm.departmentId">
+                <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">{{ s.name }}</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label>Số giấy phép hành nghề</label>
+              <input v-model="editForm.licenseNumber" />
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="appointments-section" v-if="!showEdit">
+        <div class="section-header">
+          <h4 class="fw-bold m-0">Lịch khám của bác sĩ</h4>
+          <div class="search-wrapper">
+            <input v-model="searchTerm" class="search-box" placeholder="Tìm bệnh nhân..." />
+          </div>
+        </div>
+        
+        <div class="table-responsive mt-3">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Mã lịch</th>
+                <th>Bệnh nhân</th>
+                <th>Điện thoại</th>
+                <th>Ngày khám</th>
+                <th>Giờ</th>
+                <th class="text-center">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="a in filteredAppointments" :key="a.id">
+                <td class="code-text">{{ a.appointmentCode }}</td>
+                <td class="fw-bold">{{ a.fullName }}</td>
+                <td>{{ a.phone }}</td>
+                <td>{{ a.appointmentDate }}</td>
+                <td>{{ a.appointmentTime }}</td>
+                <td class="text-center">
+                  <span :class="['status-pill', a.status === 'Completed' ? 'pill-gray' : 'pill-green']">
+                    {{ appointmentStatusLabel(a.status) }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="filteredAppointments.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">Không tìm thấy lịch khám nào.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- Thông tin bác sĩ -->
-      <div class="doctor-info card mb-4">
-      <div class="row g-4 align-items-center">
-        <div class="col-md-3 text-center">
-          <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
-        </div>
-        <div class="col-md-9">
-          <h3 class="doctor-name">Tên: {{ doctor?.fullName }}</h3>
-          <p><strong>Mã:</strong> {{ doctor?.code }}</p>
-          <p><strong>Chuyên khoa:</strong> {{ doctor?.specialtyName }}</p>
-          <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
-          <p><strong>Số giấy phép:</strong> {{ doctor?.licenseNumber }}</p>
-          <span :class="['badge', doctorBadgeClass(doctor?.status)]">
-            {{ doctorStatusLabel(doctor?.status) }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lịch khám -->
-    <div class="appointments card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Lịch khám của bác sĩ</h4>
-        <input v-model="searchTerm" class="form-control search-box" placeholder="Tìm bệnh nhân..." />
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Mã lịch</th>
-              <th>Bệnh nhân</th>
-              <th>Điện thoại</th>
-              <th>Ngày</th>
-              <th>Giờ</th>
-              <th>Lý do</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="a in filteredAppointments" :key="a.id">
-              <td class="fw-semibold">{{ a.appointmentCode }}</td>
-              <td>{{ a.fullName }}</td>
-              <td>{{ a.phone }}</td>
-              <td>{{ a.appointmentDate }}</td>
-              <td>{{ a.appointmentTime }}</td>
-              <td>{{ a.reason }}</td>
-              <td>
-                <span :class="['badge', a.status === 'Completed' ? 'bg-secondary' : 'bg-success']">
-                  {{ appointmentStatusLabel(a.status) }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="filteredAppointments.length === 0">
-              <td colspan="7" class="text-center text-muted py-3">Không có lịch khám nào</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Modal chỉnh sửa -->
-    <div v-if="showEdit" class="modal-backdrop">
-      <div class="modal-content p-4">
-        <h4>Cập nhật thông tin bác sĩ</h4>
-        <input v-model="editForm.fullName" class="form-control mb-2" placeholder="Tên bác sĩ" />
-        <input v-model="editForm.code" class="form-control mb-2" placeholder="Mã bác sĩ" />
-
-        <select v-model="editForm.departmentId" class="form-select mb-2">
-          <option value="">Chọn khoa</option>
-         <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
-  {{ dep.name }}
-</option>
-        </select>
-
-        <select v-model="editForm.specialtyId" class="form-select mb-2" :disabled="!editForm.departmentId">
-          <option value="">Chọn chuyên khoa</option>
-         <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">
-  {{ s.name }}
-</option>
-        </select>
-
-        <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
-        <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh avatar" />
-        <img v-if="editForm.avatarUrl" :src="editForm.avatarUrl" class="avatar-preview mt-2" />
-
-        <div class="text-end mt-3">
-          <button class="btn btn-secondary me-2" @click="showEdit=false">Hủy</button>
-          <button class="btn btn-success" @click="saveDoctor">Lưu</button>
-        </div>
-      </div>
-    </div>
     </div>
   </div>
 </template>

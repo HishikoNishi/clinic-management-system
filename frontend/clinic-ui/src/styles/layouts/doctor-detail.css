@@ -1,143 +1,292 @@
-.page-title {
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+
+:root {
+  --primary: #3678a7;
+  --primary-hover: #2b6188;
+  --primary-light: rgba(54, 120, 167, 0.08);
+  --bg-body: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --white: #ffffff;
+  --border-color: rgba(226, 232, 240, 0.8);
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 20px 50px rgba(0, 0, 0, 0.1);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.doctor-info {
-  padding: 1.5rem;
-  border-radius: 10px;
-  background: #fdfdfd;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+.doctor-page-container {
+  padding: 30px 50px;
+  background-color: var(--bg-body);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  color: var(--text-main);
 }
 
-.avatar {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #e0e0e0;
+.doctor-page-container .container {
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-.doctor-name {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: .5rem;
-}
-
-.status-badge {
-  background-color: #d1f7d1;
-  color: #2e7d32;
-  padding: .4rem .8rem;
-  border-radius: 20px;
-  font-size: .85rem;
-}
-
-.appointments {
-  margin-top: 2rem;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.card-header {
-  background: #f8f9fa;
-  padding: 1rem;
-}
-
-.search-box {
-  max-width: 250px;
-}
-
-.table th {
-  font-weight: 600;
-}
-
-.table-hover tbody tr:hover {
-  background-color: #f1f1f1;
+/* --- 2. HEADER --- */
+.page-header-box {
+  margin-bottom: 25px;
 }
 
 .page-title {
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
 }
 
-.doctor-info {
-  padding: 1.5rem;
-  border-radius: 10px;
-  background: #fdfdfd;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+/* --- 3. CARD THÔNG TIN BÁC SĨ --- */
+.doctor-info-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-.avatar {
+.doctor-profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-right: 1px dashed #e2e8f0;
+  padding-right: 10px;
+}
+
+.main-avatar {
   width: 140px;
   height: 140px;
-  border-radius: 50%;
+  border-radius: 30px;
   object-fit: cover;
-  border: 3px solid #e0e0e0;
+  margin-bottom: 15px;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
-.doctor-name {
-  font-size: 1.4rem;
+.doctor-name-display {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.doctor-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 40px;
+}
+
+.detail-box label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.detail-box p {
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: .5rem;
+  margin: 0;
 }
 
-.status-badge {
-  background-color: #d1f7d1;
-  color: #2e7d32;
-  padding: .4rem .8rem;
-  border-radius: 20px;
-  font-size: .85rem;
+/* --- 4. BẢNG LỊCH KHÁM --- */
+.appointments-section {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 25px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
-.appointments {
-  margin-top: 2rem;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.card-header {
-  background: #f8f9fa;
-  padding: 1rem;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .search-box {
-  max-width: 250px;
+  background: #f1f5f9;
+  border: 1.5px solid transparent;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  width: 240px;
+  font-size: 13px;
+  transition: var(--transition);
 }
 
-.table th {
-  font-weight: 600;
-}
-
-.table-hover tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-/* Style cho modal chỉnh sửa */
-.modal-backdrop {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1050;
-}
-
-.modal-content {
+.search-box:focus {
   background: #fff;
-  border-radius: 8px;
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.table-custom tr {
+  transition: var(--transition);
+}
+
+.table-custom tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.table-custom th {
+  background: #f8fafc;
+  padding: 12px 15px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.table-custom td {
+  padding: 14px 15px;
+  font-size: 14px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* --- 5. MODAL (FIXED & IMPROVED) --- */
+.modal-backdrop {
+  background: rgba(15, 23, 42, 0.5); /* Tối hơn một chút để nổi bật */
+  backdrop-filter: blur(8px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* Z-index cao để không bị che */
+}
+
+.modal-content-styled {
+  background: var(--white);
+  border-radius: 28px;
+  padding: 30px 40px;
+  width: 90%;
   max-width: 500px;
-  width: 100%;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 2001;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.avatar-preview {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header-custom h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.edit-preview-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
   object-fit: cover;
-  margin-top: 10px;
+  border: 4px solid #f1f5f9;
+  display: block;
+  margin: 0 auto 20px;
 }
 
+.form-group input, 
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  outline: none;
+}
+
+/* --- 6. BUTTON HOVER EFFECTS --- */
+.btn-primary, .btn-update {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover, .btn-update:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(54, 120, 167, 0.3);
+}
+
+.btn-primary:active, .btn-update:active {
+  transform: translateY(0);
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+  color: var(--text-main);
+}
+
+.btn-cancel:active {
+  background: #cbd5e1;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+/* Trạng thái badges */
+.status-pill {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+.pill-green { background: #dcfce7; color: #15803d; }
+.pill-gray { background: #f1f5f9; color: #475569; }
