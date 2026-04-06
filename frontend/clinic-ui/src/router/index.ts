@@ -174,6 +174,12 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
   },
   {
+    path: "/technician/tests/history",
+    name: "TechnicianTestsHistory",
+    component: () => import("@/views/technician/TechnicianTests.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
+  },
+  {
     path: "/cashier/invoices",
     name: "CashierInvoices",
     component: () => import("@/views/cashier/CashierInvoices.vue"),

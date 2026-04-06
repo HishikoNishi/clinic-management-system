@@ -69,8 +69,8 @@ const handlePay = async () => {
 <template>
   <div class="container py-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="mb-0">HÃ³a Ä‘Æ¡n & thanh toÃ¡n</h2>
-      <span class="badge bg-primary">Vai trÃ²: Cashier</span>
+      <h2 class="mb-0">Hóa đơn & thanh toán</h2>
+      <span class="badge bg-primary">Vai trò: Thu ngân</span>
     </div>
 
     <div class="row g-3">
@@ -98,35 +98,35 @@ const handlePay = async () => {
       <div class="col-lg-5">
         <div class="card shadow-sm h-100">
           <div class="card-body">
-            <h5 class="card-title mb-3">Thanh toÃ¡n</h5>
+            <h5 class="card-title mb-3">Thanh toán</h5>
             <div v-if="invoice">
               <div class="mb-2 text-muted small">
-                T?m ?ng dã thu: <span class="fw-semibold">{{ formatCurrency(totalDeposit) }}</span><br />
-                C?n thanh toán: <span class="fw-semibold">{{ formatCurrency(balanceDue) }}</span>
+                Tạm ứng đã thu: <span class="fw-semibold">{{ formatCurrency(totalDeposit) }}</span><br />
+                Cần thanh toán: <span class="fw-semibold">{{ formatCurrency(balanceDue) }}</span>
               </div>
               <div class="mb-3">
-                <label class="form-label">S? ti?n thanh toán</label>
+                <label class="form-label">Số tiền thanh toán</label>
                 <div class="input-group">
                   <input v-model.number="payAmount" type="number" min="0" class="form-control" :disabled="isPaid || payLoading" />
                   <span class="input-group-text">VND</span>
                 </div>
-                <small class="text-muted">M?c d?nh: {{ formatCurrency(balanceDue) }}</small>
+                <small class="text-muted">Mặc định: {{ formatCurrency(balanceDue) }}</small>
               </div>
               <div class="mb-3">
-                <label class="form-label">PhÆ°Æ¡ng thá»©c</label>
+                <label class="form-label">Phương thức</label>
                 <select v-model="payMethod" class="form-select" :disabled="isPaid || payLoading">
-                  <option value="cash">Tiá»n máº·t</option>
-                  <option value="banker">Chuyá»ƒn khoáº£n</option>
-                  <option value="card">Tháº»</option>
+                  <option value="cash">Tiền mặt</option>
+                  <option value="banker">Chuyển khoản</option>
+                  <option value="card">Thẻ</option>
                 </select>
               </div>
               <button class="btn btn-primary w-100" :disabled="isPaid || payLoading" @click="handlePay">
-                <span v-if="payLoading" class="spinner-border spinner-border-sm me-1" />Thanh toÃ¡n
+                <span v-if="payLoading" class="spinner-border spinner-border-sm me-1" />Thanh toán
               </button>
               <div v-if="payMessage" class="alert alert-success mt-2 py-2">{{ payMessage }}</div>
               <div v-if="payError" class="alert alert-danger mt-2 py-2">{{ payError }}</div>
             </div>
-            <div v-else class="text-muted small">ChÆ°a cÃ³ hÃ³a Ä‘Æ¡n Ä‘á»ƒ thanh toÃ¡n.</div>
+            <div v-else class="text-muted small">Chưa có hóa đơn để thanh toán.</div>
           </div>
         </div>
       </div>

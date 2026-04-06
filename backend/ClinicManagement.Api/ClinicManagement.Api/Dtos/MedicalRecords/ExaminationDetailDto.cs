@@ -16,6 +16,7 @@ namespace ClinicManagement.Api.Dtos.MedicalRecords
         public decimal Surcharge { get; set; }
         public decimal Discount { get; set; }
         public List<PrescriptionItemDto> PrescriptionItems { get; set; } = new();
-        public List<string> ClinicalTests { get; set; } = new();
+        public List<ClinicalTests.ClinicalTestDto> ClinicalTests { get; set; } = new();
+        public Guid? CurrentMedicalRecordId { get; set; }
     }
 }

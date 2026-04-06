@@ -13,7 +13,8 @@ namespace ClinicManagement.Api.Models
         public string Role { get; set; } = "Staff";
         public string? AvatarUrl { get; set; }
         public bool IsActive { get; set; } = true;
-
+        public Guid? DepartmentId { get; set; }
+        public Department? Department { get; set; }
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
 

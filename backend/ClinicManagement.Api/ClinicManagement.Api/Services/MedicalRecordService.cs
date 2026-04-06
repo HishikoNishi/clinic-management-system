@@ -137,7 +137,9 @@ public class MedicalRecordService
                 _context.ClinicalTests.Add(new ClinicalTest
                 {
                     MedicalRecordId = medicalRecord.Id,
-                    TestName = testName
+                    TestName = testName,
+                    Status = "Pending",
+                    OrderedByDoctorId = doctor.Id
                 });
             }
 

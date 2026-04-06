@@ -48,10 +48,10 @@
                 <span class="spinner-border spinner-border-sm me-2"></span>Đang tải...
               </td>
             </tr>
-            <tr v-else-if="appointments.length === 0">
+            <tr v-else-if="filteredAppointments.length === 0">
               <td colspan="5" class="text-center py-4 text-muted">Không có lịch khám</td>
             </tr>
-            <tr v-else v-for="a in appointments" :key="a.id">
+            <tr v-else v-for="a in filteredAppointments" :key="a.id">
               <td class="fw-semibold">{{ a.fullName }}</td>
               <td>{{ a.phone }}</td>
               <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
@@ -60,7 +60,8 @@
               </td>
               <td class="text-end">
                 <button class="btn btn-primary btn-sm" @click="goExamine(a.id)">
-                  <i class="bi bi-stethoscope me-1"></i> Khám
+                  <i class="bi bi-stethoscope me-1"></i>
+                  {{ a.status === 'Completed' ? 'Xem hồ sơ khám' : 'Khám / tiếp tục' }}
                 </button>
               </td>
             </tr>
@@ -72,15 +73,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { useRouter } from "vue-router"
 import api from "@/services/api"
 
 const router = useRouter()
 const appointments = ref<any[]>([])
+const filteredAppointments = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return appointments.value.filter((a) => {
+    if (!a.appointmentDate) return true
+    const d = new Date(a.appointmentDate)
+    d.setHours(0, 0, 0, 0)
+    return d.getTime() >= today.getTime()
+  })
+})
 const loading = ref(false)
 const error = ref<string | null>(null)
-const currentStatus = ref("CheckedIn,Confirmed")
+const currentStatus = ref("CheckedIn,Confirmed,Completed")
 // trạng thái của bác sĩ
 const doctorStatus = ref("Active")
 const doctorId = localStorage.getItem("doctorId")

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Dtos.MedicalRecords;
+using ClinicManagement.Api.Dtos.ClinicalTests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -94,7 +95,17 @@ public class MedicalRecordController : ControllerBase
 
         var tests = await _context.ClinicalTests
             .Where(t => t.MedicalRecordId == record.Id)
-            .Select(t => t.TestName)
+            .Select(t => new ClinicalTestDto
+            {
+                Id = t.Id,
+                MedicalRecordId = t.MedicalRecordId,
+                TestName = t.TestName,
+                Result = t.Result,
+                TechnicianName = t.TechnicianName,
+                CreatedAt = t.CreatedAt,
+                Status = t.Status,
+                ResultAt = t.ResultAt
+            })
             .ToListAsync();
 
         var dto = new ExaminationDetailDto

@@ -10,6 +10,11 @@ namespace ClinicManagement.Api.Dtos.ClinicalTests
         public string? Result { get; set; }
         public string? TechnicianName { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Status => string.IsNullOrWhiteSpace(Result) ? "Pending" : "Completed";
+        public string Status { get; set; } = "Pending";
+        public DateTime? ResultAt { get; set; }
+        public Guid? AppointmentId { get; set; }
+        public Guid? PatientId { get; set; }
+        public string? PatientName { get; set; }
+        public string? PatientPhone { get; set; }
     }
 }

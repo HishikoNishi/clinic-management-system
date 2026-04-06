@@ -83,11 +83,11 @@
         </button>
 
         <button
-          v-if="appointment.status === 'Confirmed' || appointment.status === 'CheckedIn'"
+          v-if="appointment"
           @click="goExamination"
           class="primary"
         >
-          Đi tới màn khám
+          Đi tới màn khám / hồ sơ
         </button>
 
       </div>

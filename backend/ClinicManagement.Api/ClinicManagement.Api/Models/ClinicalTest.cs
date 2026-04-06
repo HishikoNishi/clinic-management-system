@@ -7,6 +7,9 @@ namespace ClinicManagement.Api.Models
         public string TestName { get; set; } = string.Empty;
         public string? Result { get; set; }
         public string? TechnicianName { get; set; }
+        public string Status { get; set; } = "Pending";
+        public DateTime? ResultAt { get; set; }
+        public Guid? OrderedByDoctorId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public MedicalRecord? MedicalRecord { get; set; }

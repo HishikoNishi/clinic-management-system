@@ -160,7 +160,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync();
 
             var prescriptionItems = new List<PrescriptionItemDto>();
-            var clinicalTests = new List<string>();
+            var clinicalTests = new List<ClinicManagement.Api.Dtos.ClinicalTests.ClinicalTestDto>();
             if (currentRecord != null)
             {
                 var pres = await _context.Prescriptions
@@ -178,7 +178,17 @@ namespace ClinicManagement.Api.Controllers
 
                 clinicalTests = await _context.ClinicalTests
                     .Where(t => t.MedicalRecordId == currentRecord.Id)
-                    .Select(t => t.TestName)
+                    .Select(t => new ClinicManagement.Api.Dtos.ClinicalTests.ClinicalTestDto
+                    {
+                        Id = t.Id,
+                        MedicalRecordId = t.MedicalRecordId,
+                        TestName = t.TestName,
+                        Result = t.Result,
+                        TechnicianName = t.TechnicianName,
+                        CreatedAt = t.CreatedAt,
+                        Status = string.IsNullOrWhiteSpace(t.Status) ? (string.IsNullOrWhiteSpace(t.Result) ? "Pending" : "Completed") : t.Status,
+                        ResultAt = t.ResultAt
+                    })
                     .ToListAsync();
             }
 
@@ -208,7 +218,8 @@ namespace ClinicManagement.Api.Controllers
                 Surcharge = currentRecord?.Surcharge ?? 0m,
                 Discount = currentRecord?.Discount ?? 0m,
                 PrescriptionItems = prescriptionItems,
-                ClinicalTests = clinicalTests
+                ClinicalTests = clinicalTests,
+                CurrentMedicalRecordId = currentRecord?.Id
             };
 
             return Ok(dto);

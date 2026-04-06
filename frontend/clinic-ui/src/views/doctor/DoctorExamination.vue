@@ -5,7 +5,7 @@
         <div class="card-header">
           <h6 class="mb-0">Thông tin bệnh nhân</h6>
         </div>
-        <div class="card-body">
+      <div class="card-body">
           <p class="mb-1"><span class="text-muted">Họ tên:</span> <strong>{{ patient.fullName }}</strong></p>
           <p class="mb-1"><span class="text-muted">Điện thoại:</span> <strong>{{ patient.phone }}</strong></p>
           <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
@@ -164,6 +164,37 @@
       </div>
     </div>
 
+    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Xét nghiệm đã yêu cầu</h6>
+        <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
+          Làm mới
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Tên</th>
+              <th>Trạng thái</th>
+              <th>Kết quả</th>
+              <th>KTV</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="t in clinicalTestsDetail" :key="t.id">
+              <td>{{ t.testName }}</td>
+              <td><span :class="['badge', labStatusClass(t.status)]">{{ labStatusLabel(t.status) }}</span></td>
+              <td>{{ t.result || '—' }}</td>
+              <td>{{ t.technicianName || '—' }}</td>
+              <td class="text-muted small">{{ formatDate(t.resultAt || t.createdAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="d-flex justify-content-end gap-2 mt-3">
       <button class="btn btn-outline-secondary" @click="goBack">Quay lại</button>
       <button class="btn btn-primary" @click="submit" :disabled="saving">
@@ -191,6 +222,8 @@ const appointment = reactive<any>({})
 const patient = reactive<any>({})
 const history = ref<any[]>([])
 const historyDetail = ref<any | null>(null)
+const clinicalTestsDetail = ref<any[]>([])
+const currentMedicalRecordId = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
 const dataFromRecord = ref<any | null>(null)
@@ -262,10 +295,26 @@ const testTypeLabel = (type: string) => {
   return map[type] || "Xét nghiệm"
 }
 
+const labStatusLabel = (s: string) => {
+  const map: Record<string, string> = {
+    Pending: "Chờ thực hiện",
+    InProgress: "Đang làm",
+    Completed: "Đã có kết quả"
+  }
+  return map[s] || s
+}
+
+const labStatusClass = (s: string) => {
+  if (s === "Completed") return "bg-success-subtle text-success"
+  if (s === "InProgress") return "bg-info-subtle text-info"
+  return "bg-warning-subtle text-warning"
+}
+
 const loadDetail = async () => {
   try {
     const res = await api.get(`/doctor/DoctorAppointments/${appointmentId}/examination`)
     const data = res.data
+    currentMedicalRecordId.value = data.currentMedicalRecordId || null
     dataFromRecord.value = data
     Object.assign(appointment, data.appointment || {})
     Object.assign(patient, {
@@ -288,11 +337,25 @@ const loadDetail = async () => {
     if (Array.isArray(data.clinicalTests) && data.clinicalTests.length) {
       form.requestClinicalTest = true
       form.clinicalTestType = "Other"
-      form.clinicalTestName = data.clinicalTests[0] || ""
+      form.clinicalTestName = ""
+      form.clinicalTests = data.clinicalTests.map((t: any) => t.testName || "")
+    }
+
+    if (currentMedicalRecordId.value) {
+      await loadClinicalTestsDetail(currentMedicalRecordId.value)
     }
   } catch (err: any) {
     console.error(err)
     error.value = err?.response?.data?.message || "Không tải được thông tin khám"
+  }
+}
+
+const loadClinicalTestsDetail = async (recordId: string) => {
+  try {
+    const { data } = await api.get(`/ClinicalTests/medical-record/${recordId}`)
+    clinicalTestsDetail.value = data || []
+  } catch (err) {
+    console.error(err)
   }
 }
 
