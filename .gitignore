@@ -63,3 +63,8 @@ logs/
 
 # OPTIONAL (dev only)
 # **/Migrations/
+
+# Local docs/tests (not source)
+Dev_Development_Note.docx
+ManualTests.xlsx
+backend/ClinicManagement.Api/ClinicManagement.Api/structure.txt

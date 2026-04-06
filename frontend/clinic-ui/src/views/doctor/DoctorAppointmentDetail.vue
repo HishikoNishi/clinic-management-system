@@ -82,6 +82,14 @@
           Hoàn thành
         </button>
 
+        <button
+          v-if="appointment.status === 'Confirmed' || appointment.status === 'CheckedIn'"
+          @click="goExamination"
+          class="primary"
+        >
+          Đi tới màn khám
+        </button>
+
       </div>
 
     </div>
@@ -217,10 +225,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 
 const route = useRoute()
+const router = useRouter()
 
 const appointment = ref<any>(null)
 const error = ref<string | null>(null)
@@ -367,6 +376,11 @@ const saveMedicalRecord = async () => {
       instruction: ""
     }
   ]
+}
+
+const goExamination = () => {
+  if (!appointment.value?.id) return
+  router.push(`/doctor/examination/${appointment.value.id}`)
 }
 
 /* FORMAT DATE */

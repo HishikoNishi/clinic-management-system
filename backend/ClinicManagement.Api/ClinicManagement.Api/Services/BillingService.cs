@@ -1,19 +1,21 @@
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace ClinicManagement.Api.Services
 {
+    /// <summary>
+    /// Tinh hoa don tu ho so kham, don thuoc, xet nghiem, bao hiem va tam ung.
+    /// </summary>
     public class BillingService
     {
         private readonly ClinicDbContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly IPricingProvider _pricing;
 
-        public BillingService(ClinicDbContext context, IConfiguration configuration)
+        public BillingService(ClinicDbContext context, IPricingProvider pricing)
         {
             _context = context;
-            _configuration = configuration;
+            _pricing = pricing;
         }
 
         public async Task<Invoice?> GenerateInvoiceAsync(Guid appointmentId)
@@ -42,14 +44,18 @@ namespace ClinicManagement.Api.Services
             decimal subtotal = 0m;
             var lines = new List<InvoiceLine>();
 
-            // Consultation fee
-            var consultationFee = _configuration.GetValue<decimal?>("Billing:ConsultationFee") ?? 0m;
+            var insuranceCover = medicalRecord.InsuranceCoverPercent;
+
+            // Clinic ticket: free with insurance, otherwise charge clinic ticket fee (fallback consultation fee)
+            var consultationFee = insuranceCover > 0
+                ? 0m
+                : (_pricing.ClinicTicketFee > 0 ? _pricing.ClinicTicketFee : _pricing.ConsultationFee);
             if (consultationFee > 0)
             {
                 subtotal += consultationFee;
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Phí khám",
+                    Description = "Phieu kham",
                     ItemType = "Consultation",
                     Amount = consultationFee
                 });
@@ -60,7 +66,7 @@ namespace ClinicManagement.Api.Services
             {
                 foreach (var d in prescription.PrescriptionDetails)
                 {
-                    var price = GetDrugPrice(d.MedicineName);
+                    var price = _pricing.GetDrugPrice(d.MedicineName);
                     if (price <= 0) continue;
 
                     var qty = d.Duration > 0 ? d.Duration : 1;
@@ -69,7 +75,7 @@ namespace ClinicManagement.Api.Services
 
                     lines.Add(new InvoiceLine
                     {
-                        Description = $"Thuốc: {d.MedicineName}",
+                        Description = $"Thuoc: {d.MedicineName}",
                         ItemType = "Drug",
                         Amount = amount
                     });
@@ -79,19 +85,18 @@ namespace ClinicManagement.Api.Services
             // Clinical tests
             foreach (var t in tests)
             {
-                var price = GetTestPrice(t.TestName);
+                var price = _pricing.GetTestPrice(t.TestName);
                 if (price <= 0) continue;
                 subtotal += price;
                 lines.Add(new InvoiceLine
                 {
-                    Description = $"Xét nghiệm: {t.TestName}",
+                    Description = $"Xet nghiem: {t.TestName}",
                     ItemType = "Test",
                     Amount = price
                 });
             }
 
             // Insurance discount
-            var insuranceCover = medicalRecord.InsuranceCoverPercent;
             decimal insuranceDiscount = 0m;
             if (insuranceCover > 0 && insuranceCover <= 1)
             {
@@ -100,7 +105,7 @@ namespace ClinicManagement.Api.Services
                 {
                     lines.Add(new InvoiceLine
                     {
-                        Description = $"Bảo hiểm chi trả ({insuranceCover:P0})",
+                        Description = $"Bao hiem chi tra ({insuranceCover:P0})",
                         ItemType = "Insurance",
                         Amount = -insuranceDiscount
                     });
@@ -112,7 +117,7 @@ namespace ClinicManagement.Api.Services
             {
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Phụ thu",
+                    Description = "Phu thu",
                     ItemType = "Surcharge",
                     Amount = medicalRecord.Surcharge
                 });
@@ -122,7 +127,7 @@ namespace ClinicManagement.Api.Services
             {
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Giảm trừ",
+                    Description = "Giam tru",
                     ItemType = "Discount",
                     Amount = -Math.Abs(medicalRecord.Discount)
                 });
@@ -131,20 +136,24 @@ namespace ClinicManagement.Api.Services
             var subtotalAfterInsurance = subtotal - insuranceDiscount + medicalRecord.Surcharge - Math.Abs(medicalRecord.Discount);
             if (subtotalAfterInsurance < 0) subtotalAfterInsurance = 0;
 
-            // Deposits thu trước
+            // Deposits thu truoc
             var deposits = await _context.Payments
                 .Where(p => p.AppointmentId == appointmentId && p.IsDeposit)
                 .ToListAsync();
-            var totalDeposit = deposits.Sum(d => d.Amount);
+            var totalDepositCollected = deposits.Sum(d => d.Amount);
 
-            // chỉ khấu trừ tối đa bằng subtotalAfterInsurance
-            var appliedDeposit = Math.Min(totalDeposit, subtotalAfterInsurance);
+            // khau tru toi da bang subtotalAfterInsurance
+            var appliedDeposit = Math.Min(totalDepositCollected, subtotalAfterInsurance);
 
             if (appliedDeposit > 0)
             {
+                var desc = totalDepositCollected > appliedDeposit
+                    ? $"Tam ung da thu (ap dung {appliedDeposit:N0}/{totalDepositCollected:N0})"
+                    : "Tam ung da thu";
+
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Tạm ứng đã thu",
+                    Description = desc,
                     ItemType = "Deposit",
                     Amount = -appliedDeposit
                 });
@@ -152,6 +161,19 @@ namespace ClinicManagement.Api.Services
 
             var balanceDue = subtotalAfterInsurance - appliedDeposit;
             if (balanceDue < 0) balanceDue = 0;
+
+            // tien du tam ung (refund)
+            var depositRefund = totalDepositCollected - appliedDeposit;
+            if (depositRefund > 0)
+            {
+                lines.Add(new InvoiceLine
+                {
+                    Description = "Hoan tam ung du",
+                    ItemType = "DepositRefund",
+                    Amount = -depositRefund
+                });
+                balanceDue = 0; // da hoan phan du, khong con phai thu
+            }
 
             // Upsert invoice by appointment
             var invoice = await _context.Invoices
@@ -166,7 +188,7 @@ namespace ClinicManagement.Api.Services
                     AppointmentId = appointmentId,
                     Amount = subtotalAfterInsurance,
                     BalanceDue = balanceDue,
-                    TotalDeposit = appliedDeposit,
+                    TotalDeposit = totalDepositCollected,
                     CreatedAt = DateTime.UtcNow,
                     IsPaid = false,
                     PaymentDate = null
@@ -177,15 +199,12 @@ namespace ClinicManagement.Api.Services
             {
                 if (invoice.IsPaid)
                 {
-                    // không tự động cập nhật hóa đơn đã thanh toán
+                    // khong tu dong cap nhat hoa don da thanh toan
                     return invoice;
                 }
                 invoice.Amount = subtotalAfterInsurance;
                 invoice.BalanceDue = balanceDue;
-                invoice.TotalDeposit = appliedDeposit;
-                // keep PaymentDate/IsPaid as is; only set when thu tiền thật
-                // invoice.PaymentDate = invoice.PaymentDate;
-                // invoice.IsPaid = invoice.IsPaid;
+                invoice.TotalDeposit = totalDepositCollected;
 
                 // refresh lines
                 _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
@@ -198,7 +217,7 @@ namespace ClinicManagement.Api.Services
                 _context.InvoiceLines.Add(line);
             }
 
-            // gán invoiceId cho các khoản tạm ứng chưa gán
+            // gan invoiceId cho cac khoan tam ung chua gan
             foreach (var deposit in deposits.Where(d => d.InvoiceId == null))
             {
                 deposit.InvoiceId = invoice.Id;
@@ -207,26 +226,5 @@ namespace ClinicManagement.Api.Services
             await _context.SaveChangesAsync();
             return invoice;
         }
-
-        private decimal GetDrugPrice(string medicineName)
-        {
-            var list = _configuration.GetSection("Billing:DrugPrices").Get<List<NamedPrice>>() ?? new();
-            var price = list.FirstOrDefault(x => string.Equals(x.Name, medicineName, StringComparison.OrdinalIgnoreCase))?.Price ?? 0m;
-            return price;
-        }
-
-        private decimal GetTestPrice(string testName)
-        {
-            var list = _configuration.GetSection("Billing:TestPrices").Get<List<NamedPrice>>() ?? new();
-            var price = list.FirstOrDefault(x => string.Equals(x.Name, testName, StringComparison.OrdinalIgnoreCase))?.Price ?? 0m;
-            return price;
-        }
-
-        private class NamedPrice
-        {
-            public string Name { get; set; } = string.Empty;
-            public decimal Price { get; set; }
-        }
     }
 }
-

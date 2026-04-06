@@ -52,6 +52,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('refreshExpiresAt')
       localStorage.removeItem('doctorId')
+      localStorage.removeItem('pinAuthOk')
     },
 
     isTokenExpired(): boolean {

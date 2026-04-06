@@ -14,11 +14,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/GuestDashboard.vue")
   },
 
-  {
-    path: "/login",
-    name: "Login",
-    component: () => import("@/views/Login.vue")
-  },
+{
+  path: "/login",
+  name: "Login",
+  component: () => import("@/views/Login.vue"),
+  beforeEnter: () => {
+    const authStore = useAuthStore()
+    const pinOk = localStorage.getItem('pinAuthOk') === 'true'
+    if (authStore.token) return true
+    if (!pinOk) return "/home"
+    return true
+  }
+},
 
   {
     path: "/dashboard",
@@ -195,6 +202,11 @@ const roleFallback: Record<string, string> = {
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  const pinOk = localStorage.getItem('pinAuthOk') === 'true'
+
+  if ((to.name === 'Login' || to.path === '/login') && !pinOk && !authStore.token) {
+    return { path: '/home' }
+  }
 
   if (to.meta.requiresAuth) {
     if (!authStore.token) {
@@ -205,11 +217,10 @@ router.beforeEach((to) => {
 
  
   if (to.meta.role) {
-    const roles = Array.isArray(to.meta.role)
-      ? to.meta.role
-      : [to.meta.role]
+    const roles = (Array.isArray(to.meta.role) ? to.meta.role : [to.meta.role]).map(r => String(r).toLowerCase())
+    const userRole = (authStore.role || "").toLowerCase()
 
-    if (!roles.includes(authStore.role || "")) {
+    if (!roles.includes(userRole)) {
       const fallback = authStore.role
         ? roleFallback[authStore.role]
         : "/home"

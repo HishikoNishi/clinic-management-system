@@ -20,6 +20,8 @@ export interface InvoiceDetail {
   isPaid: boolean
   createdAt?: string
   paymentDate?: string
+  insuranceCoverPercent?: number
+  insurancePlanCode?: string
   appointment?: {
     id: string
     appointmentCode?: string

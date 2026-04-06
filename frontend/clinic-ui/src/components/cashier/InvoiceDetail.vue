@@ -30,6 +30,10 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
           Hóa đơn: <span class="fw-semibold">{{ invoice.id }}</span><br />
           Bệnh nhân: <span class="fw-semibold">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</span><br />
           Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</span><br />
+          <span v-if="invoice.insuranceCoverPercent && invoice.insuranceCoverPercent > 0">
+            Bảo hiểm: <span class="badge bg-info text-dark">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</span>
+            <span v-if="invoice.insurancePlanCode" class="text-muted">({{ invoice.insurancePlanCode }})</span><br />
+          </span>
           Trạng thái: <span :class="`badge ${statusBadge(invoice.isPaid)}`">{{ invoice.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span><br />
           Ngày tạo: {{ formatDateTime(invoice.createdAt) }}<br />
           Ngày thanh toán: {{ formatDateTime(invoice.paymentDate) }}<br />

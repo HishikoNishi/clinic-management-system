@@ -3,12 +3,12 @@ using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
-using ClinicManagement.Api.Utils;
 using ClinicManagement.Api.Services;
+using ClinicManagement.Api.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using Microsoft.AspNetCore.Authorization;
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
@@ -196,16 +196,28 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("search")]
         public async Task<IActionResult> Search(SearchAppointmentDto dto)
         {
-            var appointment = await _context.Appointments
+            if (string.IsNullOrWhiteSpace(dto.Phone) && string.IsNullOrWhiteSpace(dto.Email))
+                return BadRequest(new { message = "Cần nhập số điện thoại hoặc email" });
+
+            var query = _context.Appointments
                 .Include(x => x.Patient)
-                .FirstOrDefaultAsync(x =>
-                    x.AppointmentCode == dto.AppointmentCode &&
-                    x.Patient.Phone == dto.Phone);
+                .AsQueryable();
 
-            if (appointment == null)
-                return NotFound();
+            query = query.Where(x =>
+                (!string.IsNullOrWhiteSpace(dto.Phone) && x.Patient.Phone == dto.Phone) ||
+                (!string.IsNullOrWhiteSpace(dto.Email) && x.Patient.Email == dto.Email));
 
-            return Ok(new AppointmentDetailDto
+            if (!string.IsNullOrWhiteSpace(dto.AppointmentCode))
+            {
+                query = query.Where(x => x.AppointmentCode == dto.AppointmentCode);
+            }
+
+            var appointments = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(50)
+                .ToListAsync();
+
+            var result = appointments.Select(appointment => new AppointmentDetailDto
             {
                 Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
@@ -220,7 +232,9 @@ namespace ClinicManagement.Api.Controllers
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 CreatedAt = appointment.CreatedAt
-            });
+            }).ToList();
+
+            return Ok(result);
 
         }
 

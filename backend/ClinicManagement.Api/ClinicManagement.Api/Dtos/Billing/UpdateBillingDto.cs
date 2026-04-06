@@ -9,7 +9,7 @@ namespace ClinicManagement.Api.Dtos.Billing
         public Guid AppointmentId { get; set; }
 
         [Range(0, 1)]
-        public decimal InsuranceCoverPercent { get; set; } = 0m;
+        public decimal? InsuranceCoverPercent { get; set; }
 
         public string? InsuranceCode { get; set; }
 

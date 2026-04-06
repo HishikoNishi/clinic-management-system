@@ -21,6 +21,9 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Load billing.json (optional override)
+builder.Configuration.AddJsonFile("billing.json", optional: true, reloadOnChange: true);
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -67,6 +70,7 @@ builder.Services.AddScoped<IUserRepository, EFUserRepository>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<OtpService>();
+builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
 
@@ -134,6 +138,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

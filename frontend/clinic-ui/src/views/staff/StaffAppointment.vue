@@ -407,23 +407,38 @@ async function checkInAppointment(a: Appointment) {
   const ok = await ensureInsuranceBeforeDeposit(a)
   if (!ok) return
 
-  const input = prompt("Nhập số tiền tạm ứng (VND)", "300000")
-  let amount = Number(input ?? "0")
-  const depositCap = 300000
-  if (!amount || amount <= 0) {
-    alert("Số tiền tạm ứng không hợp lệ")
-    return
+  // Nếu đã có BHYT hợp lệ, cho phép bỏ qua tạm ứng (mặc định 0)
+  let amount = 0
+const hasInsurance = insuranceVerified.value && (insuranceInfo.value?.coveragePercent ?? insuranceInfo.value?.coverage ?? 0) > 0
+
+  const isInpatient = confirm("Bệnh nhân nhập viện? OK = Có, Cancel = Không")
+
+  if (isInpatient) {
+    const depositCap = 200000
+    const input = prompt("Nhập số tiền tạm ứng (VND)", depositCap.toString())
+    amount = Number(input ?? "0")
+    if (!amount || amount <= 0) {
+      alert("Số tiền tạm ứng không hợp lệ")
+      return
+    }
+    if (amount > depositCap) {
+      alert(`Tạm ứng tối đa ${depositCap.toLocaleString()} VND. Hệ thống sẽ thu ${depositCap.toLocaleString()}.`)
+      amount = depositCap
+    }
+  } else {
+    amount = 0 // khám ngoại trú không thu tạm ứng
   }
-  if (amount > depositCap) {
-    alert(`Tạm ứng tối đa ${depositCap.toLocaleString()} VND. Hệ thống sẽ thu ${depositCap.toLocaleString()}.`)
-    amount = depositCap
-  }
+
+  const cover = insuranceInfo.value?.coveragePercent ?? insuranceInfo.value?.coverage ?? 0
   await api.post("/staff/StaffAppointments/checkin", {
     appointmentId: a.id,
     depositAmount: amount,
-    method: "cash"
+    method: "cash",
+    isInpatient,
+    insuranceCode: insuranceCode.value,
+    insuranceCoverPercent: cover
   })
-  alert("Check-in & thu tạm ứng thành công")
+  alert(isInpatient ? "Check-in & tạm ứng thành công" : "Check-in ngoại trú (không thu tạm ứng)")
   loadAppointments()
 }
 const canAssignDoctor = (a: Appointment) => {
