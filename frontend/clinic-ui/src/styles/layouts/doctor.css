@@ -1,143 +1,201 @@
-/* ===== PAGE ===== */
+/* Tổng thể */
 .doctor-page {
+  background-color: #f8fafc;
   min-height: 100vh;
-  background: var(--color-bg-main);
-  padding: 50px;
-  font-family: "Inter", sans-serif;
+  padding-top: 20px;
+  font-size: 13.5px; /* Giảm cỡ chữ chung */
 }
-
-/* ===== HEADER ===== */
-.page-header h2 {
-  font-weight: 700;
-  color: var(--color-text-main);
-}
-
-.page-header p {
-  color: var(--color-text-muted);
-  margin-bottom: 0;
-}
-
-/* ===== BUTTON ===== */
-.btn-modern {
-  border-radius: 50px;
-  padding: 8px 20px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.btn-primary-modern {
-  background: var(--color-primary);
-  border: none;
-  color: var(--color-text-inverse);
-}
-
-.btn-primary-modern:hover {
-  transform: translateY(-2px);
-  background: var(--color-primary-dark);
-  box-shadow: var(--shadow-primary);
-}
-
-/* ===== CARD ===== */
-.doctor-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 6px 20px var(--color-shadow);
-  transition: all 0.35s ease;
-  height: 100%;
-}
-
-.doctor-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
-}
-
-.doctor-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-main);
-}
-
-/* ===== BADGE ===== */
-.badge-soft {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 6px 14px;
-  border-radius: 50px;
-  font-size: 13px;
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
-}
-
-/* ===== ACTION BUTTONS ===== */
-.btn-outline-modern {
-  border-radius: 50px;
-  padding: 6px 14px;
-  font-size: 13px;
-  transition: all 0.3s ease;
-}
-
-.btn-outline-modern:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== MODAL ===== */
 .modal-backdrop-custom {
   position: fixed;
-  inset: 0;
-  background: var(--color-bg-overlay);
-  backdrop-filter: blur(6px);
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 1050;
 }
 
 .modal-modern {
-  background: var(--color-bg-card);
-  width: 400px;
-  border-radius: 25px;
-  padding: 30px;
-  box-shadow: var(--shadow-2xl);
-  animation: fadeInScale 0.25s ease;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.modal-modern h5 {
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: var(--color-text-main);
-}
-
-.modal-modern input {
+  background: white;
+  width: 100%;
+  max-width: 420px; /* Độ rộng vừa phải */
+  padding: 20px;
   border-radius: 12px;
-  padding: 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-soft);
-  color: var(--color-text-main);
 }
 
-.modal-modern input:focus {
-  border-color: var(--color-primary);
-  background: var(--color-bg-card);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.18);
+.form-group label {
+  margin-bottom: 2px;
+}
+/* Ô tìm kiếm có Icon */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-wrapper i {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+}
+.search-input {
+  padding-left: 32px !important;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  width: 280px;
 }
 
-/* ===== EMPTY STATE ===== */
-.empty-state {
-  text-align: center;
-  padding: 80px 0;
-  color: var(--color-text-muted);
-  font-size: 16px;
+/* Bảng tùy chỉnh */
+.custom-table thead th {
+  background: #f1f5f9;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 12px 15px;
+  border: none;
+}
+
+.custom-table tbody td {
+  padding: 10px 15px; /* Thu hẹp khoảng cách dòng */
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Badge Mã bác sĩ */
+.code-badge {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Avatar nhỏ trong bảng */
+.avatar-mini {
+  width: 28px;
+  height: 28px;
+  background: #3698a7;
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Text Khoa/Chuyên khoa */
+.dept-text { font-weight: 600; color: #334155; }
+.spec-text { font-size: 11px; color: #94a3b8; }
+
+/* Select trạng thái nhỏ gọn */
+.status-select-sm {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  width: 100%;
+  cursor: pointer;
+}
+.status-select-sm.active { background: #dcfce7; color: #15803d; }
+.status-select-sm.busy { background: #fef9c3; color: #a16207; }
+.status-select-sm.inactive { background: #b1b1b1; color: #ffffff; }
+
+/* Nút thao tác dạng Icon */
+.btn-group-action {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+}
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: 0.2s;
+}
+.btn-icon:hover { transform: scale(1.1); }
+.btn-icon.info:hover { background: #e0f2fe; color: #0369a1; }
+.btn-icon.edit:hover { background: #fef9c3; color: #a16207; }
+.btn-icon.delete:hover { background: #fee2e2; color: #b91c1c; }
+
+/* Modal nhỏ gọn */
+.modal-modern {
+  background: white;
+  width: 100%;
+  max-width: 450px;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+/* CSS cho badge Hoạt động đẹp hơn */
+.status-badge-lg.bg-success {
+    background-color: #e6f4ea !important; /* Màu xanh lá rất nhạt */
+    color: #1e7e34 !important;            /* Chữ màu xanh đậm hơn để dễ đọc */
+    padding: 6px 16px;                   /* Tạo khoảng trống cho chữ thở */
+    border-radius: 50px;                 /* Bo tròn hoàn toàn hai đầu */
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    border: 1px solid #c3e6cb;           /* Viền mảnh tạo độ nổi khối */
+    text-transform: uppercase;           /* Chữ in hoa nhẹ cho chuyên nghiệp (tùy chọn) */
+    letter-spacing: 0.5px;
+}
+
+/* Badge Modern như ảnh */
+.status-badge-modern {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 18px;
+  border-radius: 12px; /* Bo góc mềm mại */
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* Màu Pastel nhẹ nhàng */
+.status-badge-modern.bg-success {
+  background-color: #e8f7ed !important;
+  color: #287d3c !important;
+}
+
+.status-badge-modern.bg-warning {
+  background-color: #fff4e5 !important;
+  color: #b76e00 !important;
+}
+
+.status-badge-modern.bg-secondary {
+  background-color: #f1f3f5 !important;
+  color: #495057 !important;
+}
+
+/* Select box trong chế độ sửa */
+.status-select-edit {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 500;
+  color: #287d3c; /* Mặc định màu xanh cho Active */
+  background-color: #f9f9f9;
+}
+
+.edit-profile-box {
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.doctor-name-display {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 4px;
 }

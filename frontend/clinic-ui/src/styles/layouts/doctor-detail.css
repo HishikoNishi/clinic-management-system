@@ -280,7 +280,7 @@
   margin-top: 30px;
 }
 
-/* Trạng thái badges */
+
 .status-pill {
   padding: 5px 12px;
   border-radius: 8px;
@@ -290,3 +290,47 @@
 }
 .pill-green { background: #dcfce7; color: #15803d; }
 .pill-gray { background: #f1f5f9; color: #475569; }
+/* --- BỔ SUNG TRẠNG THÁI BADGE MODERN --- */
+.status-badge-modern {
+  display: inline-flex !important;
+  align-items: center;
+  padding: 6px 18px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  gap: 8px;
+color: floralwhite;
+  margin-top: 10px;
+}
+
+.status-badge-modern.bg-success {
+  background-color: #e8f7ed ;
+
+  border-color: #c3e6cb;
+}
+
+.status-badge-modern.bg-warning {
+  background-color: #fff4e5;
+
+  border-color: #ffe5d0;
+}
+
+.status-badge-modern.bg-secondary {
+  background-color: #f1f3f5;
+
+  border-color: #dee2e6;
+}
+
+.status-select-edit {
+  cursor: pointer;
+  appearance: none; 
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 35px;
+}
+
+.status-select-edit:has(option[value="Active"]:checked) {
+  border-color: #c3e6cb;
+  color: #287d3c;
+}

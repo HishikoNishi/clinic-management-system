@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import '@/styles/layouts/doctor-detail.css'
 
 const route = useRoute()
+const router = useRouter()
 const doctorId = route.params.id
 const auth = useAuthStore()
 
@@ -13,6 +14,10 @@ const api = axios.create({
   baseURL: 'https://localhost:7235/api',
   headers: { Authorization: `Bearer ${auth.token}` }
 })
+
+function goBackToStaffList() {
+  router.push('/doctors')
+}
 
 const doctor = ref<any>(null)
 const appointments = ref<any[]>([])
@@ -26,23 +31,33 @@ onMounted(async () => {
   await loadDoctor()
   await loadAppointments()
 })
-
 async function loadDoctor() {
   const resDoctor = await api.get(`/Doctor/${doctorId}`)
   doctor.value = resDoctor.data
+  
+  // Quan trọng: Cập nhật editForm ngay sau khi load doctor
   editForm.value = {
     ...doctor.value,
+    status: doctor.value.status, // Đảm bảo status được gán ở đây
     departmentId: doctor.value.departmentId?.toString() || '',
-    specialtyId: doctor.value.specialtyId?.toString() || ''   // ✅ thêm dòng này
+    specialtyId: doctor.value.specialtyId?.toString() || ''
   }
 }
 
+function syncEditForm() {
+  editForm.value = {
+    ...doctor.value,
+    status: doctor.value.status,
+    departmentId: doctor.value.departmentId?.toString() || '',
+    specialtyId: doctor.value.specialtyId?.toString() || ''
+  }
+}
 
 async function loadAppointments() {
   try {
     const resAppointments = await api.get(`/Doctor/${doctorId}/appointments`)
     appointments.value = resAppointments.data
-  } catch (err:any) {
+  } catch (err: any) {
     console.error("Lỗi khi load lịch khám:", err)
   }
 }
@@ -61,41 +76,60 @@ async function loadSpecialties(departmentId: string) {
   specialties.value = res.data
 }
 
+// Thêm hàm này vào phần script của bạn
+async function updateStatus(id: string, status: string) {
+  try {
+    // Gọi đúng endpoint như code tham khảo của bạn
+    await api.put(`/Doctor/${id}/status`, { status })
+    console.log("Đã cập nhật trạng thái riêng biệt thành công")
+  } catch (err: any) {
+    console.error("Lỗi cập nhật trạng thái:", err)
+    throw err // Ném lỗi để hàm saveDoctor phía dưới xử lý
+  }
+}
+
 async function saveDoctor() {
   try {
+    // 1. Cập nhật thông tin chung (Họ tên, khoa, chuyên khoa...)
     await api.put(`/Doctor/${doctorId}`, {
       fullName: editForm.value.fullName,
       code: editForm.value.code,
-      specialtyId: editForm.value.specialtyId,   
+      specialtyId: editForm.value.specialtyId,
       licenseNumber: editForm.value.licenseNumber,
       departmentId: editForm.value.departmentId,
       avatarUrl: editForm.value.avatarUrl
+      // Không gửi status ở đây nếu API cũ không nhận
     })
 
+    // 2. Cập nhật TRẠNG THÁI (Gọi endpoint riêng giống code tham khảo)
+await updateStatus(doctorId as string, editForm.value.status)
     showEdit.value = false
-    await loadDoctor()
-  } catch (err:any) {
-    alert("Không thể cập nhật bác sĩ: " + err.message)
+    await loadDoctor() // Load lại để UI cập nhật badge mới
+    alert("Cập nhật thông tin và trạng thái thành công!")
+  } catch (err: any) {
+    alert("Không thể cập nhật: " + (err.response?.data?.message || err.message))
   }
 }
 
 async function openEdit() {
-  // Reset editForm từ doctor mới nhất
+  // Đồng bộ từ doctor hiện tại sang form sửa
   editForm.value = {
     ...doctor.value,
+    status: doctor.value.status, // Lấy status hiện tại của doctor
     departmentId: doctor.value.departmentId?.toString() || '',
     specialtyId: doctor.value.specialtyId?.toString() || ''
   }
+  
   await loadDepartments()
   if (editForm.value.departmentId) {
     await loadSpecialties(editForm.value.departmentId)
   }
   showEdit.value = true
 }
+
 watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
   if (newVal) {
     await loadSpecialties(newVal)
-    // Chỉ reset nếu department thực sự thay đổi khác với cũ
     if (newVal !== oldVal) {
       editForm.value.specialtyId = ''
     }
@@ -104,8 +138,6 @@ watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
     editForm.value.specialtyId = ''
   }
 })
-
-
 
 const filteredAppointments = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
@@ -144,6 +176,7 @@ const appointmentStatusLabel = (status: string) => {
   return labels[status] || status
 }
 </script>
+
 <template>
   <div class="doctor-page-container">
     <div class="container">
@@ -152,28 +185,49 @@ const appointmentStatusLabel = (status: string) => {
           <h1 class="page-title mb-1">Chi tiết bác sĩ</h1>
           <p class="text-muted mb-0">Quản lý hồ sơ và lịch khám chuyên khoa</p>
         </div>
-        <div class="header-actions" v-if="!showEdit">
-          <button class="btn-primary" @click="openEdit">Sửa thông tin</button>
-        </div>
-        <div class="header-actions d-flex gap-2" v-else>
-          <button class="btn-update" @click="saveDoctor">Lưu thay đổi</button>
-          <button class="btn-cancel" @click="showEdit = false">Quay lại</button>
+        <div class="header-actions d-flex gap-2">
+          <template v-if="!showEdit">
+            <button class="btn btn-outline-secondary px-3" @click="goBackToStaffList">
+              <i class="bi bi-arrow-left me-1"></i> Danh sách
+            </button>
+            <button class="btn-primary px-3" @click="openEdit">Sửa thông tin</button>
+          </template>
+          <template v-else>
+            <button class="btn-update px-3" @click="saveDoctor">Lưu thay đổi</button>
+            <button class="btn-cancel px-3" @click="showEdit = false">Hủy</button>
+          </template>
         </div>
       </div>
 
       <div class="doctor-info-card" :class="{ 'is-editing': showEdit }">
         <div class="doctor-profile-section">
-          <img :src="(showEdit ? editForm.avatarUrl : doctor?.avatarUrl) || '/default-avatar.png'" class="main-avatar" />
-          
+          <div class="avatar-wrapper">
+            <img :src="(showEdit ? editForm.avatarUrl : doctor?.avatarUrl) || '/default-avatar.png'" class="main-avatar" />
+          </div>
+
           <div v-if="!showEdit" class="profile-text text-center">
             <h2 class="doctor-name-display">{{ doctor?.fullName }}</h2>
-            <span :class="['status-badge-lg', doctorBadgeClass(doctor?.status)]">
+            <div :class="['status-badge-modern', doctorBadgeClass(doctor?.status)]">
               {{ doctorStatusLabel(doctor?.status) }}
-            </span>
+            </div>
           </div>
-          <div v-else class="form-group full-width mt-3">
-            <label>Link ảnh đại diện</label>
-            <input v-model="editForm.avatarUrl" placeholder="Dán link ảnh vào đây..." />
+
+          <div v-else class="edit-profile-box mt-3 w-100 px-4">
+           <div class="form-group mb-3">
+  <label class="small fw-bold text-muted mb-1">Trạng thái bác sĩ</label>
+  <select 
+    v-model="editForm.status" 
+    class=" status-badge-morden select form-select-sm status-select-edit"
+  >
+    <option value="Active">Hoạt động</option>
+    <option value="Busy">Đang khám</option>
+    <option value="Inactive">Không hoạt động</option>
+  </select>
+</div>
+            <div class="form-group">
+              <label class="small fw-bold text-muted mb-1">Link ảnh đại diện</label>
+              <input v-model="editForm.avatarUrl" class="form-control form-control-sm" />
+            </div>
           </div>
         </div>
 
@@ -200,27 +254,27 @@ const appointmentStatusLabel = (status: string) => {
           <template v-else>
             <div class="form-group">
               <label>Họ và tên</label>
-              <input v-model="editForm.fullName" />
+              <input v-model="editForm.fullName" class="form-control" />
             </div>
             <div class="form-group">
               <label>Mã nhân viên</label>
-              <input v-model="editForm.code" />
+              <input v-model="editForm.code" class="form-control" />
             </div>
             <div class="form-group">
               <label>Khoa</label>
-              <select v-model="editForm.departmentId">
+              <select v-model="editForm.departmentId" class="form-select">
                 <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">{{ dep.name }}</option>
               </select>
             </div>
             <div class="form-group">
               <label>Chuyên khoa</label>
-              <select v-model="editForm.specialtyId" :disabled="!editForm.departmentId">
+              <select v-model="editForm.specialtyId" :disabled="!editForm.departmentId" class="form-select">
                 <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">{{ s.name }}</option>
               </select>
             </div>
             <div class="form-group full-width">
               <label>Số giấy phép hành nghề</label>
-              <input v-model="editForm.licenseNumber" />
+              <input v-model="editForm.licenseNumber" class="form-control" />
             </div>
           </template>
         </div>
@@ -266,7 +320,6 @@ const appointmentStatusLabel = (status: string) => {
           </table>
         </div>
       </div>
-
     </div>
   </div>
 </template>

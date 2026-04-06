@@ -6,6 +6,8 @@
          <!-- Chọn trạng thái của bác sĩ -->
         <div class="mb-3">
           <label class="form-label fw-semibold">Trạng thái của tôi:</label>
+                    <disable class="form-label fw-semibold">(Cật nhật thay đổi trạng thái hoạt động, đang bận khám, hay nghỉ)</disable >
+
           <select v-model="doctorStatus" @change="updateDoctorStatus" class="form-select form-select-sm" style="max-width:200px">
             <option value="Active">Hoạt động</option>
             <option value="Busy">Đang khám</option>
@@ -14,7 +16,12 @@
         </div>
         <p class="text-muted mb-0">Hiển thị lịch đã được phân cho bác sĩ (Đã check-in / Chờ khám).</p>
       </div>
+         
+
       <div class="filter d-flex gap-2">
+        
+       <label class="form-label fw-semibold">Lọc/tìm theo trạng thái:</label>
+            
         <select v-model="currentStatus" class="form-select form-select-sm" @change="loadAppointments">
           <option value="CheckedIn,Confirmed">Đã check-in + Chờ khám</option>
           <option value="CheckedIn">Đã check-in</option>
@@ -85,18 +92,18 @@ const currentStatus = ref("CheckedIn,Confirmed")
 const doctorStatus = ref("Active")
 const doctorId = localStorage.getItem("doctorId")
 async function updateDoctorStatus() {
-  if (!doctorId) {
-    error.value = "Không tìm thấy ID bác sĩ"
-    return
-  }
+  if (!doctorId) return;
   try {
     await api.put(`/doctor/${doctorId}/status`, {
-      Status: doctorStatus.value   // giống DoctorList: PascalCase
-    })
-    console.log("Doctor status updated:", doctorStatus.value)
-  } catch (err:any) {
-    console.error("Update doctor status error:", err.response?.data || err)
-    error.value = "Không thể cập nhật trạng thái bác sĩ"
+      Status: doctorStatus.value
+    });
+    
+    // LƯU VÀO CACHE: Để khi chuyển trang quay lại sẽ thấy ngay
+    localStorage.setItem("selectedDoctorStatus", doctorStatus.value);
+    
+    console.log("Đã lưu trạng thái vào máy:", doctorStatus.value);
+  } catch (err: any) {
+    error.value = "Không thể cập nhật trạng thái";
   }
 }
 
@@ -148,10 +155,38 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   const year = date.getFullYear()
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
+const mapStatus = (s: number | string) => {
+  // Ép kiểu hoặc kiểm tra kỹ String/Number
+  if (s === 1 || s === "Active") return "Active";
+  if (s === 2 || s === "Busy") return "Busy";
+  if (s === 0 || s === "Inactive") return "Inactive";
+  return "Active"; // Chỉ để Active nếu thực sự không khớp cái nào
+}
+const loadDoctorStatus = async () => {
+  // BƯỚC 1: Lấy từ bộ nhớ tạm của trình duyệt trước
+  const savedStatus = localStorage.getItem("selectedDoctorStatus");
+  if (savedStatus) {
+    doctorStatus.value = savedStatus;
+  }
 
+  if (!doctorId) return;
+
+  // BƯỚC 2: Đồng bộ lại với Database để đảm bảo chính xác
+  try {
+    const res = await api.get(`/doctor/${doctorId}/profile`);
+    const statusFromDb = mapStatus(res.data.status);
+    
+    doctorStatus.value = statusFromDb;
+    localStorage.setItem("selectedDoctorStatus", statusFromDb); // Cập nhật lại cache
+  } catch (err) {
+    console.error("Lỗi đồng bộ trạng thái:", err);
+  }
+}
 onMounted(() => {
+  loadDoctorStatus()   // lấy trạng thái thực tế từ backend
   loadAppointments()
 })
+
 </script>
 
 <style src="@/styles/layouts/doctor-appointments.css"></style>
