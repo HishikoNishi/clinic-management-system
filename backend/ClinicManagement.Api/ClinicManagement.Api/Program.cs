@@ -2,6 +2,7 @@
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
 using ClinicManagement.Api.Services;
+using ClinicManagement.Api.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -126,6 +127,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ClinicDbContext>();
     dbContext.Database.Migrate();
+    await SeedData.SeedAsync(scope.ServiceProvider);
 }
 
 if (app.Environment.IsDevelopment())

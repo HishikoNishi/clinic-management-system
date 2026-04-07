@@ -8,21 +8,21 @@ using System.IO;
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
-    [Route("api/Doctor")]
-    public class DoctorMediaController : ControllerBase
+    [Route("api/Staffs")]
+    public class StaffMediaController : ControllerBase
     {
         private readonly ClinicDbContext _context;
         private readonly IWebHostEnvironment _env;
         private readonly long _maxFileSize = 2 * 1024 * 1024; // 2MB
 
-        public DoctorMediaController(ClinicDbContext context, IWebHostEnvironment env)
+        public StaffMediaController(ClinicDbContext context, IWebHostEnvironment env)
         {
             _context = context;
             _env = env;
         }
 
         [HttpPost("{id}/avatar")]
-        [Authorize(Roles = "Admin,Doctor")]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> UploadAvatar(Guid id, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -36,21 +36,21 @@ namespace ClinicManagement.Api.Controllers
             if (!allowed.Contains(ext))
                 return BadRequest(new { message = "Định dạng ảnh không hợp lệ (jpg, png, webp)" });
 
-            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == id);
-            if (doctor == null) return NotFound(new { message = "Không tìm thấy bác sĩ" });
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.Id == id);
+            if (staff == null) return NotFound(new { message = "Không tìm thấy nhân viên" });
 
-            if (User.IsInRole("Doctor"))
+            if (User.IsInRole("Staff"))
             {
                 var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || doctor.UserId != Guid.Parse(userIdClaim))
+                if (string.IsNullOrEmpty(userIdClaim) || staff.UserId != Guid.Parse(userIdClaim))
                     return Forbid();
             }
 
             var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            var folder = Path.Combine(webRoot, "uploads", "doctors");
+            var folder = Path.Combine(webRoot, "uploads", "staffs");
             Directory.CreateDirectory(folder);
 
-            var fileName = $"{doctor.Code}-{Guid.NewGuid():N}{ext}";
+            var fileName = $"{staff.Code}-{Guid.NewGuid():N}{ext}";
             var savePath = Path.Combine(folder, fileName);
 
             using (var stream = System.IO.File.Create(savePath))
@@ -58,8 +58,8 @@ namespace ClinicManagement.Api.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            var publicUrl = $"{Request.Scheme}://{Request.Host}/uploads/doctors/{fileName}";
-            doctor.AvatarUrl = publicUrl;
+            var publicUrl = $"{Request.Scheme}://{Request.Host}/uploads/staffs/{fileName}";
+            staff.AvatarUrl = publicUrl;
             await _context.SaveChangesAsync();
 
             return Ok(new { url = publicUrl });

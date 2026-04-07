@@ -45,7 +45,6 @@ namespace ClinicManagement.Api.Controllers
                 .Include(d => d.User)
                 .Include(d => d.Department)
                 .Include(d => d.Specialty)
-                .Where(d => d.Status == DoctorStatus.Active)
                 .Select(d => new DoctorDto
                 {
                     Id = d.Id,
@@ -285,6 +284,7 @@ namespace ClinicManagement.Api.Controllers
                 {
                     d.Id,
                     d.FullName,
+                    Status = d.Status.ToString(),
                     DepartmentId = d.DepartmentId,
                     DepartmentName = d.Department.Name,
                     SpecialtyName = d.Specialty.Name  

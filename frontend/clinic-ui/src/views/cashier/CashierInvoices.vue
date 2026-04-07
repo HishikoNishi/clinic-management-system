@@ -67,10 +67,14 @@ const handlePay = async () => {
 </script>
 
 <template>
-  <div class="container py-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="mb-0">Hóa đơn & thanh toán</h2>
-      <span class="badge bg-primary">Vai trò: Thu ngân</span>
+  <div class="container py-4 page">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Cashier</div>
+        <h2 class="page-title mb-0">Hóa đơn & thanh toán</h2>
+        <p class="page-subtitle">Tra cứu lịch khám, tạo hóa đơn, tính lại và thanh toán nhanh.</p>
+      </div>
+      <span class="badge bg-primary-subtle text-primary border">Vai trò: Thu ngân</span>
     </div>
 
     <div class="row g-3">
@@ -96,7 +100,7 @@ const handlePay = async () => {
         <InvoiceDetail :invoice="invoice" />
       </div>
       <div class="col-lg-5">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm h-100 page-card">
           <div class="card-body">
             <h5 class="card-title mb-3">Thanh toán</h5>
             <div v-if="invoice">

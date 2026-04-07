@@ -139,8 +139,6 @@ const appointmentStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
-const uploadLoading = ref(false)
-const uploadError = ref('')
 const onAvatarSelected = async (e: Event) => {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]

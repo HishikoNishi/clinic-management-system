@@ -13,7 +13,7 @@ namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/staff/[controller]")]
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Admin,Staff")]
     public class StaffAppointmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;

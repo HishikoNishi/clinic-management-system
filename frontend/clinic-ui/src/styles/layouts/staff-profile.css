@@ -2,12 +2,12 @@
   max-width: 640px;
   margin: 2rem auto;
   padding: 2rem;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  border-top: 6px solid #1e90ff;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  border-top: 6px solid var(--color-primary);
   text-align: center; /* giữ từ stash */
-  font-family: "Roboto", sans-serif;
   min-height: 400px;
 }
 
@@ -15,7 +15,7 @@
   margin-bottom: 1rem;
   font-weight: 700;
   font-size: 1.5rem;
-  color: #1e3a5f;
+  color: var(--color-text-primary);
 }
 
 .avatar {
@@ -24,41 +24,26 @@
   border-radius: 50%;
   object-fit: cover;
   margin: 0 auto 1rem auto; /* căn giữa đẹp hơn */
-  border: 3px solid #1e90ff;
+  border: 3px solid var(--color-primary);
   display: block;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .avatar:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(30,144,255,0.5);
+  box-shadow: var(--shadow-primary);
 }
 
 .highlight-box {
-  background: #e6f2ff;
+  background: var(--color-primary-light);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   margin: 1rem 0;
   font-weight: 500;
-  color: #0056b3;
+  color: var(--color-primary-dark);
 }
 
-.btn-primary {
-  background: linear-gradient(90deg, #6a9bcd, #73a4d7);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 0.6rem 1.2rem;
-  font-weight: 500;
-  margin-top: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(90deg, #759bc4, #597a9e);
-  transform: translateY(-2px);
-}
+/* Use global Bootstrap/token buttons; avoid overriding .btn-primary here */
 
 /* Modal */
 .modal-backdrop {
@@ -72,20 +57,21 @@
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--color-bg-card);
   padding: 1.75rem;
   border-radius: 10px;
   width: 420px;
   max-width: 90%;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-xl);
   animation: fadeIn 0.3s ease;
+  border: 1px solid var(--color-border);
 }
 
 .modal-box h4 {
   margin-bottom: 1rem;
   font-weight: 600;
   font-size: 1.2rem;
-  color: #1e3a5f;
+  color: var(--color-text-primary);
 }
 
 .modal-actions {

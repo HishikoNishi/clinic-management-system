@@ -1,26 +1,54 @@
 ﻿<template>
   <div class="staff-container">
-    <h2>Quản lý lịch khám</h2>
+    <div class="staff-page-header">
+      <div>
+        <div class="staff-eyebrow">Staff</div>
+        <h2 class="staff-title">Quản lý lịch khám</h2>
+        <p class="staff-subtitle">Tìm kiếm, lọc trạng thái và điều phối bác sĩ cho từng lịch khám.</p>
+      </div>
+    </div>
 
-    <div class="search-bar">
-      <input v-model="searchCode" placeholder="Tìm kiếm theo mã..." />
-      <input v-model="searchName" placeholder="Tìm kiếm theo tên bệnh nhân..." />
-      <input v-model="searchPhone" placeholder="Tìm kiếm theo số điện thoại..." />
-      <input type="date" v-model="searchDate" />
+    <div class="staff-filters card shadow-sm">
+      <div class="card-body">
+        <div class="search-bar">
+          <div class="field">
+            <i class="bi bi-upc-scan" aria-hidden="true"></i>
+            <input v-model="searchCode" placeholder="Tìm theo mã..." />
+          </div>
+          <div class="field">
+            <i class="bi bi-person" aria-hidden="true"></i>
+            <input v-model="searchName" placeholder="Tìm theo tên bệnh nhân..." />
+          </div>
+          <div class="field">
+            <i class="bi bi-telephone" aria-hidden="true"></i>
+            <input v-model="searchPhone" placeholder="Tìm theo số điện thoại..." />
+          </div>
+          <div class="field">
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            <input type="date" v-model="searchDate" />
+          </div>
 
-      <select v-model="selectedDepartment" @change="handleDepartmentFilter">
-        <option value="">Chọn khoa</option>
-        <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
-          {{ dep.name }}
-        </option>
-      </select>
+          <div class="field">
+            <i class="bi bi-building" aria-hidden="true"></i>
+            <select v-model="selectedDepartment" @change="handleDepartmentFilter">
+              <option value="">Tất cả khoa</option>
+              <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
+                {{ dep.name }}
+              </option>
+            </select>
+          </div>
 
-      <select v-model="selectedDoctor" :disabled="!selectedDepartment">
-        <option value="">Chọn bác sĩ</option>
-        <option v-for="d in doctorOptions" :key="d.id" :value="d.id.toString()">
-          {{ d.fullName }}
-        </option>
-      </select>
+          <div class="field">
+            <i class="bi bi-person-workspace" aria-hidden="true"></i>
+            <select v-model="selectedDoctor" :disabled="!selectedDepartment">
+              <option value="">Tất cả bác sĩ</option>
+              <option v-for="d in doctorOptions" :key="d.id" :value="d.id.toString()">
+                {{ d.fullName }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="filter">
@@ -34,51 +62,55 @@
       </button>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Mã</th>
-          <th>Bệnh nhân</th>
-          <th>Điện thoại</th>
-          <th>Ngày sinh</th>
-          <th>Ngày khám</th>
-          <th>Trạng thái</th>
-          <th>Triệu chứng</th>
-          <th>Bác sĩ</th>
-          <th>Gán/Điều phối bác sĩ</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="a in filteredAppointments" :key="a.id">
-          <td>{{ a.appointmentCode }}</td>
-          <td>{{ a.fullName }}</td>
-          <td>{{ a.phone }}</td>
-          <td>{{ formatDate(a.dateOfBirth) }}</td>
-          <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-          <td>
-            <span :class="'status ' + a.statusDetail.value.toLowerCase()">
-              {{ statusLabel(a.statusDetail.value) }}
-            </span>
-          </td>
-          <td>{{ a.reason }}</td>
-          <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
-          <td @click.stop>
-            <template v-if="canAssignDoctor(a)">
-              <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
-                {{ a.statusDetail.doctorId ? "Đổi bác sĩ" : "Gán bác sĩ" }}
-              </button>
-              <button v-if="a.statusDetail.doctorId" class="btn btn-sm btn-success me-2" @click="checkInAppointment(a)">
-                Check-in + Tạm ứng
-              </button>
-              <span v-else class="text-muted small">(gán bác sĩ trước)</span>
-            </template>
-            <button class="btn btn-sm btn-info" @click="$router.push(`/staff/appointments/${a.id}`)">
-              Chi tiết
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="staff-table card shadow-sm">
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã</th>
+              <th>Bệnh nhân</th>
+              <th>Điện thoại</th>
+              <th>Ngày sinh</th>
+              <th>Ngày khám</th>
+              <th>Trạng thái</th>
+              <th>Triệu chứng</th>
+              <th>Bác sĩ</th>
+              <th>Gán/Điều phối bác sĩ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in filteredAppointments" :key="a.id">
+              <td>{{ a.appointmentCode }}</td>
+              <td class="fw-semibold">{{ a.fullName }}</td>
+              <td>{{ a.phone }}</td>
+              <td>{{ formatDate(a.dateOfBirth) }}</td>
+              <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+              <td>
+                <span :class="'status ' + a.statusDetail.value.toLowerCase()">
+                  {{ statusLabel(a.statusDetail.value) }}
+                </span>
+              </td>
+              <td class="staff-reason">{{ a.reason }}</td>
+              <td>{{ a.statusDetail.doctorName || 'Chưa gán' }}</td>
+              <td @click.stop class="staff-actions">
+                <template v-if="canAssignDoctor(a)">
+                  <button class="btn btn-sm btn-primary me-2" @click="openAssignModal(a)">
+                    {{ a.statusDetail.doctorId ? "Đổi bác sĩ" : "Gán bác sĩ" }}
+                  </button>
+                  <button v-if="a.statusDetail.doctorId" class="btn btn-sm btn-success me-2" @click="checkInAppointment(a)">
+                    Check-in + Tạm ứng
+                  </button>
+                  <span v-else class="text-muted small">(gán bác sĩ trước)</span>
+                </template>
+                <button class="btn btn-sm btn-outline-primary" @click="$router.push(`/staff/appointments/${a.id}`)">
+                  Chi tiết
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <p v-if="appointments.length === 0">Không có lịch khám</p>
 
@@ -131,8 +163,13 @@
                 :disabled="!assignForm.specialtyId"
               >
                 <option value="">-- Chọn bác sĩ --</option>
-                <option v-for="d in assignDoctorsList" :key="d.id" :value="d.id.toString()">
-                  {{ d.fullName }}
+                <option
+                  v-for="d in assignDoctorsList"
+                  :key="d.id"
+                  :value="d.id.toString()"
+                  :disabled="isDoctorBusy(d)"
+                >
+                  {{ d.fullName }} <span v-if="isDoctorBusy(d)">- (Đang khám)</span>
                 </option>
               </select>
             </div>
@@ -151,11 +188,24 @@
                   v-else
                   v-for="d in assignDoctorsList"
                   :key="d.id"
-                  :class="['doctor-chip', assignForm.doctorId === d.id.toString() ? 'selected' : '']"
-                  @click="assignForm.doctorId = d.id.toString()"
+                  :class="[
+                    'doctor-chip',
+                    assignForm.doctorId === d.id.toString() ? 'selected' : '',
+                    isDoctorBusy(d) ? 'disabled' : ''
+                  ]"
+                  @click="!isDoctorBusy(d) && (assignForm.doctorId = d.id.toString())"
                 >
-                  <div class="fw-semibold">{{ d.fullName }}</div>
-                  <div class="text-muted small">{{ d.code }} · {{ d.specialtyName }}</div>
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <div class="fw-semibold">{{ d.fullName }}</div>
+                      <div class="text-muted small">{{ d.code }} · {{ d.specialtyName }}</div>
+                      <div class="d-flex align-items-center gap-1 text-muted small">
+                        <span class="status-dot" :class="isDoctorBusy(d) ? 'busy' : 'idle'"></span>
+                        <span>{{ doctorStatusLabel(d) }}</span>
+                      </div>
+                    </div>
+                    <!-- <span v-if="isDoctorBusy(d)" class="badge bg-danger-subtle text-danger ms-2">Đang khám</span> -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -313,7 +363,17 @@ const loadAssignSpecialties = async (departmentId: string) => {
 const loadAssignDoctorsBySpecialty = async (specialtyId: string) => {
   if (!specialtyId) { assignDoctorsList.value = []; return }
   const res = await api.get(`/Doctor/by-specialty/${specialtyId}`)
-  assignDoctorsList.value = res.data ?? []
+  const list = res.data ?? []
+  const doctorMap = new Map((doctors.value || []).map((d: any) => [d.id, d]))
+  assignDoctorsList.value = list.map((d: any) => {
+    const merged = { ...d }
+    const match = doctorMap.get(d.id)
+    if (match) {
+      merged.status = merged.status ?? match.status
+      merged.currentStatus = merged.currentStatus ?? match.status
+    }
+    return merged
+  })
 }
 
 function openAssignModal(appointment: Appointment) {
@@ -323,6 +383,8 @@ function openAssignModal(appointment: Appointment) {
     specialtyId: '',
     doctorId: ''
   }
+  // Refresh latest doctor statuses before selecting
+  loadDoctors()
   insuranceCode.value = ''
   insuranceInfo.value = null
   insuranceVerified.value = false
@@ -478,6 +540,24 @@ const statusLabel = (status: string) => {
 const handleDepartmentFilter = () => {
   selectedDoctor.value = ""
 }
+
+const doctorRawStatus = (d: any) => (d?.status ?? d?.Status ?? d?.statusName ?? d?.currentStatus ?? '').toString().toLowerCase()
+const doctorBusyFromAppointments = (doctorId: string) =>
+  appointments.value.some(a =>
+    a.statusDetail?.doctorId === doctorId &&
+    ['checkedin', 'confirmed', 'pending'].includes((a.statusDetail.value || '').toLowerCase())
+  )
+
+const isDoctorBusy = (d: any) => {
+  const raw = doctorRawStatus(d)
+  if (doctorBusyFromAppointments(d.id?.toString?.() || d.id)) return true
+  if (!raw && !Number.isNaN(Number(d?.status))) {
+    return Number(d.status) !== 0 // treat 0 as Active
+  }
+  const busyKeywords = ['busy', 'inprogress', 'occupied', 'đang khám', 'dang kham']
+  return busyKeywords.includes(raw)
+}
+const doctorStatusLabel = (d: any) => (isDoctorBusy(d) ? 'Đang khám' : 'Sẵn sàng')
 
 onMounted(() => {
   loadDepartments()

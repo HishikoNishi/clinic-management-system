@@ -5,10 +5,10 @@ import api from '@/services/api'
 const doctors = ref<any[]>([])
 const loading = ref(false)
 const fallbackPhotos = [
-  "https://images.unsplash.com/photo-1550831107-1553da8c8464?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=600&q=80"
+  "https://img.lovepik.com/free-png/20211117/lovepik-young-male-doctor-png-image_400974294_wh1200.png",
+  "https://static.vecteezy.com/system/resources/thumbnails/034/225/175/small_2x/male-doctor-beautiful-man-doctor-posing-in-uniform-generative-ai-free-png.png",
+  "https://media.istockphoto.com/id/500162175/photo/vietnamese-doctor.jpg?s=612x612&w=0&k=20&c=OduWxm3nQ7NOalndl3k8Akusl04BTeRPzOJ744_ayQI=",
+  "https://thumbs.dreamstime.com/b/asian-doctor-holding-report-isolated-white-background-54817437.jpg"
 ]
 
 const loadDoctors = async () => {
@@ -102,9 +102,23 @@ onMounted(loadDoctors)
   transform: translateY(-2px);
 }
 .doctor-photo {
-  height: 180px;
+  width: 100%;
+  height: 220px;
   object-fit: cover;
+  object-position: center top;
   border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 576px) {
+  .doctor-photo {
+    height: 260px;
+  }
+}
+
+@media (min-width: 992px) {
+  .doctor-photo {
+    height: 300px;
+  }
 }
 .tag-list .badge {
   font-weight: var(--font-weight-medium);
