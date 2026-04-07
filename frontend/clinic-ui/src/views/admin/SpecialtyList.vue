@@ -251,6 +251,37 @@ onMounted(async () => {
 
 .doc-avatar { width: 42px; height: 42px; background: #3678a7; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; overflow: hidden; }
 
+.btn-icon.info:hover { 
+  background: #0ea5e9; 
+  color: #fff; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+
+.btn-icon.info { color: #0ea5e9; }
+.btn-icon.info:hover { 
+  background: #0ea5e9; 
+  color: #fff; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+.btn-icon.edit { color: #10b981; }
+.btn-icon.edit:hover { 
+  background: #10b981; 
+  color: #fff; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+
+.btn-icon.delete { color: #ef4444; }
+.btn-icon.delete:hover { 
+  background: #ef4444; 
+  color: #fff; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
 
 .badge-status { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .badge-status.active { background: #dcfce7; color: #15803d; } /* Xanh lá */
