@@ -14,11 +14,18 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/GuestDashboard.vue")
   },
 
-  {
-    path: "/login",
-    name: "Login",
-    component: () => import("@/views/Login.vue")
-  },
+{
+  path: "/login",
+  name: "Login",
+  component: () => import("@/views/Login.vue"),
+  beforeEnter: () => {
+    const authStore = useAuthStore()
+    const pinOk = localStorage.getItem('pinAuthOk') === 'true'
+    if (authStore.token) return true
+    if (!pinOk) return "/home"
+    return true
+  }
+},
 
   {
     path: "/dashboard",
@@ -37,7 +44,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/appointment",
     name: "Appointment",
-    component: () => import("@/views/AppointmentView.vue")
+    component: () => import("@/views/AppointmentView.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: ["Admin", "Staff", "Doctor"] }
   },
 
   {
@@ -50,14 +58,14 @@ const routes: RouteRecordRaw[] = [
     path: "/staff/appointments",
     name: "StaffAppointment",
     component: () => import("@/views/staff/StaffAppointment.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
+    meta: { layout: "dashboard", requiresAuth: true, role: ["Staff", "Admin"] }
   },
 
   {
     path: "/staff/appointments/:id",
     name: "StaffAppointmentDetail",
     component: () => import("@/views/staff/StaffAppointmentDetail.vue"),
-    meta: { layout: "dashboard", requiresAuth: true, role: "Staff" }
+    meta: { layout: "dashboard", requiresAuth: true, role: ["Staff", "Admin"] }
   },
 
   {
@@ -167,6 +175,12 @@ const routes: RouteRecordRaw[] = [
     meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
   },
   {
+    path: "/technician/tests/history",
+    name: "TechnicianTestsHistory",
+    component: () => import("@/views/technician/TechnicianTests.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Technician" }
+  },
+  {
     path: "/cashier/invoices",
     name: "CashierInvoices",
     component: () => import("@/views/cashier/CashierInvoices.vue"),
@@ -195,6 +209,11 @@ const roleFallback: Record<string, string> = {
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
+  const pinOk = localStorage.getItem('pinAuthOk') === 'true'
+
+  if ((to.name === 'Login' || to.path === '/login') && !pinOk && !authStore.token) {
+    return { path: '/home' }
+  }
 
   if (to.meta.requiresAuth) {
     if (!authStore.token) {
@@ -205,11 +224,10 @@ router.beforeEach((to) => {
 
  
   if (to.meta.role) {
-    const roles = Array.isArray(to.meta.role)
-      ? to.meta.role
-      : [to.meta.role]
+    const roles = (Array.isArray(to.meta.role) ? to.meta.role : [to.meta.role]).map(r => String(r).toLowerCase())
+    const userRole = (authStore.role || "").toLowerCase()
 
-    if (!roles.includes(authStore.role || "")) {
+    if (!roles.includes(userRole)) {
       const fallback = authStore.role
         ? roleFallback[authStore.role]
         : "/home"

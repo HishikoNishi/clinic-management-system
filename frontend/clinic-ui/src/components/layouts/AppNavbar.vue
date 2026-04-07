@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -16,7 +17,8 @@ const isLoggedIn = computed(() => {
 const userRole = computed(() => authStore.role)
 
 const guestNavigationItems = [
-  { label: 'Dịch vụ', path: '#services', icon: 'heart', isAnchor: true },
+  { label: 'Dịch vụ', path: '#services', icon: 'heart-pulse', isAnchor: true },
+  { label: 'Bác sĩ', path: '#doctors', icon: 'people', isAnchor: true },
   { label: 'Đặt lịch hẹn', path: '#booking', icon: 'calendar-check', isAnchor: true },
   { label: 'Tìm kiếm', path: '#search', icon: 'search', isAnchor: true }
 ]
@@ -40,20 +42,41 @@ const handleLogout = () => {
   router.push('/')
 }
 
-const handleLogin = () => {
-  router.push('/login')
-}
-
-const closeNavbar = () => {
-  isNavOpen.value = false
-}
+const closeNavbar = () => { isNavOpen.value = false }
 
 const navigateTo = (path: string, isAnchor: boolean) => {
-  if (isAnchor) {
-    closeNavbar()
-  } else {
-    router.push(path)
-    closeNavbar()
+  if (isAnchor) closeNavbar()
+  else { router.push(path); closeNavbar() }
+}
+
+// PIN modal for internal login
+const showPinModal = ref(false)
+const pinCode = ref('')
+const pinError = ref('')
+const pinLoading = ref(false)
+
+const openPinModal = () => {
+  showPinModal.value = true
+  pinCode.value = ''
+  pinError.value = ''
+}
+
+const submitPin = async () => {
+  pinError.value = ''
+  if (!pinCode.value || pinCode.value.length !== 6) {
+    pinError.value = 'Nhập mã PIN 6 chữ số'
+    return
+  }
+  try {
+    pinLoading.value = true
+    await api.post('/auth/login-pin', { pin: pinCode.value })
+    localStorage.setItem('pinAuthOk', 'true')
+    showPinModal.value = false
+    router.push('/login')
+  } catch (err: any) {
+    pinError.value = err?.response?.data?.message || 'Mã PIN không đúng'
+  } finally {
+    pinLoading.value = false
   }
 }
 </script>
@@ -104,14 +127,14 @@ const navigateTo = (path: string, isAnchor: boolean) => {
 
         <hr v-if="isLoggedIn" class="text-secondary d-lg-none" />
 
-        <div v-if="!isLoggedIn" class="mt-3 mt-lg-0 ms-lg-2">
+        <div v-if="!isLoggedIn" class="mt-3 mt-lg-0 ms-lg-3 d-flex align-items-center">
           <button
-            @click="handleLogin"
-            class="btn btn-primary btn-sm"
+            @click="openPinModal"
+            class="btn btn-outline-light btn-icon"
             type="button"
+            title="Khu vực nội bộ"
           >
-            <i class="bi bi-box-arrow-in-right me-1"></i>
-            Đăng nhập
+            <i class="bi bi-shield-lock"></i>
           </button>
         </div>
 
@@ -133,6 +156,29 @@ const navigateTo = (path: string, isAnchor: boolean) => {
       </div>
     </div>
   </nav>
+
+  <div v-if="showPinModal" class="modal-backdrop" @click.self="showPinModal = false">
+    <div class="modal-box">
+      <h5>Truy cập nội bộ</h5>
+      <p class="text-muted small mb-2">Nhập mã PIN 6 chữ số để vào.</p>
+      <input
+        v-model="pinCode"
+        type="password"
+        maxlength="6"
+        class="form-control"
+        placeholder="******"
+        inputmode="numeric"
+      />
+      <div v-if="pinError" class="form-error mt-1">{{ pinError }}</div>
+      <div class="modal-actions">
+        <button class="btn btn-outline-secondary w-50" @click="showPinModal = false">Đóng</button>
+        <button class="btn btn-primary w-50" :disabled="pinLoading" @click="submitPin">
+          <span v-if="pinLoading" class="spinner-border spinner-border-sm me-1"></span>
+          Xác nhận
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -163,17 +209,10 @@ const navigateTo = (path: string, isAnchor: boolean) => {
   color: #fff !important;
 }
 
-.navbar-brand:hover {
-  opacity: 0.85;
-}
+.navbar-brand:hover { opacity: 0.85; }
 
-.navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.navbar-toggler-icon {
-  filter: brightness(0) invert(1);
-}
+.navbar-toggler { border-color: rgba(255, 255, 255, 0.6); }
+.navbar-toggler-icon { filter: brightness(0) invert(1); }
 
 @media (max-width: 991px) {
   .nav-link.active {
@@ -181,4 +220,35 @@ const navigateTo = (path: string, isAnchor: boolean) => {
     background-color: rgba(232, 240, 255, 0.12);
   }
 }
+
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.btn-icon i { font-size: 16px; }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.modal-box h5 { margin: 0 0 12px 0; }
+.modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+.form-error { color: #c0392b; font-size: 12px; }
 </style>

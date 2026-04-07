@@ -169,6 +169,11 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(s => s.UserId).IsUnique();
+
+                entity.HasOne(s => s.Department)
+                      .WithMany()
+                      .HasForeignKey(s => s.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             /* ================================

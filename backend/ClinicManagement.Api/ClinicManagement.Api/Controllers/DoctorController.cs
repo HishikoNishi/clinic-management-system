@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Doctor;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -38,7 +38,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET ALL ================= */
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var doctors = await _context.Doctors
@@ -284,6 +284,7 @@ namespace ClinicManagement.Api.Controllers
                 {
                     d.Id,
                     d.FullName,
+                    Status = d.Status.ToString(),
                     DepartmentId = d.DepartmentId,
                     DepartmentName = d.Department.Name,
                     SpecialtyName = d.Specialty.Name  

@@ -1,25 +1,30 @@
-﻿using System;
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
+using ClinicManagement.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ClinicManagement.Api.Dtos.Appointments;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/staff/[controller]")]
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Admin,Staff")]
     public class StaffAppointmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
+        private readonly FakeInsuranceService _fakeInsuranceService;
+        private readonly IConfiguration _configuration;
 
-        public StaffAppointmentsController(ClinicDbContext context)
+        public StaffAppointmentsController(ClinicDbContext context, FakeInsuranceService fakeInsuranceService, IConfiguration configuration)
         {
             _context = context;
+            _fakeInsuranceService = fakeInsuranceService;
+            _configuration = configuration;
         }
 
         // GET: api/staff/Appointments
@@ -195,7 +200,7 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("checkin")]
         public async Task<IActionResult> CheckIn([FromBody] CheckInRequestDto dto)
         {
-            const decimal depositCap = 300000m;
+            var depositCap = _configuration.GetValue<decimal?>("Billing:DepositCap") ?? 200000m;
 
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
@@ -223,9 +228,48 @@ namespace ClinicManagement.Api.Controllers
             appointment.CheckedInAt = DateTime.UtcNow;
             appointment.CheckInChannel = "Staff";
 
+            // Lưu bảo hiểm vào hồ sơ khám (tạo mới nếu chưa có) để tính phí trước khi thu tạm ứng
+            if (!string.IsNullOrWhiteSpace(dto.InsuranceCode) || (dto.InsuranceCoverPercent ?? 0) > 0)
+            {
+                var plan = !string.IsNullOrWhiteSpace(dto.InsuranceCode)
+                    ? _fakeInsuranceService.Verify(dto.InsuranceCode!)
+                    : null;
+
+                if (!string.IsNullOrWhiteSpace(dto.InsuranceCode) && plan == null)
+                {
+                    return BadRequest("Mã bảo hiểm không hợp lệ hoặc đã hết hạn");
+                }
+
+                var cover = dto.InsuranceCoverPercent ?? plan?.CoveragePercent ?? 0m;
+                cover = FinanceHelper.Clamp01(cover);
+
+                var medicalRecord = await _context.MedicalRecords
+                    .FirstOrDefaultAsync(r => r.AppointmentId == appointment.Id);
+
+                if (medicalRecord == null)
+                {
+                    medicalRecord = new MedicalRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        AppointmentId = appointment.Id,
+                        DoctorId = appointment.DoctorId!.Value,
+                        PatientId = appointment.PatientId,
+                        Symptoms = appointment.Reason ?? string.Empty,
+                        Diagnosis = string.Empty,
+                        Treatment = string.Empty,
+                        Note = string.Empty,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.MedicalRecords.Add(medicalRecord);
+                }
+
+                medicalRecord.InsurancePlanCode = plan?.Code ?? dto.InsuranceCode;
+                medicalRecord.InsuranceCoverPercent = cover;
+            }
+
             Payment? depositPayment = null;
-            // create deposit
-            if (dto.DepositAmount > 0)
+            // create deposit only for inpatient
+            if (dto.IsInpatient && dto.DepositAmount > 0)
             {
                 // nếu đã có invoice cho appointment thì gắn luôn
                 var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.AppointmentId == appointment.Id);

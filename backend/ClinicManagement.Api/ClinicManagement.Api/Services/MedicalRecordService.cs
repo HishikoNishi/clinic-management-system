@@ -1,4 +1,4 @@
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Dtos.MedicalRecords;
@@ -19,17 +19,12 @@ public class MedicalRecordService
     public async Task<MedicalRecord> CreateMedicalRecord(MedicalRecord record)
     {
         _context.MedicalRecords.Add(record);
-
-        var appointment = await _context.Appointments
-     .FirstOrDefaultAsync(x => x.Id == record.AppointmentId);
-
+        var appointment = await _context.Appointments.FirstOrDefaultAsync(x => x.Id == record.AppointmentId);
         if (appointment != null)
         {
             appointment.Status = AppointmentStatus.Completed;
         }
-
         await _context.SaveChangesAsync();
-
         return record;
     }
 
@@ -41,37 +36,59 @@ public class MedicalRecordService
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == doctorUserId);
             if (doctor == null) throw new InvalidOperationException("Doctor not found");
 
-            var insurance = dto.InsuranceCoverPercent;
-            if (insurance < 0) insurance = 0;
-            if (insurance > 1) insurance = 1;
-
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId && a.DoctorId == doctor.Id);
 
             if (appointment == null) throw new InvalidOperationException("Appointment not found or not assigned to this doctor");
 
-            if (appointment.Status == AppointmentStatus.Completed)
-                throw new InvalidOperationException("Appointment already completed");
+            // allow update if record exists
+            var medicalRecord = await _context.MedicalRecords
+                .FirstOrDefaultAsync(r => r.AppointmentId == appointment.Id);
 
-            var medicalRecord = new MedicalRecord
+            if (medicalRecord == null)
             {
-                Id = Guid.NewGuid(),
-                AppointmentId = appointment.Id,
-                DoctorId = doctor.Id,
-                PatientId = appointment.PatientId,
-                Symptoms = appointment.Reason ?? string.Empty,
-                Diagnosis = dto.Diagnosis,
-                Treatment = string.Empty,
-                Note = dto.Notes ?? string.Empty,
-                InsuranceCoverPercent = insurance,
-                Surcharge = dto.Surcharge,
-                Discount = dto.Discount,
-                CreatedAt = DateTime.UtcNow
-            };
+                medicalRecord = new MedicalRecord
+                {
+                    Id = Guid.NewGuid(),
+                    AppointmentId = appointment.Id,
+                    DoctorId = doctor.Id,
+                    PatientId = appointment.PatientId,
+                    Symptoms = appointment.Reason ?? string.Empty,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.MedicalRecords.Add(medicalRecord);
+            }
 
-            _context.MedicalRecords.Add(medicalRecord);
-            await _context.SaveChangesAsync();
+            // Ưu tiên giá trị đã lưu (ví dụ đã xác thực BHYT khi check-in) nếu payload không gửi hoặc =0
+            var insurance = dto.InsuranceCoverPercent;
+            if (insurance <= 0 && medicalRecord.InsuranceCoverPercent > 0)
+            {
+                insurance = medicalRecord.InsuranceCoverPercent;
+            }
+            insurance = FinanceHelper.Clamp01(insurance);
+
+            medicalRecord.Diagnosis = dto.Diagnosis;
+            // EF column Treatment không nullable, ghi cùng chẩn đoán để tránh null
+            medicalRecord.Treatment = dto.Diagnosis;
+            medicalRecord.Note = dto.Notes ?? string.Empty;
+            medicalRecord.InsuranceCoverPercent = insurance;
+            medicalRecord.Surcharge = dto.Surcharge;
+            medicalRecord.Discount = dto.Discount;
+
+            // Replace prescription
+            var existingPrescription = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .FirstOrDefaultAsync(p => p.MedicalRecordId == medicalRecord.Id);
+
+            if (existingPrescription != null)
+            {
+                if (existingPrescription.PrescriptionDetails != null)
+                {
+                    _context.PrescriptionDetails.RemoveRange(existingPrescription.PrescriptionDetails);
+                }
+                _context.Prescriptions.Remove(existingPrescription);
+            }
 
             var validPrescriptionItems = dto.PrescriptionItems?
                 .Where(item => !string.IsNullOrWhiteSpace(item.MedicineName))
@@ -93,16 +110,36 @@ public class MedicalRecordService
                         Frequency = string.Empty
                     }).ToList()
                 };
-
                 _context.Prescriptions.Add(prescription);
             }
 
-            if (dto.RequestClinicalTest)
+            // Replace clinical tests (tránh cộng dồn qua nhiều lần lưu)
+            var existingTests = await _context.ClinicalTests
+                .Where(t => t.MedicalRecordId == medicalRecord.Id)
+                .ToListAsync();
+            if (existingTests.Any())
+            {
+                _context.ClinicalTests.RemoveRange(existingTests);
+            }
+
+            var testNames = new List<string>();
+            if (dto.ClinicalTestNames != null && dto.ClinicalTestNames.Any())
+            {
+                testNames.AddRange(dto.ClinicalTestNames.Where(n => !string.IsNullOrWhiteSpace(n)));
+            }
+            else if (dto.RequestClinicalTest && !string.IsNullOrWhiteSpace(dto.ClinicalTestName))
+            {
+                testNames.Add(dto.ClinicalTestName);
+            }
+
+            foreach (var testName in testNames)
             {
                 _context.ClinicalTests.Add(new ClinicalTest
                 {
                     MedicalRecordId = medicalRecord.Id,
-                    TestName = string.IsNullOrWhiteSpace(dto.ClinicalTestName) ? "Clinical test requested" : dto.ClinicalTestName
+                    TestName = testName,
+                    Status = "Pending",
+                    OrderedByDoctorId = doctor.Id
                 });
             }
 
@@ -110,9 +147,15 @@ public class MedicalRecordService
 
             await _context.SaveChangesAsync();
 
-            // Tự động tính hóa đơn sau khi lưu hồ sơ
-            await _billingService.GenerateInvoiceAsync(appointment.Id);
-
+            try
+            {
+                await _billingService.GenerateInvoiceAsync(appointment.Id);
+            }
+            catch
+            {
+                // Nếu tính hóa đơn lỗi (thiếu cấu hình giá, v.v.), vẫn giữ hồ sơ khám
+                // và để cashier tính lại sau.
+            }
             await transaction.CommitAsync();
 
             return medicalRecord;

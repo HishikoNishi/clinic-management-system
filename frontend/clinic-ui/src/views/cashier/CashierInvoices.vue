@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import AppointmentLookup from '@/components/cashier/AppointmentLookup.vue'
 import InvoiceForm from '@/components/cashier/InvoiceForm.vue'
@@ -20,6 +20,9 @@ const isPaid = computed(() => invoice.value?.isPaid ?? false)
 
 const balanceDue = computed(() => invoice.value?.balanceDue ?? invoice.value?.amount ?? 0)
 const totalDeposit = computed(() => invoice.value?.totalDeposit ?? 0)
+const insuranceCoverPercent = computed<number | null>(() =>
+  invoice.value?.insuranceCoverPercent ?? null
+)
 
 const autofillPayAmount = computed(() => payAmount.value ?? balanceDue.value ?? 0)
 
@@ -44,7 +47,8 @@ const handleRecalc = async (payload: { insuranceCode?: string; insuranceCoverPer
   if (!appointmentId.value) return
   await recalc({
     appointmentId: appointmentId.value,
-    ...payload
+    ...payload,
+    insuranceCoverPercent: payload.insuranceCoverPercent ?? undefined
   })
   payAmount.value = invoice.value?.balanceDue ?? invoice.value?.amount ?? payAmount.value
 }
@@ -63,10 +67,14 @@ const handlePay = async () => {
 </script>
 
 <template>
-  <div class="container py-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="mb-0">Hóa đơn & thanh toán</h2>
-      <span class="badge bg-primary">Vai trò: Cashier</span>
+  <div class="container py-4 page">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Cashier</div>
+        <h2 class="page-title mb-0">Hóa đơn & thanh toán</h2>
+        <p class="page-subtitle">Tra cứu lịch khám, tạo hóa đơn, tính lại và thanh toán nhanh.</p>
+      </div>
+      <span class="badge bg-primary-subtle text-primary border">Vai trò: Thu ngân</span>
     </div>
 
     <div class="row g-3">
@@ -79,6 +87,7 @@ const handlePay = async () => {
           :appointment-id="appointmentId"
           :invoice-amount="invoice?.amount ?? null"
           :is-paid="isPaid"
+          :insurance-cover-percent="insuranceCoverPercent ?? undefined"
           :loading="loading"
           @create="handleCreate"
           @recalc="handleRecalc"
@@ -91,21 +100,21 @@ const handlePay = async () => {
         <InvoiceDetail :invoice="invoice" />
       </div>
       <div class="col-lg-5">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm h-100 page-card">
           <div class="card-body">
             <h5 class="card-title mb-3">Thanh toán</h5>
             <div v-if="invoice">
               <div class="mb-2 text-muted small">
-                T?m ?ng d� thu: <span class="fw-semibold">{{ formatCurrency(totalDeposit) }}</span><br />
-                C?n thanh to�n: <span class="fw-semibold">{{ formatCurrency(balanceDue) }}</span>
+                Tạm ứng đã thu: <span class="fw-semibold">{{ formatCurrency(totalDeposit) }}</span><br />
+                Cần thanh toán: <span class="fw-semibold">{{ formatCurrency(balanceDue) }}</span>
               </div>
               <div class="mb-3">
-                <label class="form-label">S? ti?n thanh to�n</label>
+                <label class="form-label">Số tiền thanh toán</label>
                 <div class="input-group">
                   <input v-model.number="payAmount" type="number" min="0" class="form-control" :disabled="isPaid || payLoading" />
                   <span class="input-group-text">VND</span>
                 </div>
-                <small class="text-muted">M?c d?nh: {{ formatCurrency(balanceDue) }}</small>
+                <small class="text-muted">Mặc định: {{ formatCurrency(balanceDue) }}</small>
               </div>
               <div class="mb-3">
                 <label class="form-label">Phương thức</label>
@@ -130,4 +139,5 @@ const handlePay = async () => {
     <div v-if="error" class="alert alert-danger mt-3 py-2">{{ error }}</div>
   </div>
 </template>
+
 

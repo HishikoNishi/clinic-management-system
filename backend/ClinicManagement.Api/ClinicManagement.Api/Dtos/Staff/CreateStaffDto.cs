@@ -14,4 +14,6 @@ public class CreateStaffDto
 
     [Required]
     public string Role { get; set; } = null!;
+
+    public Guid? DepartmentId { get; set; }
 }

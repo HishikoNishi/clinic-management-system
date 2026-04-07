@@ -1,3 +1,4 @@
+using System;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Invoices;
 using ClinicManagement.Api.Dtos.Billing;
@@ -63,6 +64,7 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> GetInvoice(Guid id)
         {
             var invoice = await _context.Invoices
+                .AsNoTracking()
                 .Include(i => i.Appointment)
                     .ThenInclude(a => a.Patient)
                 .Include(i => i.Payments)
@@ -72,7 +74,11 @@ namespace ClinicManagement.Api.Controllers
             if (invoice == null)
                 return NotFound(new { message = "Không tìm thấy hóa đơn" });
 
-            return Ok(MapInvoice(invoice));
+            var record = await _context.MedicalRecords
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.AppointmentId == invoice.AppointmentId);
+
+            return Ok(MapInvoice(invoice, record));
         }
 
         // ==============================
@@ -111,6 +117,8 @@ namespace ClinicManagement.Api.Controllers
         // ==============================
         // Thanh toán hóa đơn (tương thích cũ, nhưng đồng thời tạo Payment)
         // ==============================
+        [Obsolete("Use POST /payment", false)]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [HttpPut("{id}/pay")]
         public async Task<IActionResult> PayInvoice(Guid id)
         {
@@ -170,10 +178,11 @@ namespace ClinicManagement.Api.Controllers
                 return NotFound(new { message = "Không tìm thấy hồ sơ khám" });
 
             // cập nhật thông tin tài chính do cashier nhập
-            var cover = dto.InsuranceCoverPercent;
-            if (cover < 0) cover = 0;
-            if (cover > 1) cover = 1;
-            record.InsuranceCoverPercent = cover;
+            if (dto.InsuranceCoverPercent.HasValue)
+            {
+                var cover = dto.InsuranceCoverPercent.Value;
+                record.InsuranceCoverPercent = FinanceHelper.Clamp01(cover);
+            }
             record.Surcharge = dto.Surcharge;
             record.Discount = dto.Discount;
 
@@ -184,7 +193,7 @@ namespace ClinicManagement.Api.Controllers
                     return BadRequest(new { message = "Bảo hiểm không hợp lệ hoặc đã hết hạn" });
 
                 record.InsurancePlanCode = plan.Code;
-                record.InsuranceCoverPercent = plan.CoveragePercent;
+                record.InsuranceCoverPercent = FinanceHelper.Clamp01(plan.CoveragePercent);
             }
 
             await _context.SaveChangesAsync();
@@ -195,16 +204,19 @@ namespace ClinicManagement.Api.Controllers
                 return NotFound(new { message = "Không tạo được hóa đơn" });
 
             var result = await _context.Invoices
+                .AsNoTracking()
                 .Include(i => i.Appointment).ThenInclude(a => a.Patient)
                 .Include(i => i.Payments)
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.Id == invoice.Id);
 
-            return Ok(MapInvoice(result!));
+            return Ok(MapInvoice(result!, record));
         }
 
-        private object MapInvoice(Invoice invoice)
+        private object MapInvoice(Invoice invoice, MedicalRecord? med)
         {
+            var insuranceCover = med?.InsuranceCoverPercent ?? 0m;
+            string? insurancePlan = med?.InsurancePlanCode;
             return new
             {
                 invoice.Id,
@@ -217,6 +229,8 @@ namespace ClinicManagement.Api.Controllers
                 invoice.IsPaid,
                 invoice.CreatedAt,
                 invoice.PaymentDate,
+                InsuranceCoverPercent = insuranceCover,
+                InsurancePlanCode = insurancePlan,
                 appointment = invoice.Appointment == null ? null : new
                 {
                     invoice.Appointment.Id,

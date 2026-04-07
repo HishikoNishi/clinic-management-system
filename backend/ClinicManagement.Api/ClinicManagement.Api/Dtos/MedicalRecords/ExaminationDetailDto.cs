@@ -10,5 +10,13 @@ namespace ClinicManagement.Api.Dtos.MedicalRecords
         public Guid AppointmentId { get; set; }
         public AppointmentDetailDto? Appointment { get; set; }
         public List<BasicMedicalHistoryDto> MedicalHistory { get; set; } = new();
+        public string? Diagnosis { get; set; }
+        public string? Note { get; set; }
+        public decimal InsuranceCoverPercent { get; set; }
+        public decimal Surcharge { get; set; }
+        public decimal Discount { get; set; }
+        public List<PrescriptionItemDto> PrescriptionItems { get; set; } = new();
+        public List<ClinicalTests.ClinicalTestDto> ClinicalTests { get; set; } = new();
+        public Guid? CurrentMedicalRecordId { get; set; }
     }
 }

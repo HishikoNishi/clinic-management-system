@@ -1,14 +1,19 @@
 <template>
-  <div class="container py-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="container py-3 page">
+    <div class="page-header">
       <div>
-        <h2 class="mb-1">Quản lý chuyên khoa</h2>
-        <p class="text-muted mb-0">Theo khoa, thêm/sửa/xóa chuyên khoa.</p>
+        <div class="page-eyebrow">Admin</div>
+        <h2 class="page-title mb-0">Quản lý chuyên khoa</h2>
+        <p class="page-subtitle">Theo khoa, thêm/sửa/xóa chuyên khoa.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Thêm chuyên khoa</button>
+      <button class="btn btn-primary" @click="openCreate">
+        <i class="bi bi-plus-lg me-1"></i>
+        Thêm chuyên khoa
+      </button>
     </div>
 
-    <div class="card p-3 mb-3">
+    <div class="card page-card mb-3">
+      <div class="card-body">
       <div class="row g-2 align-items-end">
         <div class="col-md-4">
           <label class="form-label">Lọc theo khoa</label>
@@ -22,9 +27,10 @@
           <input class="form-control" v-model="searchTerm" placeholder="Tên chuyên khoa..." />
         </div>
       </div>
+      </div>
     </div>
 
-    <div class="card">
+    <div class="card page-card">
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead class="table-light">

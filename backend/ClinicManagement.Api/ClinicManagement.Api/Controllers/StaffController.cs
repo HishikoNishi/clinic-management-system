@@ -25,6 +25,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var staffs = await _context.Staffs
                 .Include(s => s.User)
+                .Include(s => s.Department)
                 .Select(s => new StaffDto
                 {
                     Id = s.Id,
@@ -33,8 +34,11 @@ namespace ClinicManagement.Api.Controllers
                     Role = s.Role,
                     IsActive = s.IsActive,
                     Username = s.User.Username,
+                    UserId = s.UserId,
                     CreatedAt = s.CreatedAt,
-                    AvatarUrl = s.AvatarUrl
+                    AvatarUrl = s.AvatarUrl,
+                    DepartmentId = s.DepartmentId,
+                    DepartmentName = s.Department != null ? s.Department.Name : null
                 })
                 .ToListAsync();
 
@@ -48,6 +52,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var staff = await _context.Staffs
                 .Include(s => s.User)
+                .Include(s => s.Department)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (staff == null)
@@ -61,7 +66,10 @@ namespace ClinicManagement.Api.Controllers
                 Role = staff.Role,
                 IsActive = staff.IsActive,
                 Username = staff.User.Username,
-                CreatedAt = staff.CreatedAt
+                UserId = staff.UserId,
+                CreatedAt = staff.CreatedAt,
+                DepartmentId = staff.DepartmentId,
+                DepartmentName = staff.Department != null ? staff.Department.Name : null
             });
         }
 
@@ -86,6 +94,11 @@ namespace ClinicManagement.Api.Controllers
             if (await _context.Staffs.AnyAsync(s => s.Code == dto.Code))
                 return BadRequest(new { message = "Staff code already exists." });
 
+            if (dto.Role == "Technician" && dto.DepartmentId == null)
+                return BadRequest(new { message = "Technician requires a department." });
+            if (dto.DepartmentId.HasValue && !await _context.Departments.AnyAsync(d => d.Id == dto.DepartmentId.Value))
+                return BadRequest(new { message = "Department not found." });
+
             var staff = new Staff
             {
                 Id = Guid.NewGuid(),
@@ -94,7 +107,8 @@ namespace ClinicManagement.Api.Controllers
                 Role = dto.Role,
                 UserId = dto.UserId,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                DepartmentId = dto.DepartmentId
             };
 
             await _context.Staffs.AddAsync(staff);
@@ -123,11 +137,17 @@ namespace ClinicManagement.Api.Controllers
                 await _context.Staffs.AnyAsync(s => s.Code == dto.Code))
                 return BadRequest(new { message = "Staff code already exists." });
 
+            if (dto.Role == "Technician" && dto.DepartmentId == null)
+                return BadRequest(new { message = "Technician requires a department." });
+            if (dto.DepartmentId.HasValue && !await _context.Departments.AnyAsync(d => d.Id == dto.DepartmentId.Value))
+                return BadRequest(new { message = "Department not found." });
+
             staff.Code = dto.Code;
             staff.FullName = dto.FullName;
             staff.Role = dto.Role;
             staff.UserId = dto.UserId;
             staff.IsActive = dto.IsActive;
+            staff.DepartmentId = dto.DepartmentId;
             staff.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -161,6 +181,7 @@ namespace ClinicManagement.Api.Controllers
 
             var staff = await _context.Staffs
                 .Include(s => s.User)
+                .Include(s => s.Department)
                 .FirstOrDefaultAsync(s => s.UserId == userId);
 
             if (staff == null) return NotFound(new { message = "Staff profile not found" });
@@ -173,9 +194,11 @@ namespace ClinicManagement.Api.Controllers
                 Role = staff.Role,
                 IsActive = staff.IsActive,
                 Username = staff.User.Username,
+                UserId = staff.UserId,
                 CreatedAt = staff.CreatedAt,
-               
-                AvatarUrl = staff.AvatarUrl
+                AvatarUrl = staff.AvatarUrl,
+                DepartmentId = staff.DepartmentId,
+                DepartmentName = staff.Department != null ? staff.Department.Name : null
             });
         }
         // PUT api/Staffs/profile

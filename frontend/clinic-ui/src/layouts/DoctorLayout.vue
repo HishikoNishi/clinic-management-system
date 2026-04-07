@@ -34,7 +34,7 @@ const logout = () => {
     <header class="topbar">
       <div class="brand" @click="go('/doctor/appointments')">
         <i class="bi bi-hospital me-2"></i>
-        Bác sĩ
+        Quản lý phòng khám
       </div>
       <button class="sidebar-toggle d-lg-none" type="button" @click="isSidebarOpen = !isSidebarOpen">
         <i :class="`bi ${isSidebarOpen ? 'bi-x-lg' : 'bi-list'}`"></i>

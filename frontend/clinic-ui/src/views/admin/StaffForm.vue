@@ -7,6 +7,7 @@ import {
   updateStaff
 } from "@/services/staffService"
 import { getUsers } from "@/services/userService"
+import api from "@/services/api"
 
 // ================= ROUTER =================
 const route = useRoute()
@@ -15,7 +16,7 @@ const id = route.params.id as string
 const isEdit = computed(() => !!id)
 
 // ================= ROLE =================
-const allowedRoles = ["Staff", "Cashier"] as const
+const allowedRoles = ["Staff", "Cashier", "Technician"] as const
 type Role = typeof allowedRoles[number]
 
 // ================= TYPES =================
@@ -25,17 +26,20 @@ type StaffForm = {
   fullName: string
   role: Role
   isActive: boolean
+  departmentId?: string | null
 }
 
 // ================= DATA =================
 const users = ref<any[]>([])
+const departments = ref<any[]>([])
 
 const form = reactive<StaffForm>({
   userId: "",
   code: "",
   fullName: "",
-  role: allowedRoles[0], // luôn hợp lệ
-  isActive: true
+  role: allowedRoles[0],
+  isActive: true,
+  departmentId: ""
 })
 
 // ================= LABEL =================
@@ -45,6 +49,8 @@ const roleLabel = (role: Role) => {
       return "Lễ tân"
     case "Cashier":
       return "Thu ngân"
+    case "Technician":
+      return "Kỹ thuật viên"
     default:
       return role
   }
@@ -60,9 +66,14 @@ onMounted(async () => {
       allowedRoles.includes(u.role)
     )
 
+    const resDeps = await api.get("/Departments")
+    departments.value = resDeps.data || []
+
     if (isEdit.value) {
       const res = await getStaffById(id)
-      Object.assign(form, res.data)
+      Object.assign(form, res.data, {
+        departmentId: res.data.departmentId || ""
+      })
     }
   } catch (error) {
     console.error("Lỗi load dữ liệu", error)
@@ -75,7 +86,8 @@ const isValid = computed(() => {
     form.userId &&
     form.code.trim() &&
     form.fullName.trim() &&
-    form.role
+    form.role &&
+    (form.role !== "Technician" || !!form.departmentId)
   )
 })
 
@@ -140,6 +152,20 @@ const handleSubmit = async () => {
           <select v-model="form.role" required>
             <option v-for="r in allowedRoles" :key="r" :value="r">
               {{ roleLabel(r) }}
+            </option>
+          </select>
+        </div>
+
+        <!-- DEPARTMENT FOR TECHNICIAN -->
+        <div
+          v-if="form.role === 'Technician'"
+          class="form-group"
+        >
+          <label>Khoa phụ trách</label>
+          <select v-model="form.departmentId" required>
+            <option value="">Chọn khoa</option>
+            <option v-for="d in departments" :key="d.id" :value="d.id">
+              {{ d.name }}
             </option>
           </select>
         </div>

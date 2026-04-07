@@ -1,0 +1,91 @@
+/**
+ * Page patterns
+ * Reusable, token-based building blocks for app pages.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page-eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-primary-dark);
+  margin-bottom: var(--space-2);
+}
+
+.page-title {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.page-subtitle {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  max-width: 60rem;
+}
+
+.page-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--color-bg-card), var(--color-bg-soft));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-toolbar .toolbar-left,
+.page-toolbar .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--color-text-muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 2rem;
+  color: var(--color-primary-dark);
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 991px) {
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+  .page-toolbar {
+    padding: var(--space-4);
+  }
+}
+

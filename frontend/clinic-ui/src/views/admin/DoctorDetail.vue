@@ -14,6 +14,8 @@ const showEdit = ref(false)
 const editForm = ref<any>({})
 const departments = ref<any[]>([])
 const specialties = ref<any[]>([])
+const uploadLoading = ref(false)
+const uploadError = ref('')
 
 onMounted(async () => {
   await loadDoctor()
@@ -136,6 +138,28 @@ const appointmentStatusLabel = (status: string) => {
   }
   return labels[status] || status
 }
+
+const onAvatarSelected = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploadError.value = ''
+  const form = new FormData()
+  form.append('file', file)
+  try {
+    uploadLoading.value = true
+    const res = await api.post(`/Doctor/${doctorId}/avatar`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    editForm.value.avatarUrl = res.data?.url
+    doctor.value.avatarUrl = res.data?.url
+  } catch (err: any) {
+    uploadError.value = err?.response?.data?.message || 'Tải ảnh thất bại'
+  } finally {
+    uploadLoading.value = false
+    input.value = ''
+  }
+}
 </script>
 
 <template>
@@ -233,7 +257,13 @@ const appointmentStatusLabel = (status: string) => {
         </select>
 
         <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
-        <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh avatar" />
+        <label class="form-label mt-2">Ảnh bác sĩ</label>
+        <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh (tuỳ chọn nếu không upload)" />
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <input type="file" accept="image/*" @change="onAvatarSelected" :disabled="uploadLoading" />
+          <span v-if="uploadLoading" class="small text-muted">Đang tải...</span>
+        </div>
+        <div v-if="uploadError" class="text-danger small mb-2">{{ uploadError }}</div>
         <img v-if="editForm.avatarUrl" :src="editForm.avatarUrl" class="avatar-preview mt-2" />
 
         <div class="text-end mt-3">

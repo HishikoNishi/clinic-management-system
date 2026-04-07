@@ -5,7 +5,7 @@
         <div class="card-header">
           <h6 class="mb-0">Thông tin bệnh nhân</h6>
         </div>
-        <div class="card-body">
+      <div class="card-body">
           <p class="mb-1"><span class="text-muted">Họ tên:</span> <strong>{{ patient.fullName }}</strong></p>
           <p class="mb-1"><span class="text-muted">Điện thoại:</span> <strong>{{ patient.phone }}</strong></p>
           <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
@@ -22,8 +22,38 @@
               <div class="small text-muted">{{ formatDate(h.createdAt) }}</div>
               <div class="fw-semibold">{{ h.diagnosis }}</div>
               <div class="text-muted">{{ h.note }}</div>
+              <button class="btn btn-link p-0 small" @click="viewHistoryDetail(h.id)">Xem chi tiết</button>
             </li>
           </ul>
+
+          <div v-if="historyDetail" class="mt-3 border rounded p-2 bg-light">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="fw-semibold">Hồ sơ ngày {{ formatDate(historyDetail.createdAt) }}</div>
+                <div class="small text-muted">Chẩn đoán: {{ historyDetail.diagnosis || '—' }}</div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" @click="historyDetail = null">Đóng</button>
+            </div>
+            <div class="small mt-1">Ghi chú: {{ historyDetail.note || '—' }}</div>
+            <div class="small mt-1">BHYT: {{ Math.round((historyDetail.insuranceCoverPercent || 0) * 100) }}%</div>
+            <div class="small mt-1">Phụ thu/Giảm trừ: {{ historyDetail.surcharge }} / {{ historyDetail.discount }}</div>
+            <div class="mt-2">
+              <div class="fw-semibold">Đơn thuốc</div>
+              <ul class="small mb-1">
+                <li v-for="(p, i) in historyDetail.prescriptionItems || []" :key="i">
+                  {{ p.medicineName }} ({{ p.dosage }}), SL {{ p.quantity }}
+                </li>
+                <li v-if="!historyDetail.prescriptionItems?.length" class="text-muted">Không có</li>
+              </ul>
+            </div>
+            <div class="mt-1">
+              <div class="fw-semibold">Xét nghiệm</div>
+              <ul class="small">
+                <li v-for="(t, i) in historyDetail.clinicalTests || []" :key="i">{{ t }}</li>
+                <li v-if="!historyDetail.clinicalTests?.length" class="text-muted">Không có</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -45,24 +75,25 @@
             <label class="form-check-label" for="testReq">Yêu cầu xét nghiệm</label>
           </div>
           <div v-if="form.requestClinicalTest" class="mt-2">
-            <div class="row g-2">
-              <div class="col-12 col-md-5">
-                <select v-model="form.clinicalTestType" class="form-select">
-                  <option value="Blood">Xét nghiệm máu</option>
-                  <option value="XRay">X-quang</option>
-                  <option value="Ultrasound">Siêu âm</option>
-                  <option value="Other">Khác</option>
-                </select>
-              </div>
-              <div class="col-12 col-md-7">
-                <input
-                  v-model="form.clinicalTestName"
-                  type="text"
-                  class="form-control"
-                  :placeholder="form.clinicalTestType === 'Other' ? 'Mô tả xét nghiệm' : 'Ghi chú (ví dụ: công thức máu, tim phổi...)'"
-                />
+            <div class="mb-2">
+              <label class="form-label small mb-1">Chọn nhanh loại xét nghiệm</label>
+              <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-secondary btn-sm" @click="addClinicalTest(testTypeLabel('Blood'))">Xét nghiệm máu</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" @click="addClinicalTest(testTypeLabel('XRay'))">X-quang</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" @click="addClinicalTest(testTypeLabel('Ultrasound'))">Siêu âm</button>
               </div>
             </div>
+            <div class="list-group">
+              <div class="list-group-item d-flex align-items-center gap-2" v-for="(t, idx) in form.clinicalTests" :key="idx">
+                <input v-model="form.clinicalTests[idx]" type="text" class="form-control" placeholder="Nhập tên xét nghiệm" />
+                <button class="btn btn-outline-danger btn-sm" type="button" @click="removeClinicalTest(idx)" :disabled="form.clinicalTests.length === 1">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-link p-0 mt-2" type="button" @click="addClinicalTest('')">
+              + Thêm xét nghiệm
+            </button>
           </div>
         </div>
       </div>
@@ -133,6 +164,37 @@
       </div>
     </div>
 
+    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Xét nghiệm đã yêu cầu</h6>
+        <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
+          Làm mới
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Tên</th>
+              <th>Trạng thái</th>
+              <th>Kết quả</th>
+              <th>KTV</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="t in clinicalTestsDetail" :key="t.id">
+              <td>{{ t.testName }}</td>
+              <td><span :class="['badge', labStatusClass(t.status)]">{{ labStatusLabel(t.status) }}</span></td>
+              <td>{{ t.result || '—' }}</td>
+              <td>{{ t.technicianName || '—' }}</td>
+              <td class="text-muted small">{{ formatDate(t.resultAt || t.createdAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="d-flex justify-content-end gap-2 mt-3">
       <button class="btn btn-outline-secondary" @click="goBack">Quay lại</button>
       <button class="btn btn-primary" @click="submit" :disabled="saving">
@@ -159,8 +221,12 @@ const appointmentId = route.params.id as string
 const appointment = reactive<any>({})
 const patient = reactive<any>({})
 const history = ref<any[]>([])
+const historyDetail = ref<any | null>(null)
+const clinicalTestsDetail = ref<any[]>([])
+const currentMedicalRecordId = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
+const dataFromRecord = ref<any | null>(null)
 
 const form = reactive({
   diagnosis: "",
@@ -168,6 +234,7 @@ const form = reactive({
   requestClinicalTest: false,
   clinicalTestType: "Blood",
   clinicalTestName: "",
+  clinicalTests: [""],
   vitals: {
     heartRate: "",
     bloodPressure: "",
@@ -194,6 +261,19 @@ const removeRow = (idx: number) => {
   form.prescriptionItems.splice(idx, 1)
 }
 
+const addClinicalTest = (name: string) => {
+  if (!form.clinicalTests) form.clinicalTests = [""]
+  form.clinicalTests.push(name)
+}
+
+const removeClinicalTest = (idx: number) => {
+  if (form.clinicalTests.length === 1) {
+    form.clinicalTests[0] = ""
+    return
+  }
+  form.clinicalTests.splice(idx, 1)
+}
+
 const formatDate = (d: string) => {
   return d ? new Date(d).toLocaleString() : ""
 }
@@ -215,10 +295,27 @@ const testTypeLabel = (type: string) => {
   return map[type] || "Xét nghiệm"
 }
 
+const labStatusLabel = (s: string) => {
+  const map: Record<string, string> = {
+    Pending: "Chờ thực hiện",
+    InProgress: "Đang làm",
+    Completed: "Đã có kết quả"
+  }
+  return map[s] || s
+}
+
+const labStatusClass = (s: string) => {
+  if (s === "Completed") return "bg-success-subtle text-success"
+  if (s === "InProgress") return "bg-info-subtle text-info"
+  return "bg-warning-subtle text-warning"
+}
+
 const loadDetail = async () => {
   try {
     const res = await api.get(`/doctor/DoctorAppointments/${appointmentId}/examination`)
     const data = res.data
+    currentMedicalRecordId.value = data.currentMedicalRecordId || null
+    dataFromRecord.value = data
     Object.assign(appointment, data.appointment || {})
     Object.assign(patient, {
       fullName: data.appointment?.fullName,
@@ -226,9 +323,49 @@ const loadDetail = async () => {
       dateOfBirth: data.appointment?.dateOfBirth
     })
     history.value = data.medicalHistory || []
+
+    // Prefill from current medical record if exists
+    if (data.diagnosis) form.diagnosis = data.diagnosis
+    if (data.note) form.notes = data.note
+    if (Array.isArray(data.prescriptionItems) && data.prescriptionItems.length) {
+      form.prescriptionItems = data.prescriptionItems.map((p: any) => ({
+        medicineName: p.medicineName || "",
+        dosage: p.dosage || "",
+        quantity: p.quantity || 1
+      }))
+    }
+    if (Array.isArray(data.clinicalTests) && data.clinicalTests.length) {
+      form.requestClinicalTest = true
+      form.clinicalTestType = "Other"
+      form.clinicalTestName = ""
+      form.clinicalTests = data.clinicalTests.map((t: any) => t.testName || "")
+    }
+
+    if (currentMedicalRecordId.value) {
+      await loadClinicalTestsDetail(currentMedicalRecordId.value)
+    }
   } catch (err: any) {
     console.error(err)
     error.value = err?.response?.data?.message || "Không tải được thông tin khám"
+  }
+}
+
+const loadClinicalTestsDetail = async (recordId: string) => {
+  try {
+    const { data } = await api.get(`/ClinicalTests/medical-record/${recordId}`)
+    clinicalTestsDetail.value = data || []
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const viewHistoryDetail = async (recordId: string) => {
+  try {
+    const { data } = await api.get(`/medical-record/${recordId}`)
+    historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === recordId)?.createdAt }
+  } catch (err: any) {
+    console.error(err)
+    alert(err?.response?.data?.message || "Không tải được hồ sơ chi tiết")
   }
 }
 
@@ -238,9 +375,15 @@ const submit = async () => {
     return
   }
 
-  if (form.requestClinicalTest && form.clinicalTestType === "Other" && !form.clinicalTestName.trim()) {
-    alert("Vui lòng mô tả xét nghiệm cần thực hiện")
-    return
+  if (form.requestClinicalTest) {
+    const anyName =
+      form.clinicalTests.some(t => t && t.trim()) ||
+      (form.clinicalTestType !== "Other" && form.clinicalTestType) ||
+      (form.clinicalTestType === "Other" && form.clinicalTestName.trim())
+    if (!anyName) {
+      alert("Vui lòng nhập ít nhất một xét nghiệm")
+      return
+    }
   }
 
   const prescriptionItems = form.prescriptionItems
@@ -263,18 +406,39 @@ const submit = async () => {
 
     const combinedNotes = [form.notes, vitalsNote].filter(Boolean).join(" --- ")
 
+    const clinicalTestNames = form.requestClinicalTest
+      ? (form.clinicalTests
+          .filter(t => t && t.trim())
+          .map(t => t.trim())
+          .concat(
+            form.clinicalTestType === "Other" && form.clinicalTestName.trim()
+              ? [`${testTypeLabel(form.clinicalTestType)}: ${form.clinicalTestName.trim()}`]
+              : form.clinicalTestType !== "Other"
+              ? [testTypeLabel(form.clinicalTestType)]
+              : []
+          ))
+      : []
+
     await api.post("/medical-record/examination", {
       appointmentId,
       diagnosis: form.diagnosis,
       notes: combinedNotes,
       requestClinicalTest: form.requestClinicalTest,
-      clinicalTestName: form.requestClinicalTest
-        ? `${testTypeLabel(form.clinicalTestType)}${form.clinicalTestName ? ": " + form.clinicalTestName.trim() : ""}`
-        : null,
-      prescriptionItems
+      clinicalTestNames,
+      prescriptionItems,
+      // giữ lại bảo hiểm/phụ thu/giảm trừ đã có (nếu không muốn đổi)
+      insuranceCoverPercent: dataFromRecord.value?.insuranceCoverPercent ?? 0,
+      surcharge: dataFromRecord.value?.surcharge ?? 0,
+      discount: dataFromRecord.value?.discount ?? 0
     })
     alert("Đã lưu hồ sơ khám")
-    router.push("/doctor/appointments")
+    await loadDetail()
+    // reset flag để tránh cảm giác lưu xong vẫn bật ghi chú xét nghiệm cũ
+    if (!form.requestClinicalTest) {
+      form.clinicalTestType = "Blood"
+      form.clinicalTestName = ""
+      form.clinicalTests = [""]
+    }
   } catch (err: unknown) {
   const errorAxios = err as AxiosError<any>
   console.error(err)

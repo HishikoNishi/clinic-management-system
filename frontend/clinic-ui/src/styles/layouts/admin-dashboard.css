@@ -1,0 +1,147 @@
+/**
+ * Admin dashboard: charts (CSS-only, token colors)
+ */
+
+.admin-dash-charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+@media (min-width: 992px) {
+  .admin-dash-charts {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+.admin-chart-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-chart-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.admin-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-height: 180px;
+  padding-top: var(--space-2);
+}
+
+.admin-bar-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-bar {
+  width: 100%;
+  max-width: 28px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 4px;
+  transition: opacity var(--transition-fast);
+}
+
+.admin-bar:hover {
+  opacity: 0.88;
+}
+
+.admin-bar-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.admin-bar-value {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.admin-status-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.admin-status-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+.admin-status-name {
+  color: var(--color-text-secondary);
+}
+
+.admin-status-track {
+  height: 10px;
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.admin-status-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+  min-width: 2px;
+  transition: width var(--transition-slow);
+}
+
+.admin-status-fill--pending {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.admin-status-fill--confirmed {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+}
+
+.admin-status-fill--assigned {
+  background: linear-gradient(90deg, #6366f1, #4f46e5);
+}
+
+.admin-status-fill--checkedin {
+  background: linear-gradient(90deg, #0284c7, #0369a1);
+}
+
+.admin-status-fill--completed {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+}
+
+.admin-status-fill--cancelled {
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
+.admin-status-count {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  min-width: 2rem;
+  text-align: right;
+}
+
+.admin-dash-loading {
+  opacity: 0.65;
+  pointer-events: none;
+}

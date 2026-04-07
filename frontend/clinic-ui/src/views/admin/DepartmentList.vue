@@ -1,14 +1,18 @@
 <template>
-  <div class="container py-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="container py-3 page">
+    <div class="page-header">
       <div>
-        <h2 class="mb-1">Quản lý khoa</h2>
-        <p class="text-muted mb-0">Danh sách khoa, thêm/sửa/xóa.</p>
+        <div class="page-eyebrow">Admin</div>
+        <h2 class="page-title mb-0">Quản lý khoa</h2>
+        <p class="page-subtitle">Danh sách khoa, thêm/sửa/xóa.</p>
       </div>
-      <button class="btn btn-primary" @click="openCreate">+ Thêm khoa</button>
+      <button class="btn btn-primary" @click="openCreate">
+        <i class="bi bi-plus-lg me-1"></i>
+        Thêm khoa
+      </button>
     </div>
 
-    <div class="card">
+    <div class="card page-card">
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead class="table-light">

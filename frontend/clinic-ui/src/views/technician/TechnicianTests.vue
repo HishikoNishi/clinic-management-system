@@ -1,71 +1,238 @@
-﻿<template>
+<template>
   <div class="tech-tests">
-    <div class="card shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-          <h5 class="mb-0">Danh sách xét nghiệm</h5>
-          <small class="text-muted">Các yêu cầu bác sĩ gửi xuống cho kỹ thuật viên</small>
+    <div class="card tech-card">
+      <div class="card-header tech-header">
+        <div class="tech-title">
+          <div class="tech-eyebrow">Technician</div>
+          <h5 class="mb-1">Xét nghiệm</h5>
+          <small class="text-muted">Chỉ hiển thị các yêu cầu đã thanh toán</small>
         </div>
-        <button class="btn btn-outline-secondary btn-sm" @click="loadTests">
-          <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
-        </button>
+
+        <div class="tech-controls">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Chế độ xem">
+            <button
+              type="button"
+              class="btn"
+              :class="viewMode === 'pending' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="switchMode('pending')"
+            >
+              <i class="bi bi-list-check me-1"></i>
+              Đang chờ
+            </button>
+            <button
+              type="button"
+              class="btn"
+              :class="viewMode === 'history' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="switchMode('history')"
+            >
+              <i class="bi bi-clock-history me-1"></i>
+              Lịch sử
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="tech-select">
+              <i class="bi bi-building"></i>
+              <select
+                class="form-select form-select-sm"
+                v-model="selectedDepartmentId"
+                @change="handleDepartmentChange"
+                aria-label="Chọn khoa"
+              >
+                <option value="">Tất cả khoa</option>
+                <option v-for="d in departments" :key="d.id" :value="d.id">
+                  {{ d.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="tech-search">
+              <i class="bi bi-search"></i>
+              <input
+                v-model="patientQuery"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Tìm bệnh nhân (tên / SĐT)..."
+              />
+            </div>
+
+            <button class="btn btn-outline-secondary btn-sm" :disabled="loading" @click="loadTests">
+              <span v-if="loading" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              <i v-else class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+              Làm mới
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="card-body p-0">
-        <div v-if="tests.length === 0" class="p-3 text-center text-muted">
-          Chưa có yêu cầu xét nghiệm.
+        <div v-if="uiError" class="alert alert-danger m-3 mb-0">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ uiError }}
         </div>
 
-        <div v-else class="table-responsive">
-          <table class="table table-striped align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>Tên xét nghiệm</th>
-                <th>Medical Record</th>
-                <th>Trạng thái</th>
-                <th style="width: 26%;">Kết quả</th>
-                <th style="width: 18%;">Kỹ thuật viên</th>
-                <th style="width: 90px;"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in tests" :key="t.id">
-                <td class="fw-semibold">{{ t.testName }}</td>
-                <td class="text-monospace small">{{ t.medicalRecordId }}</td>
-                <td>
-                  <span :class="['badge', t.status === 'Completed' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning']">
-                    {{ t.status === 'Completed' ? 'Đã có kết quả' : 'Chờ thực hiện' }}
+        <div class="row g-0 tech-shell">
+          <div class="col-12 col-lg-4 tech-pane border-end">
+            <div class="tech-pane-header">
+              <div class="tech-pane-title">
+                <span class="fw-semibold">Bệnh nhân</span>
+                <span class="badge text-bg-light border ms-2">{{ filteredPatients.length }}</span>
+              </div>
+              <div class="text-muted small">
+                {{ viewMode === 'pending' ? 'Danh sách chờ xét nghiệm' : 'Danh sách đã hoàn tất' }}
+              </div>
+            </div>
+
+            <ul class="list-group list-group-flush tech-list">
+              <li v-if="loadingPatients" class="list-group-item text-muted small">
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                Đang tải danh sách bệnh nhân...
+              </li>
+
+              <li
+                v-for="p in filteredPatients"
+                :key="`${p.patientId}-${p.medicalRecordId}`"
+                :class="[
+                  'list-group-item list-group-item-action tech-patient',
+                  selectedPatientId === p.patientId?.toString() ? 'active' : ''
+                ]"
+                role="button"
+                @click="selectPatient(p)"
+              >
+                <div class="d-flex align-items-start justify-content-between gap-2">
+                  <div class="min-w-0">
+                    <div class="fw-semibold text-truncate">{{ p.fullName || '—' }}</div>
+                    <div class="text-muted small text-truncate">
+                      <i class="bi bi-telephone me-1" aria-hidden="true"></i>{{ p.phone || '—' }}
+                    </div>
+                    <div class="text-muted small text-truncate">
+                      <i class="bi bi-file-earmark-medical me-1" aria-hidden="true"></i>{{ p.medicalRecordId || '—' }}
+                    </div>
+                  </div>
+                  <span v-if="viewMode === 'pending'" class="badge rounded-pill text-bg-primary">
+                    {{ p.pendingCount ?? 0 }}
                   </span>
-                </td>
-                <td>
+                </div>
+              </li>
+
+              <li
+                v-if="!loadingPatients && filteredPatients.length === 0"
+                class="list-group-item text-muted small"
+              >
+                {{ viewMode === 'pending' ? 'Không có bệnh nhân chờ xét nghiệm.' : 'Không có lịch sử phù hợp.' }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-12 col-lg-8 tech-content">
+            <div class="tech-content-header">
+              <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                <div class="min-w-0">
+                  <div class="fw-semibold text-truncate">
+                    {{ selectedPatient?.fullName ? `Bệnh nhân: ${selectedPatient.fullName}` : 'Chưa chọn bệnh nhân' }}
+                  </div>
+                  <div class="text-muted small text-truncate">
+                    <span v-if="selectedPatient?.phone"><i class="bi bi-telephone me-1"></i>{{ selectedPatient.phone }}</span>
+                    <span v-if="selectedPatient?.phone && selectedPatient?.medicalRecordId" class="mx-2">·</span>
+                    <span v-if="selectedPatient?.medicalRecordId"><i class="bi bi-file-earmark-medical me-1"></i>{{ selectedPatient.medicalRecordId }}</span>
+                  </div>
+                </div>
+
+                <div class="tech-search tech-search--tests">
+                  <i class="bi bi-funnel"></i>
                   <input
-                    v-model="t.result"
+                    v-model="testQuery"
+                    type="text"
                     class="form-control form-control-sm"
-                    :disabled="t.status === 'Completed'"
-                    placeholder="Nhập kết quả..."
+                    placeholder="Lọc xét nghiệm (tên / record)..."
                   />
-                </td>
-                <td>
-                  <input
-                    v-model="t.technicianName"
-                    class="form-control form-control-sm"
-                    :disabled="t.status === 'Completed'"
-                    placeholder="Tên KTV..."
-                  />
-                </td>
-                <td class="text-end">
-                  <button
-                    v-if="t.status !== 'Completed'"
-                    class="btn btn-primary btn-sm"
-                    @click.stop="updateResult(t)"
-                  >
-                    <i class="bi bi-save me-1"></i>Lưu
-                  </button>
-                  <span v-else class="text-muted small">Đã lưu</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="loadingTests" class="tech-empty">
+              <div class="spinner-border text-primary" role="status" aria-label="Đang tải"></div>
+              <div class="text-muted mt-2">Đang tải danh sách xét nghiệm...</div>
+            </div>
+
+            <div v-else-if="!selectedPatientId" class="tech-empty">
+              <i class="bi bi-person-lines-fill tech-empty-icon" aria-hidden="true"></i>
+              <div class="fw-semibold">Chọn bệnh nhân</div>
+              <div class="text-muted">Chọn bệnh nhân ở danh sách bên trái để xem yêu cầu xét nghiệm.</div>
+            </div>
+
+            <div v-else-if="filteredTests.length === 0" class="tech-empty">
+              <i class="bi bi-clipboard2-check tech-empty-icon" aria-hidden="true"></i>
+              <div class="fw-semibold">Không có yêu cầu phù hợp</div>
+              <div class="text-muted">
+                {{ viewMode === 'pending' ? 'Bệnh nhân này chưa có xét nghiệm chờ / đang làm.' : 'Không có kết quả trong lịch sử.' }}
+              </div>
+            </div>
+
+            <div v-else class="table-responsive tech-table">
+              <table class="table align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tên xét nghiệm</th>
+                    <th>Medical Record</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 26%;">Kết quả</th>
+                    <th style="width: 18%;">Kỹ thuật viên</th>
+                    <th style="width: 90px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="t in filteredTests" :key="t.id" :class="{ 'tech-row-completed': t.status === 'Completed' }">
+                    <td class="fw-semibold">{{ t.testName }}</td>
+                    <td class="text-monospace small">{{ t.medicalRecordId }}</td>
+                    <td>
+                      <span :class="['badge', statusClass(t.status)]">
+                        {{ statusLabel(t.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <input
+                        v-model="t.result"
+                        class="form-control form-control-sm"
+                        :disabled="t.status === 'Completed'"
+                        placeholder="Nhập kết quả..."
+                      />
+                    </td>
+                    <td>
+                      <input
+                        v-model="t.technicianName"
+                        class="form-control form-control-sm"
+                        :disabled="t.status === 'Completed'"
+                        placeholder="Tên KTV..."
+                      />
+                    </td>
+                    <td class="text-end">
+                      <div class="d-flex gap-1 justify-content-end">
+                        <button
+                          v-if="t.status === 'Pending'"
+                          class="btn btn-outline-secondary btn-sm"
+                          @click.stop="startTest(t)"
+                          :disabled="savingId === t.id"
+                        >
+                          Bắt đầu
+                        </button>
+                        <button
+                          v-if="t.status !== 'Completed'"
+                          class="btn btn-primary btn-sm"
+                          @click.stop="updateResult(t)"
+                          :disabled="savingId === t.id"
+                        >
+                          <span v-if="savingId === t.id" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                          <i v-else class="bi bi-save me-1" aria-hidden="true"></i>Lưu
+                        </button>
+                        <span v-else class="text-muted small">Đã lưu</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -73,45 +240,273 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { computed, ref, onMounted, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 
 const tests = ref<any[]>([])
+const patients = ref<any[]>([])
+const historyPatients = ref<any[]>([])
+const departments = ref<any[]>([])
+const selectedDepartmentId = ref<string>("")
+const selectedPatientId = ref<string | null>(null)
+const selectedRecordId = ref<string | null>(null)
+const route = useRoute()
+const router = useRouter()
+const viewMode = ref<"pending" | "history">(route.path.includes("/history") ? "history" : "pending")
+const uiError = ref<string>("")
+const loadingPatients = ref(false)
+const loadingTests = ref(false)
+const savingId = ref<string | number | null>(null)
+const patientQuery = ref("")
+const testQuery = ref("")
+
+const loading = computed(() => loadingPatients.value || loadingTests.value)
+
+const currentPatients = computed(() =>
+  viewMode.value === "pending" ? patients.value : historyPatients.value
+)
+
+const selectedPatient = computed(() => {
+  if (!selectedPatientId.value) return null
+  return currentPatients.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value) || null
+})
+
+const filteredPatients = computed(() => {
+  const q = patientQuery.value.trim().toLowerCase()
+  if (!q) return currentPatients.value
+  return currentPatients.value.filter((p: any) => {
+    const name = (p.fullName || "").toString().toLowerCase()
+    const phone = (p.phone || "").toString().toLowerCase()
+    const record = (p.medicalRecordId || "").toString().toLowerCase()
+    return name.includes(q) || phone.includes(q) || record.includes(q)
+  })
+})
+
+const filteredTests = computed(() => {
+  const q = testQuery.value.trim().toLowerCase()
+  if (!q) return tests.value
+  return tests.value.filter((t: any) => {
+    const name = (t.testName || "").toString().toLowerCase()
+    const record = (t.medicalRecordId || "").toString().toLowerCase()
+    const status = (t.status || "").toString().toLowerCase()
+    return name.includes(q) || record.includes(q) || status.includes(q)
+  })
+})
+
+const loadDepartments = async () => {
+  try {
+    const res = await api.get("/Departments")
+    departments.value = res.data || []
+  } catch (err: any) {
+    console.log(err)
+    uiError.value = err?.response?.data?.message || "Không tải được danh sách khoa."
+  }
+}
 
 const loadTests = async () => {
   try {
-    const res = await api.get("/ClinicalTests")
+    uiError.value = ""
+    await Promise.all([loadPendingPatients(), loadHistoryPatients()])
+    if (viewMode.value === "pending") {
+      await loadTestsForSelected("Pending,InProgress", patients)
+    } else {
+      await loadTestsForSelected("Completed", historyPatients)
+    }
+  } catch (err: any) {
+    console.log(err)
+    uiError.value = err?.response?.data?.message || "Không tải được danh sách xét nghiệm."
+  }
+}
+
+const loadPendingPatients = async () => {
+  try {
+    loadingPatients.value = true
+    const pendingUrl = selectedDepartmentId.value
+      ? "/ClinicalTests/pending-patients/by-department"
+      : "/ClinicalTests/pending-patients"
+
+    const resPatient = await api.get(pendingUrl, {
+      params: selectedDepartmentId.value
+        ? { departmentId: selectedDepartmentId.value, paidOnly: true }
+        : {}
+    })
+    patients.value = resPatient.data || []
+  } finally {
+    loadingPatients.value = false
+  }
+}
+
+const loadHistoryPatients = async () => {
+  try {
+    loadingPatients.value = true
+    const res = await api.get("/ClinicalTests", {
+      params: {
+        status: "Completed",
+        paidOnly: true,
+        departmentId: selectedDepartmentId.value || undefined
+      }
+    })
+    const list = Array.isArray(res.data) ? res.data : []
+    const grouped = new Map<string, any>()
+    list.forEach((t: any) => {
+      const pid = t.patientId || "unknown"
+      if (!grouped.has(pid)) {
+        grouped.set(pid, {
+          patientId: t.patientId,
+          fullName: t.patientName || "",
+          phone: t.patientPhone || "",
+          medicalRecordId: t.medicalRecordId,
+          pendingCount: 0
+        })
+      }
+    })
+    historyPatients.value = Array.from(grouped.values())
+  } finally {
+    loadingPatients.value = false
+  }
+}
+
+const loadTestsForSelected = async (status: string, sourcePatients: any) => {
+  loadingTests.value = true
+  if (sourcePatients.value.length) {
+    const found = sourcePatients.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value)
+    if (!found) {
+      selectedPatientId.value = sourcePatients.value[0].patientId?.toString() || null
+      selectedRecordId.value = sourcePatients.value[0].medicalRecordId
+    }
+  } else {
+    selectedPatientId.value = null
+    selectedRecordId.value = null
+    tests.value = []
+    loadingTests.value = false
+    return
+  }
+
+  if (selectedPatientId.value) {
+    const res = await api.get("/ClinicalTests", {
+      params: {
+        status,
+        patientId: selectedPatientId.value,
+        paidOnly: true,
+        departmentId: selectedDepartmentId.value || undefined
+      }
+    })
     const normalized = res.data.map((t: any) => ({
       ...t,
       status: t.status || (t.result ? "Completed" : "Pending")
     }))
     tests.value = normalized.sort((a: any, b: any) => {
+      if (status === "Completed") {
+        return (new Date(b.resultAt || b.createdAt).getTime() - new Date(a.resultAt || a.createdAt).getTime())
+      }
       if (a.status === b.status) return 0
       return a.status === "Pending" ? -1 : 1
     })
-  } catch (err) {
-    console.log(err)
+  } else {
+    tests.value = []
+  }
+  loadingTests.value = false
+}
+
+const handleDepartmentChange = async () => {
+  selectedPatientId.value = null
+  selectedRecordId.value = null
+  await loadTests()
+}
+
+const selectPatient = async (p: any) => {
+  selectedPatientId.value = p.patientId?.toString() || null
+  selectedRecordId.value = p.medicalRecordId
+  if (viewMode.value === "pending") {
+    await loadTestsForSelected("Pending,InProgress", patients)
+  } else {
+    await loadTestsForSelected("Completed", historyPatients)
   }
 }
 
 const updateResult = async (test: any) => {
   if (!test.result || !test.technicianName) {
-    alert("Nhập đầy đủ thông tin")
+    uiError.value = "Vui lòng nhập đầy đủ kết quả và tên kỹ thuật viên."
     return
   }
 
-  await api.patch(`/ClinicalTests/${test.id}/result`, {
-    result: test.result,
-    technicianName: test.technicianName
-  })
-
-  alert("Đã lưu kết quả")
-  loadTests()
+  try {
+    uiError.value = ""
+    savingId.value = test.id
+    await api.patch(`/ClinicalTests/${test.id}/result`, {
+      result: test.result,
+      technicianName: test.technicianName
+    })
+    await loadTests()
+  } catch (err: any) {
+    console.log(err)
+    uiError.value = err?.response?.data?.message || "Không thể lưu kết quả. Vui lòng thử lại."
+  } finally {
+    savingId.value = null
+  }
 }
 
-onMounted(() => {
-  loadTests()
+const startTest = async (test: any) => {
+  try {
+    uiError.value = ""
+    savingId.value = test.id
+    await api.patch(`/ClinicalTests/${test.id}/start`, {
+      technicianName: test.technicianName
+    })
+    await loadTests()
+  } catch (err: any) {
+    console.log(err)
+    uiError.value = err?.response?.data?.message || "Không thể bắt đầu xét nghiệm. Vui lòng thử lại."
+  } finally {
+    savingId.value = null
+  }
+}
+
+const switchMode = async (mode: "pending" | "history") => {
+  if (viewMode.value === mode) return
+  viewMode.value = mode
+  selectedPatientId.value = null
+  selectedRecordId.value = null
+  await loadTests()
+  const targetPath = mode === "history" ? "/technician/tests/history" : "/technician/tests"
+  if (route.path !== targetPath) {
+    router.push(targetPath)
+  }
+}
+
+const statusLabel = (s: string) => {
+  const map: Record<string, string> = {
+    Pending: "Chờ thực hiện",
+    InProgress: "Đang làm",
+    Completed: "Đã có kết quả"
+  }
+  return map[s] || s
+}
+
+const statusClass = (s: string) => {
+  if (s === "Completed") return "bg-success-subtle text-success"
+  if (s === "InProgress") return "bg-info-subtle text-info"
+  return "bg-warning-subtle text-warning"
+}
+
+onMounted(async () => {
+  await loadDepartments()
+  await loadTests()
 })
+
+watch(
+  () => route.path,
+  async (newPath) => {
+    const mode = newPath.includes("/history") ? "history" : "pending"
+    if (viewMode.value !== mode) {
+      viewMode.value = mode
+      selectedPatientId.value = null
+      selectedRecordId.value = null
+      await loadTests()
+    }
+  }
+)
 </script>
 
 <style src="@/styles/layouts/technician-tests.css"></style>

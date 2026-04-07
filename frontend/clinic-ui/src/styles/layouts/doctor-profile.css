@@ -1,11 +1,12 @@
 .profile-card {
-  background: #fff;
-  border: none;
-  border-radius: 14px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-top: 6px solid var(--color-primary);
+  border-radius: var(--radius-2xl);
   padding: 2rem;
   max-width: 600px; /* nhỏ gọn hơn */
   margin: 2rem auto;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
   text-align: center;
 }
 
@@ -13,7 +14,7 @@
   margin-bottom: 1.5rem;
   font-weight: 700;
   font-size: 1.8rem; /* chữ to hơn */
-  color: var(--color-primary, #0066cc);
+  color: var(--color-text-primary);
 }
 
 .avatar {
@@ -21,10 +22,10 @@
   height: 220px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid var(--color-primary, #0066cc);
+  border: 5px solid var(--color-primary);
   margin: 0 auto 1.5rem auto;
   display: block;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: var(--shadow-lg);
 }
 
 .profile-info {
@@ -36,11 +37,11 @@
   margin: 0.5rem 0;
   font-size: 1.2rem; /* chữ to hơn */
   line-height: 1.6;
-  color: #333;
+  color: var(--color-text-main);
 }
 
 .profile-info strong {
-  color: #000;
+  color: var(--color-text-primary);
 }
 
 .profile-actions {
@@ -73,20 +74,21 @@
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--color-bg-card);
   border-radius: 12px;
   padding: 2rem;
   width: 420px;
   max-width: 90%;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  box-shadow: var(--shadow-xl);
   text-align: center;
+  border: 1px solid var(--color-border);
 }
 
 .modal-box h4 {
   margin-bottom: 1rem;
   font-weight: 600;
   font-size: 1.4rem;
-  color: var(--color-primary, #0066cc);
+  color: var(--color-text-primary);
 }
 
 .modal-actions {

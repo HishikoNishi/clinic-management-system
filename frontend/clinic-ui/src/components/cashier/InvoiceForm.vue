@@ -7,6 +7,7 @@ const props = defineProps<{
   appointmentId?: string
   invoiceAmount?: number | null
   isPaid?: boolean
+  insuranceCoverPercent?: number
   loading?: boolean
 }>()
 
@@ -17,7 +18,7 @@ const emit = defineEmits<{
 
 const amount = ref<number | null>(null)
 const insuranceCode = ref('')
-const insuranceCoverPercent = ref<number>(0)
+const insuranceCoverPercent = ref<number | null>(null)
 const surcharge = ref<number>(0)
 const discount = ref<number>(0)
 const payMethod = ref<PaymentMethod>('cash')
@@ -27,6 +28,7 @@ const canCreate = computed(() =>
 )
 
 const disabled = computed(() => props.isPaid || props.loading)
+const insuranceLocked = computed(() => (props.insuranceCoverPercent ?? 0) > 0)
 
 const handleCreate = () => {
   if (!amount.value || amount.value <= 0) return
@@ -34,12 +36,17 @@ const handleCreate = () => {
 }
 
 const handleRecalc = () => {
-  emit('recalc', {
-    insuranceCode: insuranceCode.value || undefined,
-    insuranceCoverPercent: (insuranceCoverPercent.value || 0) / 100,
+  const payload: any = {
     surcharge: surcharge.value || 0,
     discount: discount.value || 0
-  })
+  }
+  if (!insuranceLocked.value) {
+    payload.insuranceCode = insuranceCode.value || undefined
+    if (insuranceCoverPercent.value && insuranceCoverPercent.value > 0) {
+      payload.insuranceCoverPercent = insuranceCoverPercent.value / 100
+    }
+  }
+  emit('recalc', payload)
 }
 
 const autofillFromInvoice = computed(() => formatCurrency(props.invoiceAmount ?? undefined))
@@ -75,11 +82,12 @@ const autofillFromInvoice = computed(() => formatCurrency(props.invoiceAmount ??
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Mã bảo hiểm</label>
-          <input v-model="insuranceCode" type="text" class="form-control" :disabled="disabled" />
+          <input v-model="insuranceCode" type="text" class="form-control" :disabled="disabled || insuranceLocked" />
+          <small v-if="insuranceLocked" class="text-success">Đã áp dụng BH trước đó</small>
         </div>
         <div class="col-md-6">
           <label class="form-label">Bảo hiểm chi trả (%)</label>
-          <input v-model.number="insuranceCoverPercent" type="number" min="0" max="100" class="form-control" :disabled="disabled" />
+          <input v-model.number="insuranceCoverPercent" type="number" min="0" max="100" class="form-control" :disabled="disabled || insuranceLocked" />
         </div>
         <div class="col-md-6">
           <label class="form-label">Phụ thu (VND)</label>

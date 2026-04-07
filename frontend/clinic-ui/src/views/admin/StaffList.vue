@@ -39,7 +39,8 @@ const toggleStatus = async (staff: any) => {
     code: staff.code,
     fullName: staff.fullName,
     role: staff.role,
-    isActive: !staff.isActive
+    isActive: !staff.isActive,
+    departmentId: staff.departmentId
   })
 
   loadStaffs()

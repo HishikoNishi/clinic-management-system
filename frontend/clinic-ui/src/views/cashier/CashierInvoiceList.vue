@@ -38,18 +38,22 @@ watch(filterStatus, loadData)
 </script>
 
 <template>
-  <div class="container py-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="mb-0">Danh sách hóa đơn</h2>
-      <div class="d-flex gap-2">
+  <div class="container py-4 page">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">Cashier</div>
+        <h2 class="page-title mb-0">Danh sách hóa đơn</h2>
+        <p class="page-subtitle">Tìm theo mã hóa đơn / mã lịch khám / tên bệnh nhân và lọc theo trạng thái thanh toán.</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
         <input v-model="searchText" type="search" class="form-control" placeholder="Tìm theo mã / tên bệnh nhân" @input="filteredList" />
-        <select v-model="filterStatus" class="form-select">
+        <select v-model="filterStatus" class="form-select" style="min-width: 180px;">
           <option value="all">Tất cả</option>
           <option value="paid">Đã thanh toán</option>
           <option value="unpaid">Chưa thanh toán</option>
         </select>
         <button class="btn btn-outline-secondary" :disabled="listLoading" @click="loadData">
-          <span v-if="listLoading" class="spinner-border spinner-border-sm me-1" />Làm mới
+          <span v-if="listLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true" />Làm mới
         </button>
       </div>
     </div>
@@ -58,7 +62,7 @@ watch(filterStatus, loadData)
 
     <div class="row g-3">
       <div class="col-lg-7">
-        <div class="card shadow-sm h-100">
+        <div class="card shadow-sm h-100 page-card">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h5 class="card-title mb-0">Hóa đơn</h5>

@@ -1,0 +1,16 @@
+{
+  "ClinicTicketFee": 50000,
+  "ConsultationFee": 50000,
+  "DefaultTestPrice": 150000,
+  "DrugPrices": [
+    { "Name": "Paracetamol", "Price": 5000 },
+    { "Name": "Amoxicillin", "Price": 10000 },
+    { "Name": "Vitamin C", "Price": 3000 }
+  ],
+  "TestPrices": [
+    { "Name": "X�t nghi?m m�u", "Price": 150000 },
+    { "Name": "X-quang", "Price": 200000 },
+    { "Name": "Si�u �m", "Price": 180000 }
+  ]
+}
+

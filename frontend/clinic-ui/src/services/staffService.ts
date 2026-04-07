@@ -10,6 +10,7 @@ export const createStaff = (data: {
   code: string
   fullName: string
   role: string
+  departmentId?: string | null
 }) =>
   api.post("/Staffs", data)
 
@@ -21,6 +22,7 @@ export const updateStaff = (
     fullName: string
     role: string
     isActive: boolean
+    departmentId?: string | null
   }
 ) =>
   api.put(`/Staffs/${id}`, data)

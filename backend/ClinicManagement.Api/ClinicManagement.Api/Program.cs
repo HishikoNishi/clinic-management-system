@@ -2,6 +2,7 @@
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
 using ClinicManagement.Api.Services;
+using ClinicManagement.Api.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,9 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
+// Load billing.json (optional override)
+builder.Configuration.AddJsonFile("billing.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -67,6 +71,7 @@ builder.Services.AddScoped<IUserRepository, EFUserRepository>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<OtpService>();
+builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
 
@@ -122,6 +127,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ClinicDbContext>();
     dbContext.Database.Migrate();
+    await SeedData.SeedAsync(scope.ServiceProvider);
 }
 
 if (app.Environment.IsDevelopment())
@@ -134,6 +140,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

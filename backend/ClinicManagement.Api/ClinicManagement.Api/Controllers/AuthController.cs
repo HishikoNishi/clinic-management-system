@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Configuration;
+using ClinicManagement.Api.DTOs.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -21,6 +24,7 @@ namespace ClinicManagement.Api.Controllers
         private readonly ClinicDbContext _context;
         private readonly int _refreshDays;
         private readonly PasswordHasher<User> _passwordHasher = new();
+        private readonly string _loginPin;
 
         public AuthController(IUserRepository userRepo, IJwtService jwtService, ClinicDbContext context, IConfiguration configuration)
         {
@@ -28,6 +32,17 @@ namespace ClinicManagement.Api.Controllers
             _jwtService = jwtService;
             _context = context;
             _refreshDays = int.TryParse(configuration["Jwt:RefreshDays"], out var days) ? days : 7;
+            _loginPin = configuration.GetValue<string>("Auth:LoginPin") ?? string.Empty;
+        }
+
+        [HttpPost("login-pin")]
+        [AllowAnonymous]
+        public IActionResult VerifyLoginPin([FromBody] PinDto dto)
+        {
+            if (!string.IsNullOrWhiteSpace(_loginPin) && dto?.Pin == _loginPin)
+                return Ok(new { ok = true });
+
+            return Unauthorized(new { message = "Mã PIN không đúng" });
         }
 
         [HttpPost("login")]
