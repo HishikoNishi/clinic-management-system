@@ -39,7 +39,6 @@
               <tr v-else v-for="d in departments" :key="d.id">
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar-mini me-2">{{ d.name.charAt(0) }}</div>
                     <span class="fw-bold text-dark">{{ d.name }}</span>
                   </div>
                 </td>
