@@ -1,13 +1,12 @@
 ﻿<Properties StartupConfiguration="{0676A508-D306-454C-B591-66EE835AFF21}|Default">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/appsettings.json">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ClinicManagement.Api/Program.cs">
     <Files>
-      <File FileName="ClinicManagement.Api/appsettings.json" Line="4" Column="5" />
+      <File FileName="ClinicManagement.Api/appsettings.json" />
       <File FileName="ClinicManagement.Api/Controllers/AuthController.cs" />
       <File FileName="ClinicManagement.Api/Controllers/AdminController.cs" />
       <File FileName="ClinicManagement.Api/Dtos/User/UpdateUserStatusRequest.cs" />
@@ -16,22 +15,18 @@
       <File FileName="ClinicManagement.Api/Dtos/Staff/StaffDto.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateMyStaffDto.cs" />
       <File FileName="ClinicManagement.Api/Dtos/Staff/UpdateStaffDto.cs" />
-      <File FileName="ClinicManagement.Api/Dtos/Staff/CreateStaffDto.cs" Line="17" Column="43" />
+      <File FileName="ClinicManagement.Api/Dtos/Staff/CreateStaffDto.cs" />
+      <File FileName="ClinicManagement.Api/Models/Staff.cs" />
+      <File FileName="ClinicManagement.Api/Program.cs" Line="14" Column="17" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="ClinicManagement.Api" expanded="True">
-            <Node name="ClinicManagement.Api">
-              <Node name="Dtos" expanded="True">
-                <Node name="Staff" expanded="True" />
-              </Node>
-              <Node name="appsettings.json" selected="True" />
-            </Node>
-          </Node>
+          <Node name="ClinicManagement.Api" expanded="True" />
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.ItemProperties.ClinicManagement.Api PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
 </Properties>
