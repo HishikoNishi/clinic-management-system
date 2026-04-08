@@ -6,6 +6,9 @@
         <h2 class="staff-title">Quản lý lịch khám</h2>
         <p class="staff-subtitle">Tìm kiếm, lọc trạng thái và điều phối bác sĩ cho từng lịch khám.</p>
       </div>
+      <button class="btn btn-primary" @click="$router.push('/staff/create-appointment')">
+        <i class="bi bi-calendar-plus me-2"></i>Đặt lịch tại quầy
+      </button>
     </div>
 
     <div class="staff-filters card shadow-sm">
