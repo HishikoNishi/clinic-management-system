@@ -3,11 +3,13 @@ using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Services;
+using ClinicManagement.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Security.Claims;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -25,6 +27,105 @@ namespace ClinicManagement.Api.Controllers
             _context = context;
             _fakeInsuranceService = fakeInsuranceService;
             _configuration = configuration;
+        }
+
+        [HttpPost("walk-in")]
+        public async Task<IActionResult> CreateWalkInAppointment([FromBody] CreateAppointmentDto dto)
+        {
+            var today = DateTime.UtcNow.Date;
+            var businessStart = new TimeSpan(7, 0, 0);
+            var businessEnd = new TimeSpan(22, 0, 0);
+
+            if (dto.AppointmentDate.Date < today)
+                return BadRequest(new { message = "Chỉ được đặt lịch từ hôm nay trở đi" });
+
+            if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
+                return BadRequest(new { message = "Chỉ nhận đặt lịch trong khung giờ làm việc (07:00-22:00)" });
+
+            var patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.Phone == dto.Phone && p.FullName == dto.FullName);
+
+            if (patient == null)
+            {
+                patient = new Patient
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = dto.FullName,
+                    Phone = dto.Phone,
+                    Email = dto.Email,
+                    Address = dto.Address,
+                    DateOfBirth = dto.DateOfBirth,
+                    Gender = dto.Gender
+                };
+
+                _context.Patients.Add(patient);
+            }
+            else
+            {
+                patient.DateOfBirth = dto.DateOfBirth;
+                patient.Gender = dto.Gender;
+                patient.Address = string.IsNullOrWhiteSpace(dto.Address) ? patient.Address : dto.Address;
+                patient.Email = string.IsNullOrWhiteSpace(dto.Email) ? patient.Email : dto.Email;
+                patient.UpdatedAt = DateTime.UtcNow;
+            }
+
+            var existed = await _context.Appointments.AnyAsync(a =>
+                a.PatientId == patient.Id &&
+                a.AppointmentDate == dto.AppointmentDate.Date &&
+                a.AppointmentTime == dto.AppointmentTime &&
+                a.Status != AppointmentStatus.Cancelled);
+
+            if (existed)
+                return BadRequest(new { message = "Bệnh nhân đã có lịch ở khung giờ này" });
+
+            string code;
+            do
+            {
+                code = CodeGenerator.GenerateAppointmentCode();
+            }
+            while (await _context.Appointments.AnyAsync(a => a.AppointmentCode == code));
+
+            Guid? staffId = null;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var userId))
+            {
+                staffId = await _context.Staffs
+                    .Where(s => s.UserId == userId)
+                    .Select(s => (Guid?)s.Id)
+                    .FirstOrDefaultAsync();
+            }
+
+            var appointment = new Appointment
+            {
+                Id = Guid.NewGuid(),
+                PatientId = patient.Id,
+                StaffId = staffId,
+                AppointmentCode = code,
+                AppointmentDate = dto.AppointmentDate.Date,
+                AppointmentTime = dto.AppointmentTime,
+                Reason = dto.Reason,
+                Status = AppointmentStatus.Pending
+            };
+
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new AppointmentDetailDto
+            {
+                Id = appointment.Id,
+                AppointmentCode = appointment.AppointmentCode,
+                FullName = patient.FullName,
+                Phone = patient.Phone,
+                Email = patient.Email,
+                DateOfBirth = patient.DateOfBirth,
+                Gender = patient.Gender.ToString(),
+                Address = patient.Address,
+                Reason = appointment.Reason,
+                Status = appointment.Status.ToString(),
+                AppointmentDate = appointment.AppointmentDate,
+                AppointmentTime = appointment.AppointmentTime,
+                CreatedAt = appointment.CreatedAt
+            });
         }
 
         // GET: api/staff/Appointments

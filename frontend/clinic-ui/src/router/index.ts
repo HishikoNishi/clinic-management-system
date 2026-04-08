@@ -62,6 +62,13 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: "/staff/create-appointment",
+    name: "StaffCreateAppointment",
+    component: () => import("@/views/staff/StaffCreateAppointment.vue"),
+    meta: { layout: "dashboard", requiresAuth: true, role: ["Staff", "Admin"] }
+  },
+
+  {
     path: "/staff/appointments/:id",
     name: "StaffAppointmentDetail",
     component: () => import("@/views/staff/StaffAppointmentDetail.vue"),
