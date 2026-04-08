@@ -31,11 +31,11 @@
           </div>
 
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="tech-select">
-              <i class="bi bi-building"></i>
-              <select
-                class="form-select form-select-sm"
-                v-model="selectedDepartmentId"
+          <div class="tech-select">
+            <i class="bi bi-building"></i>
+            <select
+              class="form-select form-select-sm"
+              v-model="selectedDepartmentId"
                 @change="handleDepartmentChange"
                 aria-label="Chọn khoa"
               >
@@ -53,6 +53,16 @@
                 type="text"
                 class="form-control form-control-sm"
                 placeholder="Tìm bệnh nhân (tên / SĐT)..."
+              />
+            </div>
+
+            <div v-if="viewMode === 'history'" class="tech-search">
+              <i class="bi bi-calendar"></i>
+              <input
+                v-model="historyDateFilter"
+                type="date"
+                class="form-control form-control-sm"
+                aria-label="Lọc theo ngày hoàn thành"
               />
             </div>
 
@@ -107,6 +117,9 @@
                     </div>
                     <div class="text-muted small text-truncate">
                       <i class="bi bi-file-earmark-medical me-1" aria-hidden="true"></i>{{ p.medicalRecordId || '—' }}
+                    </div>
+                    <div v-if="viewMode === 'history'" class="text-muted small">
+                      <i class="bi bi-calendar3 me-1"></i>{{ p.recordDate || '—' }}
                     </div>
                   </div>
                   <span v-if="viewMode === 'pending'" class="badge rounded-pill text-bg-primary">
@@ -246,11 +259,12 @@ import api from "@/services/api"
 
 const tests = ref<any[]>([])
 const patients = ref<any[]>([])
-const historyPatients = ref<any[]>([])
+const historyRecords = ref<any[]>([])
 const departments = ref<any[]>([])
 const selectedDepartmentId = ref<string>("")
 const selectedPatientId = ref<string | null>(null)
 const selectedRecordId = ref<string | null>(null)
+const historyDateFilter = ref<string>("")
 const route = useRoute()
 const router = useRouter()
 const viewMode = ref<"pending" | "history">(route.path.includes("/history") ? "history" : "pending")
@@ -263,23 +277,25 @@ const testQuery = ref("")
 
 const loading = computed(() => loadingPatients.value || loadingTests.value)
 
-const currentPatients = computed(() =>
-  viewMode.value === "pending" ? patients.value : historyPatients.value
+const currentEntries = computed(() =>
+  viewMode.value === "pending" ? patients.value : historyRecords.value
 )
 
 const selectedPatient = computed(() => {
   if (!selectedPatientId.value) return null
-  return currentPatients.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value) || null
+  return currentEntries.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value) || null
 })
 
 const filteredPatients = computed(() => {
   const q = patientQuery.value.trim().toLowerCase()
-  if (!q) return currentPatients.value
-  return currentPatients.value.filter((p: any) => {
+  return currentEntries.value.filter((p: any) => {
+    if (viewMode.value === "history" && historyDateFilter.value) {
+      if (p.recordDate !== historyDateFilter.value) return false
+    }
     const name = (p.fullName || "").toString().toLowerCase()
     const phone = (p.phone || "").toString().toLowerCase()
     const record = (p.medicalRecordId || "").toString().toLowerCase()
-    return name.includes(q) || phone.includes(q) || record.includes(q)
+    return !q || name.includes(q) || phone.includes(q) || record.includes(q)
   })
 })
 
@@ -311,7 +327,7 @@ const loadTests = async () => {
     if (viewMode.value === "pending") {
       await loadTestsForSelected("Pending,InProgress", patients)
     } else {
-      await loadTestsForSelected("Completed", historyPatients)
+      await loadTestsForSelected("Completed", historyRecords)
     }
   } catch (err: any) {
     console.log(err)
@@ -350,37 +366,40 @@ const loadHistoryPatients = async () => {
     const list = Array.isArray(res.data) ? res.data : []
     const grouped = new Map<string, any>()
     list.forEach((t: any) => {
-      const pid = t.patientId || "unknown"
-      if (!grouped.has(pid)) {
-        grouped.set(pid, {
+      const mr = t.medicalRecordId || "unknown"
+      if (!grouped.has(mr)) {
+        const date = (t.resultAt || t.createdAt || "").toString().slice(0, 10)
+        grouped.set(mr, {
+          medicalRecordId: t.medicalRecordId,
+          appointmentId: t.appointmentId,
           patientId: t.patientId,
           fullName: t.patientName || "",
           phone: t.patientPhone || "",
-          medicalRecordId: t.medicalRecordId,
-          pendingCount: 0
+          recordDate: date
         })
       }
     })
-    historyPatients.value = Array.from(grouped.values())
+    historyRecords.value = Array.from(grouped.values())
   } finally {
     loadingPatients.value = false
   }
 }
 
-const loadTestsForSelected = async (status: string, sourcePatients: any) => {
+const loadTestsForSelected = async (status: string, sourceEntries: any) => {
   loadingTests.value = true
-  if (sourcePatients.value.length) {
-    const found = sourcePatients.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value)
-    if (!found) {
-      selectedPatientId.value = sourcePatients.value[0].patientId?.toString() || null
-      selectedRecordId.value = sourcePatients.value[0].medicalRecordId
-    }
-  } else {
+  const entries = sourceEntries.value || []
+  if (!entries.length) {
     selectedPatientId.value = null
     selectedRecordId.value = null
     tests.value = []
     loadingTests.value = false
     return
+  }
+
+  const found = entries.find((p: any) => p.patientId?.toString() === selectedPatientId.value && (!selectedRecordId.value || p.medicalRecordId === selectedRecordId.value))
+  if (!found) {
+    selectedPatientId.value = entries[0].patientId?.toString() || null
+    selectedRecordId.value = entries[0].medicalRecordId || null
   }
 
   if (selectedPatientId.value) {
@@ -392,10 +411,15 @@ const loadTestsForSelected = async (status: string, sourcePatients: any) => {
         departmentId: selectedDepartmentId.value || undefined
       }
     })
-    const normalized = res.data.map((t: any) => ({
+    let normalized = res.data.map((t: any) => ({
       ...t,
       status: t.status || (t.result ? "Completed" : "Pending")
     }))
+
+    if (viewMode.value === "history" && selectedRecordId.value) {
+      normalized = normalized.filter((t: any) => t.medicalRecordId === selectedRecordId.value)
+    }
+
     tests.value = normalized.sort((a: any, b: any) => {
       if (status === "Completed") {
         return (new Date(b.resultAt || b.createdAt).getTime() - new Date(a.resultAt || a.createdAt).getTime())
@@ -412,6 +436,7 @@ const loadTestsForSelected = async (status: string, sourcePatients: any) => {
 const handleDepartmentChange = async () => {
   selectedPatientId.value = null
   selectedRecordId.value = null
+  historyDateFilter.value = ""
   await loadTests()
 }
 
@@ -421,7 +446,7 @@ const selectPatient = async (p: any) => {
   if (viewMode.value === "pending") {
     await loadTestsForSelected("Pending,InProgress", patients)
   } else {
-    await loadTestsForSelected("Completed", historyPatients)
+    await loadTestsForSelected("Completed", historyRecords)
   }
 }
 

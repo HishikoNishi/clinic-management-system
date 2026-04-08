@@ -22,6 +22,7 @@ const statusBadge = (isPaid: boolean) => (isPaid ? 'bg-success' : 'bg-warning te
           <th>Hóa đơn</th>
           <th>Bệnh nhân</th>
           <th>Mã lịch hẹn</th>
+          <th>Loại</th>
           <th class="text-end">Tổng tiền</th>
           <th>Trạng thái</th>
           <th>Ngày tạo</th>
@@ -33,6 +34,9 @@ const statusBadge = (isPaid: boolean) => (isPaid ? 'bg-success' : 'bg-warning te
           <td class="small text-monospace">{{ inv.id.slice(0, 8) }}...</td>
           <td class="small">{{ inv.patientName || '—' }}</td>
           <td class="small text-monospace">{{ inv.appointmentCode || '—' }}</td>
+          <td class="small">
+            <span class="badge bg-light text-dark">{{ inv.invoiceType === 'Drug' ? 'Thuốc' : 'Khám' }}</span>
+          </td>
           <td class="text-end">{{ formatCurrency(inv.amount) }}</td>
           <td><span class="badge" :class="statusBadge(inv.isPaid)">{{ inv.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span></td>
           <td class="small">{{ formatDateTime(inv.createdAt) }}</td>
@@ -41,7 +45,7 @@ const statusBadge = (isPaid: boolean) => (isPaid ? 'bg-success' : 'bg-warning te
           </td>
         </tr>
         <tr v-if="!props.items.length">
-          <td colspan="7" class="text-center text-muted">Chưa có hóa đơn</td>
+          <td colspan="8" class="text-center text-muted">Chưa có hóa đơn</td>
         </tr>
       </tbody>
     </table>

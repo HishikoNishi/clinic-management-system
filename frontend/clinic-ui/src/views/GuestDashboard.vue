@@ -33,7 +33,7 @@
           <div class="hero-stat-card">
             <div class="hero-stat-row">
               <div class="hero-stat">
-                <span class="hero-stat-value">15′</span>
+                <span class="hero-stat-value">5′</span>
                 <span class="hero-stat-label">đặt lịch trung bình</span>
               </div>
               <div class="hero-stat">
@@ -84,7 +84,7 @@
         <div class="row g-4 align-items-start">
           <div class="col-lg-7">
             <!-- Success -->
-            <div v-if="bookingSuccess" class="alert alert-success">
+            <div v-if="bookingSuccess" class="alert alert-success" ref="bookingSuccessRef">
               <i class="bi bi-check-circle me-2"></i>
               <div>
                 <strong>Lịch khám đã được đặt thành công!</strong>
@@ -408,7 +408,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import api from '@/services/api'
 import '@/styles/layouts/guest-dashboard.css'
 import DoctorShowcase from '@/components/landing/DoctorShowcase.vue'
@@ -454,6 +454,7 @@ const bookingLoading = ref(false)
 const bookingError = ref('')
 const bookingSuccess = ref(false)
 const bookingResponse = ref({ appointmentCode: '', status: '', appointmentDate: '', appointmentTime: '' })
+const bookingSuccessRef = ref<HTMLElement | null>(null)
 
 /* OTP */
 const otpCode = ref('')
@@ -689,6 +690,8 @@ const submitBooking = async () => {
     })
     bookingResponse.value = response.data
     bookingSuccess.value = true
+    await nextTick()
+    bookingSuccessRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     addRecent(response.data)
   } catch (error: any) {
     bookingError.value = error.response?.data?.message || 'Không thể đặt lịch khám. Vui lòng thử lại.'

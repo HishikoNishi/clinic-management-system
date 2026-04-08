@@ -5,6 +5,8 @@
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid AppointmentId { get; set; } //MaLichHen 
         public Appointment Appointment { get; set; } = null!; //LichHen 
+        public Guid? PrescriptionId { get; set; }
+        public InvoiceType InvoiceType { get; set; } = InvoiceType.Clinic;
         public decimal Amount { get; set; } //SoTien (số còn phải trả)
         public decimal TotalDeposit { get; set; } = 0m; // Tổng tạm ứng đã thu
         public decimal BalanceDue { get; set; } = 0m;   // Số còn phải thu sau khi trừ tạm ứng

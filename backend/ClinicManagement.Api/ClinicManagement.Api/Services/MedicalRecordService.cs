@@ -81,21 +81,22 @@ public class MedicalRecordService
                 .Include(p => p.PrescriptionDetails)
                 .FirstOrDefaultAsync(p => p.MedicalRecordId == medicalRecord.Id);
 
-            if (existingPrescription != null)
-            {
-                if (existingPrescription.PrescriptionDetails != null)
-                {
-                    _context.PrescriptionDetails.RemoveRange(existingPrescription.PrescriptionDetails);
-                }
-                _context.Prescriptions.Remove(existingPrescription);
-            }
-
             var validPrescriptionItems = dto.PrescriptionItems?
                 .Where(item => !string.IsNullOrWhiteSpace(item.MedicineName))
                 .ToList();
 
             if (validPrescriptionItems != null && validPrescriptionItems.Any())
             {
+                // Có đơn thuốc mới: thay thế hoặc tạo mới
+                if (existingPrescription != null)
+                {
+                    if (existingPrescription.PrescriptionDetails != null)
+                    {
+                        _context.PrescriptionDetails.RemoveRange(existingPrescription.PrescriptionDetails);
+                    }
+                    _context.Prescriptions.Remove(existingPrescription);
+                }
+
                 var prescription = new Prescription
                 {
                     Id = Guid.NewGuid(),
@@ -112,15 +113,15 @@ public class MedicalRecordService
                 };
                 _context.Prescriptions.Add(prescription);
             }
+            else
+            {
+                // Không gửi đơn mới: giữ lại đơn hiện có (nếu có)
+            }
 
             // Replace clinical tests (tránh cộng dồn qua nhiều lần lưu)
             var existingTests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecord.Id)
                 .ToListAsync();
-            if (existingTests.Any())
-            {
-                _context.ClinicalTests.RemoveRange(existingTests);
-            }
 
             var testNames = new List<string>();
             if (dto.ClinicalTestNames != null && dto.ClinicalTestNames.Any())
@@ -132,8 +133,11 @@ public class MedicalRecordService
                 testNames.Add(dto.ClinicalTestName);
             }
 
-            foreach (var testName in testNames)
+            foreach (var testName in testNames.Distinct(StringComparer.OrdinalIgnoreCase))
             {
+                var exists = existingTests.Any(t => string.Equals(t.TestName, testName, StringComparison.OrdinalIgnoreCase));
+                if (exists) continue;
+
                 _context.ClinicalTests.Add(new ClinicalTest
                 {
                     MedicalRecordId = medicalRecord.Id,

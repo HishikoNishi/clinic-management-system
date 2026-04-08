@@ -47,7 +47,8 @@ namespace ClinicManagement.Api.Controllers
                 BalanceDue = dto.Amount,
                 TotalDeposit = 0,
                 CreatedAt = DateTime.UtcNow,
-                IsPaid = false
+                IsPaid = false,
+                InvoiceType = InvoiceType.Clinic
 
             };
 
@@ -95,6 +96,8 @@ namespace ClinicManagement.Api.Controllers
                 {
                     i.Id,
                     i.AppointmentId,
+                    i.PrescriptionId,
+                    InvoiceType = i.InvoiceType.ToString(),
                     AppointmentCode = i.Appointment != null ? i.Appointment.AppointmentCode : null,
                     PatientName = i.Appointment != null ? i.Appointment.Patient.FullName : null,
                     i.Amount,
@@ -213,6 +216,48 @@ namespace ClinicManagement.Api.Controllers
             return Ok(MapInvoice(result!, record));
         }
 
+        // ==============================
+        // Hóa đơn thuốc
+        // ==============================
+        public class CreateDrugInvoiceDto
+        {
+            public Guid PrescriptionId { get; set; }
+        }
+
+        [HttpPost("drug")]
+        public async Task<IActionResult> CreateDrugInvoice([FromBody] CreateDrugInvoiceDto dto)
+        {
+            if (dto.PrescriptionId == Guid.Empty)
+                return BadRequest(new { message = "Thiếu PrescriptionId" });
+
+            var existed = await _context.Invoices.AnyAsync(i => i.PrescriptionId == dto.PrescriptionId && i.InvoiceType == InvoiceType.Drug);
+            if (existed) return BadRequest(new { message = "Đơn thuốc này đã có hóa đơn thuốc" });
+
+            var invoice = await _billingService.GenerateDrugInvoiceAsync(dto.PrescriptionId);
+            if (invoice == null) return NotFound(new { message = "Không tạo được hóa đơn thuốc" });
+
+            var result = await _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Appointment).ThenInclude(a => a.Patient)
+                .Include(i => i.InvoiceLines)
+                .FirstOrDefaultAsync(i => i.Id == invoice.Id);
+
+            return Ok(MapInvoice(result!, null));
+        }
+
+        [HttpGet("drug/by-prescription/{id:guid}")]
+        public async Task<IActionResult> GetDrugInvoiceByPrescription(Guid id)
+        {
+            var invoice = await _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Appointment).ThenInclude(a => a.Patient)
+                .Include(i => i.InvoiceLines)
+                .FirstOrDefaultAsync(i => i.PrescriptionId == id && i.InvoiceType == InvoiceType.Drug);
+
+            if (invoice == null) return NotFound(new { message = "Không tìm thấy hóa đơn thuốc" });
+            return Ok(MapInvoice(invoice, null));
+        }
+
         private object MapInvoice(Invoice invoice, MedicalRecord? med)
         {
             var insuranceCover = med?.InsuranceCoverPercent ?? 0m;
@@ -221,6 +266,8 @@ namespace ClinicManagement.Api.Controllers
             {
                 invoice.Id,
                 invoice.AppointmentId,
+                invoice.PrescriptionId,
+                InvoiceType = invoice.InvoiceType.ToString(),
                 AppointmentCode = invoice.Appointment?.AppointmentCode,
                 PatientName = invoice.Appointment?.Patient?.FullName,
                 invoice.Amount,

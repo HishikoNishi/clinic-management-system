@@ -4,6 +4,7 @@
     {
         cash = 0,   //Tiền mặt
         banker = 1, //Chuyển khoản
-        card = 2    //Thẻ
+        card = 2,   //Thẻ
+        payosQr = 3 //QR PayOS
     }
 }

@@ -13,6 +13,8 @@ export interface InvoiceDetail {
   id: string
   appointmentId: string
   appointmentCode?: string
+  invoiceType?: string
+  prescriptionId?: string | null
   patientName?: string
   amount: number
   totalDeposit?: number
@@ -52,6 +54,8 @@ export interface InvoiceListItem {
   id: string
   appointmentId: string
   appointmentCode?: string
+  invoiceType?: string
+  prescriptionId?: string | null
   amount: number
   balanceDue?: number
   totalDeposit?: number
@@ -90,6 +94,16 @@ export const invoiceApi = {
 
   async listInvoices(params: { isPaid?: boolean; page?: number; pageSize?: number } = {}): Promise<InvoiceListItem[]> {
     const { data } = await api.get('/invoicemanagement/list', { params })
+    return data
+  },
+
+  async createDrugInvoice(prescriptionId: string) {
+    const { data } = await api.post('/invoicemanagement/drug', { prescriptionId })
+    return data
+  },
+
+  async getDrugInvoiceByPrescription(prescriptionId: string) {
+    const { data } = await api.get(`/invoicemanagement/drug/by-prescription/${prescriptionId}`)
     return data
   },
 

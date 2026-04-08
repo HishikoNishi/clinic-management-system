@@ -3,6 +3,7 @@ using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
 using ClinicManagement.Api.Services;
 using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -74,6 +75,8 @@ builder.Services.AddScoped<OtpService>();
 builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
+builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
+builder.Services.AddHttpClient();
 
 var jwtKey = configuration["Jwt:Key"]
     ?? throw new ArgumentNullException("Jwt:Key is missing in appsettings.json");
@@ -127,6 +130,12 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ClinicDbContext>();
     dbContext.Database.Migrate();
+    // Chuẩn hóa dữ liệu cũ: set InvoiceType mặc định = Clinic nếu đang null/empty
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw("UPDATE Invoices SET InvoiceType = 'Clinic' WHERE InvoiceType IS NULL OR InvoiceType = ''");
+    }
+    catch { }
     await SeedData.SeedAsync(scope.ServiceProvider);
 }
 
@@ -139,7 +148,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Dùng HTTP khi chạy ngrok dev; nếu cần HTTPS, bật lại dòng dưới
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseAuthentication();

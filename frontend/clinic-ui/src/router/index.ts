@@ -191,6 +191,12 @@ const routes: RouteRecordRaw[] = [
     name: "CashierInvoiceList",
     component: () => import("@/views/cashier/CashierInvoiceList.vue"),
     meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
+  },
+  {
+    path: "/cashier/drug-invoices",
+    name: "CashierDrugInvoices",
+    component: () => import("@/views/cashier/CashierDrugInvoices.vue"),
+    meta: { layout: "cashier", requiresAuth: true, role: "Cashier" }
   }
 ]
 

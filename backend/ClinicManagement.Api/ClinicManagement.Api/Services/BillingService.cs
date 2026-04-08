@@ -18,6 +18,101 @@ namespace ClinicManagement.Api.Services
             _pricing = pricing;
         }
 
+        public async Task<Invoice?> GenerateDrugInvoiceAsync(Guid prescriptionId)
+        {
+            var prescription = await _context.Prescriptions
+                .Include(p => p.PrescriptionDetails)
+                .FirstOrDefaultAsync(p => p.Id == prescriptionId);
+            if (prescription == null) return null;
+
+            var medicalRecord = await _context.MedicalRecords
+                .FirstOrDefaultAsync(m => m.Id == prescription.MedicalRecordId);
+            if (medicalRecord == null) return null;
+
+            var appointmentId = medicalRecord.AppointmentId;
+
+            decimal subtotal = 0m;
+            var lines = new List<InvoiceLine>();
+
+            if (prescription.PrescriptionDetails != null)
+            {
+                foreach (var d in prescription.PrescriptionDetails)
+                {
+                    var price = _pricing.GetDrugPrice(d.MedicineName);
+                    if (price <= 0) continue;
+                    var qty = d.Duration > 0 ? d.Duration : 1;
+                    var amount = price * qty;
+                    subtotal += amount;
+                    lines.Add(new InvoiceLine
+                    {
+                        Description = $"Thuoc: {d.MedicineName}",
+                        ItemType = "Drug",
+                        Amount = amount
+                    });
+                }
+            }
+
+            var insuranceCover = medicalRecord.InsuranceCoverPercent;
+            decimal insuranceDiscount = 0m;
+            if (insuranceCover > 0 && insuranceCover <= 1)
+            {
+                insuranceDiscount = Math.Round(subtotal * insuranceCover, 2);
+                if (insuranceDiscount > 0)
+                {
+                    lines.Add(new InvoiceLine
+                    {
+                        Description = $"Bao hiem chi tra ({insuranceCover:P0})",
+                        ItemType = "Insurance",
+                        Amount = -insuranceDiscount
+                    });
+                }
+            }
+
+            var total = subtotal - insuranceDiscount;
+            if (total < 0) total = 0;
+
+            // Upsert drug invoice by prescription
+            var invoice = await _context.Invoices
+                .Include(i => i.InvoiceLines)
+                .FirstOrDefaultAsync(i => i.PrescriptionId == prescriptionId && i.InvoiceType == InvoiceType.Drug);
+
+            if (invoice == null)
+            {
+                invoice = new Invoice
+                {
+                    Id = Guid.NewGuid(),
+                    AppointmentId = appointmentId,
+                    PrescriptionId = prescriptionId,
+                    InvoiceType = InvoiceType.Drug,
+                    Amount = total,
+                    BalanceDue = total,
+                    TotalDeposit = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    IsPaid = false,
+                    PaymentDate = null
+                };
+                _context.Invoices.Add(invoice);
+            }
+            else
+            {
+                if (invoice.IsPaid) return invoice; // không sửa hóa đơn đã thu
+                invoice.Amount = total;
+                invoice.BalanceDue = total;
+
+                _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
+                invoice.InvoiceLines.Clear();
+            }
+
+            foreach (var line in lines)
+            {
+                line.InvoiceId = invoice.Id;
+                _context.InvoiceLines.Add(line);
+            }
+
+            await _context.SaveChangesAsync();
+            return invoice;
+        }
+
         public async Task<Invoice?> GenerateInvoiceAsync(Guid appointmentId)
         {
             var appointment = await _context.Appointments
@@ -33,10 +128,7 @@ namespace ClinicManagement.Api.Services
 
             if (medicalRecord == null) return null;
 
-            var prescription = await _context.Prescriptions
-                .Include(p => p.PrescriptionDetails)
-                .FirstOrDefaultAsync(p => p.MedicalRecordId == medicalRecord.Id);
-
+            // Clinic invoice ONLY: bỏ thuốc, chỉ tính khám + xét nghiệm + bảo hiểm + tạm ứng
             var tests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecord.Id)
                 .ToListAsync();
@@ -59,27 +151,6 @@ namespace ClinicManagement.Api.Services
                     ItemType = "Consultation",
                     Amount = consultationFee
                 });
-            }
-
-            // Drugs
-            if (prescription?.PrescriptionDetails != null)
-            {
-                foreach (var d in prescription.PrescriptionDetails)
-                {
-                    var price = _pricing.GetDrugPrice(d.MedicineName);
-                    if (price <= 0) continue;
-
-                    var qty = d.Duration > 0 ? d.Duration : 1;
-                    var amount = price * qty;
-                    subtotal += amount;
-
-                    lines.Add(new InvoiceLine
-                    {
-                        Description = $"Thuoc: {d.MedicineName}",
-                        ItemType = "Drug",
-                        Amount = amount
-                    });
-                }
             }
 
             // Clinical tests
@@ -175,10 +246,10 @@ namespace ClinicManagement.Api.Services
                 balanceDue = 0; // da hoan phan du, khong con phai thu
             }
 
-            // Upsert invoice by appointment
+            // Upsert invoice by appointment (Clinic type)
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
-                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId);
+                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId && i.InvoiceType == InvoiceType.Clinic);
 
             if (invoice == null)
             {
@@ -191,7 +262,8 @@ namespace ClinicManagement.Api.Services
                     TotalDeposit = totalDepositCollected,
                     CreatedAt = DateTime.UtcNow,
                     IsPaid = false,
-                    PaymentDate = null
+                    PaymentDate = null,
+                    InvoiceType = InvoiceType.Clinic
                 };
                 _context.Invoices.Add(invoice);
             }
