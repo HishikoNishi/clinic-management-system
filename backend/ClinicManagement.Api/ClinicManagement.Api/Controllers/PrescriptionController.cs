@@ -69,6 +69,24 @@ namespace ClinicManagement.Api.Controllers
             return Ok(prescription);
         }
 
+        // GET BY APPOINTMENT (lấy prescription gắn với medical record của lịch hẹn)
+        [HttpGet("by-appointment/{appointmentId}")]
+        public async Task<IActionResult> GetByAppointment(Guid appointmentId)
+        {
+            var record = await _context.MedicalRecords
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.AppointmentId == appointmentId);
+            if (record == null) return NotFound(new { message = "Không tìm thấy hồ sơ khám" });
+
+            var prescription = await _context.Prescriptions
+                .AsNoTracking()
+                .Include(p => p.PrescriptionDetails)
+                .FirstOrDefaultAsync(p => p.MedicalRecordId == record.Id);
+
+            if (prescription == null) return NotFound(new { message = "Không có đơn thuốc cho lịch hẹn này" });
+            return Ok(prescription);
+        }
+
         // UPDATE
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CreatePrescriptionDto dto)

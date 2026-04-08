@@ -62,5 +62,7 @@ namespace ClinicManagement.Api.Models
         public string? CheckInChannel { get; set; }
 
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        [JsonIgnore]
+        public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }

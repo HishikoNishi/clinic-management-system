@@ -8,9 +8,9 @@
     { "Name": "Vitamin C", "Price": 3000 }
   ],
   "TestPrices": [
-    { "Name": "X�t nghi?m m�u", "Price": 150000 },
+    { "Name": "Xét nghiệm máu", "Price": 150000 },
     { "Name": "X-quang", "Price": 200000 },
-    { "Name": "Si�u �m", "Price": 180000 }
+    { "Name": "Siêu âm", "Price": 180000 }
   ]
 }
 

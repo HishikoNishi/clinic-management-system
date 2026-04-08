@@ -26,10 +26,12 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
     <div class="card-body">
       <h5 class="card-title mb-3">Chi tiết hóa đơn</h5>
       <div v-if="invoice">
+        <slot name="top" />
         <div class="small text-muted mb-3">
           Hóa đơn: <span class="fw-semibold">{{ invoice.id }}</span><br />
           Bệnh nhân: <span class="fw-semibold">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</span><br />
           Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</span><br />
+          Loại: <span class="badge bg-light text-dark">{{ invoice.invoiceType === 'Drug' ? 'Thuốc' : 'Khám' }}</span><br />
           <span v-if="invoice.insuranceCoverPercent && invoice.insuranceCoverPercent > 0">
             Bảo hiểm: <span class="badge bg-info text-dark">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</span>
             <span v-if="invoice.insurancePlanCode" class="text-muted">({{ invoice.insurancePlanCode }})</span><br />
@@ -56,6 +58,7 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
         </div>
         <div class="fw-semibold">Tổng sau trừ tạm ứng: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</div>
         <div class="text-muted small">* Đã bao gồm phí dịch vụ, phí thu/giảm trừ và tạm ứng.</div>
+        <slot />
       </div>
       <div v-else class="text-muted">Chọn một hóa đơn để xem chi tiết.</div>
     </div>

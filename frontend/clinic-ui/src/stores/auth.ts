@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
         return false
       }
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE ?? 'https://localhost:7235/api'}/auth/refresh`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE ?? 'http://localhost:7235/api'}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: this.refreshToken })

@@ -6,6 +6,7 @@ import InvoiceDetail from '@/components/cashier/InvoiceDetail.vue'
 import { useInvoice } from '@/composables/useInvoice'
 import { usePayment } from '@/composables/usePayment'
 import type { PaymentMethod } from '@/services/invoiceApi'
+import { payosApi, type PayOsCreateResponse } from '@/services/payosApi'
 import { formatCurrency } from '@/utils/format'
 
 const currentAppointment = ref<any | null>(null)
@@ -14,6 +15,9 @@ const payMethod = ref<PaymentMethod>('cash')
 
 const { invoice, loading, error, recalc, create, fetchInvoice } = useInvoice()
 const { loading: payLoading, error: payError, message: payMessage, pay } = usePayment()
+const payosData = ref<PayOsCreateResponse | null>(null)
+const payosLoading = ref(false)
+const showPayOsModal = ref(false)
 
 const appointmentId = computed(() => currentAppointment.value?.id ?? '')
 const isPaid = computed(() => invoice.value?.isPaid ?? false)
@@ -62,6 +66,20 @@ const handlePay = async () => {
   })
   if (res?.invoice) {
     invoice.value = res.invoice
+  }
+}
+
+const openPayOs = async () => {
+  if (!invoice.value?.id) return
+  payosLoading.value = true
+  payError.value = ''
+  try {
+    payosData.value = await payosApi.createPayment(invoice.value.id)
+    showPayOsModal.value = true
+  } catch (err: any) {
+    payError.value = err?.response?.data?.message ?? 'Không tạo được QR PayOS'
+  } finally {
+    payosLoading.value = false
   }
 }
 </script>
@@ -127,6 +145,9 @@ const handlePay = async () => {
               <button class="btn btn-primary w-100" :disabled="isPaid || payLoading" @click="handlePay">
                 <span v-if="payLoading" class="spinner-border spinner-border-sm me-1" />Thanh toán
               </button>
+              <button class="btn btn-outline-primary w-100 mt-2" :disabled="isPaid || payosLoading" @click="openPayOs">
+                <span v-if="payosLoading" class="spinner-border spinner-border-sm me-1" />QR PayOS
+              </button>
               <div v-if="payMessage" class="alert alert-success mt-2 py-2">{{ payMessage }}</div>
               <div v-if="payError" class="alert alert-danger mt-2 py-2">{{ payError }}</div>
             </div>
@@ -137,6 +158,28 @@ const handlePay = async () => {
     </div>
 
     <div v-if="error" class="alert alert-danger mt-3 py-2">{{ error }}</div>
+
+    <div v-if="showPayOsModal && payosData" class="modal-backdrop-custom">
+      <div class="modal-card">
+        <div class="modal-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">QR PayOS</h6>
+          <button class="btn-close" aria-label="Close" @click="showPayOsModal=false"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Số tiền: <strong>{{ payosData.amount.toLocaleString('vi-VN') }}₫</strong></p>
+          <div class="qr-box">
+            <img
+              v-if="payosData.qrCodeUrl || payosData.qrCodeBase64 || payosData.qrCode"
+              :src="payosData.qrCodeUrl || (payosData.qrCodeBase64 ? `data:image/png;base64,${payosData.qrCodeBase64}` : payosData.qrCode)"
+              alt="QR PayOS"
+            />
+            <div v-else class="text-muted small">Không có ảnh QR, bấm "Mở PayOS"</div>
+          </div>
+          <p class="small text-muted mt-2">Quét bằng app ngân hàng, hệ thống sẽ tự cập nhật khi PayOS gửi webhook.</p>
+          <a :href="payosData.checkoutUrl" target="_blank" rel="noreferrer" class="btn btn-primary w-100 mt-2">Mở PayOS</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

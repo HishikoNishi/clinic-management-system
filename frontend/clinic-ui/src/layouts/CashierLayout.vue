@@ -10,7 +10,8 @@ const isSidebarOpen = ref(false)
 
 const navItems = computed(() => ([
   { label: 'Hóa đơn & thanh toán', icon: 'receipt', path: '/cashier/invoices' },
-  { label: 'Danh sách hóa đơn', icon: 'list-ul', path: '/cashier/invoices/list' }
+  { label: 'Danh sách hóa đơn', icon: 'list-ul', path: '/cashier/invoices/list' },
+  { label: 'Hóa đơn thuốc', icon: 'capsule', path: '/cashier/drug-invoices' }
 ]))
 
 const go = (path: string) => {

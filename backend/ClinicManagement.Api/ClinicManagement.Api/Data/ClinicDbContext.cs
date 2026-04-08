@@ -232,10 +232,17 @@ namespace ClinicManagement.Api.Data
                 entity.Property(i => i.Amount)
                       .HasColumnType("decimal(18,2)")
                       .IsRequired();
+                entity.Property(i => i.InvoiceType)
+                      .HasConversion<string>()
+                      .HasMaxLength(20)
+                      .IsRequired()
+                      .HasDefaultValue(InvoiceType.Clinic);
                 entity.HasOne(i => i.Appointment)
-                      .WithOne()
-                      .HasForeignKey<Invoice>(i => i.AppointmentId)
+                      .WithMany(a => a.Invoices)
+                      .HasForeignKey(i => i.AppointmentId)
                       .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(i => i.AppointmentId);
+                entity.HasIndex(i => i.PrescriptionId);
             });
             /* ================================
            * Prescription

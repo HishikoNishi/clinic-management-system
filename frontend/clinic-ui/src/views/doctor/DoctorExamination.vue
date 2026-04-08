@@ -107,7 +107,7 @@
           <div class="row g-3">
             <div class="col-6 col-md-3">
               <label class="form-label">Nhịp tim (bpm)</label>
-              <input v-model="form.vitals.heartRate" type="number" min="0" class="form-control" placeholder="80" />
+              <input v-model="form.vitals.heartRate" type="number" min="30" max="220" class="form-control" placeholder="80" />
             </div>
             <div class="col-6 col-md-3">
               <label class="form-label">HA (mmHg)</label>
@@ -115,11 +115,11 @@
             </div>
             <div class="col-6 col-md-3">
               <label class="form-label">Nhiệt độ (°C)</label>
-              <input v-model="form.vitals.temperature" type="number" step="0.1" class="form-control" placeholder="37.0" />
+              <input v-model="form.vitals.temperature" type="number" step="0.1" min="34" max="41.5" class="form-control" placeholder="37.0" />
             </div>
             <div class="col-6 col-md-3">
               <label class="form-label">SpO₂ (%)</label>
-              <input v-model="form.vitals.spo2" type="number" min="0" max="100" class="form-control" placeholder="98" />
+              <input v-model="form.vitals.spo2" type="number" min="70" max="100" class="form-control" placeholder="98" />
             </div>
           </div>
           <small class="text-muted d-block mt-2">Các chỉ số này sẽ được lưu kèm trong ghi chú hồ sơ.</small>
@@ -372,6 +372,29 @@ const viewHistoryDetail = async (recordId: string) => {
 const submit = async () => {
   if (!form.diagnosis.trim()) {
     alert("Vui lòng nhập chẩn đoán")
+    return
+  }
+
+  // Giới hạn đơn giản cho sinh hiệu (chặn giá trị phi thực tế)
+  const hr = form.vitals.heartRate ? Number(form.vitals.heartRate) : null
+  const temp = form.vitals.temperature ? Number(form.vitals.temperature) : null
+  const spo2 = form.vitals.spo2 ? Number(form.vitals.spo2) : null
+  let bpOk = true
+  if (form.vitals.bloodPressure) {
+    const m = form.vitals.bloodPressure.match(/^\s*(\d{2,3})\s*\/\s*(\d{2,3})\s*$/)
+    if (!m) bpOk = false
+    else {
+      const sys = Number(m[1]); const dia = Number(m[2])
+      if (sys < 70 || sys > 250 || dia < 40 || dia > 150) bpOk = false
+    }
+  }
+  const vitalOut =
+    (hr !== null && (hr < 30 || hr > 200)) ||
+    (temp !== null && (temp < 34 || temp > 41.5)) ||
+    (spo2 !== null && (spo2 < 70 || spo2 > 100)) ||
+    !bpOk
+  if (vitalOut) {
+    alert("Chỉ số sinh hiệu vượt giới hạn thực tế (HR 30–200, nhiệt 34–41.5°C, SpO₂ 70–100%, HA hợp lệ dạng 120/80 và 70–250 / 40–150).")
     return
   }
 
