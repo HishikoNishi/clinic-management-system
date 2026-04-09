@@ -13,6 +13,7 @@ namespace ClinicManagement.Api.Dtos.ClinicalTests
         public string Status { get; set; } = "Pending";
         public DateTime? ResultAt { get; set; }
         public Guid? AppointmentId { get; set; }
+        public string? AppointmentCode { get; set; }
         public Guid? PatientId { get; set; }
         public string? PatientName { get; set; }
         public string? PatientPhone { get; set; }
