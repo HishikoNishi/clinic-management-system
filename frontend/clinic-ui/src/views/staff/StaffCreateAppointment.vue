@@ -46,7 +46,15 @@
           </div>
 
           <div v-if="showLookup" class="lookup-form">
-            <input v-model="lookupPhone" type="tel" class="form-control" placeholder="Số điện thoại" />
+            <input
+              v-model="lookupPhone"
+              type="tel"
+              class="form-control"
+              placeholder="Số điện thoại"
+              inputmode="numeric"
+              maxlength="11"
+              @input="lookupPhone = normalizePhoneInput(lookupPhone)"
+            />
             <input v-model="lookupEmail" type="email" class="form-control" placeholder="Email" />
             <button type="button" class="btn btn-outline-primary" :disabled="lookupLoading" @click="lookupPatient">
               <span v-if="lookupLoading" class="spinner-border spinner-border-sm me-1"></span>
@@ -93,7 +101,15 @@
             </div>
             <div class="form-group">
               <label class="form-label">Điện thoại *</label>
-              <input v-model="form.phone" type="tel" class="form-control" :readonly="isReturning" />
+              <input
+                v-model="form.phone"
+                type="tel"
+                class="form-control"
+                :readonly="isReturning"
+                inputmode="numeric"
+                maxlength="11"
+                @input="form.phone = normalizePhoneInput(form.phone)"
+              />
               <div v-if="errors.phone" class="form-error">{{ errors.phone }}</div>
             </div>
           </div>
@@ -204,6 +220,8 @@ const bookingSuccess = ref(false)
 const bookingResponse = ref<any>(null)
 const departments = ref<any[]>([])
 const selectedDepartmentId = ref('')
+
+const normalizePhoneInput = (value: string) => value.replace(/\D/g, '').slice(0, 11)
 
 const form = reactive({
   fullName: '',
@@ -357,7 +375,7 @@ const lookupPatient = async () => {
     form.fullName = data.fullName || ''
     form.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
     form.gender = mapGenderToOption(data.gender)
-    form.phone = data.phone || ''
+    form.phone = normalizePhoneInput(data.phone || '')
     form.email = data.email || ''
     form.address = data.address || ''
     isReturning.value = true

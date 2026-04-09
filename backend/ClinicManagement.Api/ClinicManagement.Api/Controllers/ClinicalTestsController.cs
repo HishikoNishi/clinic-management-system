@@ -92,6 +92,7 @@ namespace ClinicManagement.Api.Controllers
                         : t.Status,
                     ResultAt = t.ResultAt,
                     AppointmentId = null,
+                    AppointmentCode = null,
                     PatientId = null,
                     PatientName = null,
                     PatientPhone = null
@@ -171,6 +172,9 @@ namespace ClinicManagement.Api.Controllers
                     : t.Status,
                 ResultAt = t.ResultAt,
                 AppointmentId = t.MedicalRecord != null ? t.MedicalRecord.AppointmentId : null,
+                AppointmentCode = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt0)
+                    ? apt0.AppointmentCode
+                    : null,
                 PatientId = t.MedicalRecord != null ? t.MedicalRecord.PatientId : null,
                 PatientName = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt) 
                     ? apt.Patient?.FullName 
@@ -241,6 +245,9 @@ namespace ClinicManagement.Api.Controllers
                     Phone = appointmentMap.TryGetValue(g.Key.AppointmentId, out var apt2) 
                         ? apt2.Patient?.Phone 
                         : null,
+                    AppointmentCode = appointmentMap.TryGetValue(g.Key.AppointmentId, out var apt3)
+                        ? apt3.AppointmentCode
+                        : null,
                     PendingCount = g.Count(),
                     AppointmentId = g.Key.AppointmentId,
                     MedicalRecordId = g.Key.MedicalRecordId
@@ -264,6 +271,7 @@ namespace ClinicManagement.Api.Controllers
                 : test.Status,
             ResultAt = test.ResultAt,
             AppointmentId = null,
+            AppointmentCode = null,
             PatientId = null,
             PatientName = null,
             PatientPhone = null

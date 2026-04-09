@@ -128,7 +128,15 @@
                 <div v-show="showReturningLookup" class="mt-3">
                   <div class="form-row">
                     <div class="form-group">
-                      <input v-model="lookupPhone" type="tel" class="form-input" placeholder="Số điện thoại" />
+                      <input
+                        v-model="lookupPhone"
+                        type="tel"
+                        class="form-input"
+                        placeholder="Số điện thoại"
+                        inputmode="numeric"
+                        maxlength="11"
+                        @input="lookupPhone = normalizePhoneInput(lookupPhone)"
+                      />
                     </div>
                     <div class="form-group">
                       <input v-model="lookupEmail" type="email" class="form-input" placeholder="Email" />
@@ -173,7 +181,16 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">Điện thoại *</label>
-                  <input v-model="bookingForm.phone" type="tel" class="form-input" :readonly="isReturning" required />
+                  <input
+                    v-model="bookingForm.phone"
+                    type="tel"
+                    class="form-input"
+                    :readonly="isReturning"
+                    required
+                    inputmode="numeric"
+                    maxlength="11"
+                    @input="bookingForm.phone = normalizePhoneInput(bookingForm.phone)"
+                  />
                   <span v-if="bookingErrors.phone" class="form-error">{{ bookingErrors.phone }}</span>
                 </div>
               </div>
@@ -346,7 +363,15 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">Số điện thoại</label>
-                  <input v-model="searchForm.phone" type="tel" class="form-input" placeholder="Nhập SĐT hoặc email" />
+                  <input
+                    v-model="searchForm.phone"
+                    type="tel"
+                    class="form-input"
+                    placeholder="Nhập SĐT hoặc email"
+                    inputmode="numeric"
+                    maxlength="11"
+                    @input="searchForm.phone = normalizePhoneInput(searchForm.phone)"
+                  />
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
@@ -488,6 +513,8 @@ const recentAppointments = ref<any[]>([])
 const departments = ref<any[]>([])
 const selectedDepartmentId = ref('')
 
+const normalizePhoneInput = (value: string) => value.replace(/\D/g, '').slice(0, 11)
+
 /* Helpers */
 const scrollToBooking = () => document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' })
 const scrollToSearch = () => document.getElementById('search')?.scrollIntoView({ behavior: 'smooth' })
@@ -581,7 +608,7 @@ const applyPrefill = (data: any) => {
   bookingForm.fullName = data.fullName || ''
   bookingForm.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
   bookingForm.gender = mapGenderToOption(data.gender)
-  bookingForm.phone = data.phone || ''
+  bookingForm.phone = normalizePhoneInput(data.phone || '')
   bookingForm.email = data.email || ''
   bookingForm.address = data.address || ''
   isReturning.value = true

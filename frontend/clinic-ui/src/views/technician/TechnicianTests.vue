@@ -101,10 +101,10 @@
 
               <li
                 v-for="p in filteredPatients"
-                :key="`${p.patientId}-${p.medicalRecordId}`"
+                :key="getEntryKey(p)"
                 :class="[
                   'list-group-item list-group-item-action tech-patient',
-                  selectedPatientId === p.patientId?.toString() ? 'active' : ''
+                  selectedEntryKey === getEntryKey(p) ? 'active' : ''
                 ]"
                 role="button"
                 @click="selectPatient(p)"
@@ -117,6 +117,9 @@
                     </div>
                     <div class="text-muted small text-truncate">
                       <i class="bi bi-file-earmark-medical me-1" aria-hidden="true"></i>{{ p.medicalRecordId || '—' }}
+                    </div>
+                    <div class="text-muted small text-truncate">
+                      <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ p.appointmentCode || p.appointmentId || '—' }}
                     </div>
                     <div v-if="viewMode === 'history'" class="text-muted small">
                       <i class="bi bi-calendar3 me-1"></i>{{ p.recordDate || '—' }}
@@ -146,7 +149,9 @@
                   </div>
                   <div class="text-muted small text-truncate">
                     <span v-if="selectedPatient?.phone"><i class="bi bi-telephone me-1"></i>{{ selectedPatient.phone }}</span>
-                    <span v-if="selectedPatient?.phone && selectedPatient?.medicalRecordId" class="mx-2">·</span>
+                    <span v-if="selectedPatient?.phone && selectedPatient?.appointmentCode" class="mx-2">·</span>
+                    <span v-if="selectedPatient?.appointmentCode"><i class="bi bi-upc-scan me-1"></i>{{ selectedPatient.appointmentCode }}</span>
+                    <span v-if="selectedPatient?.appointmentCode && selectedPatient?.medicalRecordId" class="mx-2">·</span>
                     <span v-if="selectedPatient?.medicalRecordId"><i class="bi bi-file-earmark-medical me-1"></i>{{ selectedPatient.medicalRecordId }}</span>
                   </div>
                 </div>
@@ -168,7 +173,7 @@
               <div class="text-muted mt-2">Đang tải danh sách xét nghiệm...</div>
             </div>
 
-            <div v-else-if="!selectedPatientId" class="tech-empty">
+            <div v-else-if="!selectedEntryKey" class="tech-empty">
               <i class="bi bi-person-lines-fill tech-empty-icon" aria-hidden="true"></i>
               <div class="fw-semibold">Chọn bệnh nhân</div>
               <div class="text-muted">Chọn bệnh nhân ở danh sách bên trái để xem yêu cầu xét nghiệm.</div>
@@ -262,6 +267,7 @@ const patients = ref<any[]>([])
 const historyRecords = ref<any[]>([])
 const departments = ref<any[]>([])
 const selectedDepartmentId = ref<string>("")
+const selectedEntryKey = ref<string | null>(null)
 const selectedPatientId = ref<string | null>(null)
 const selectedRecordId = ref<string | null>(null)
 const historyDateFilter = ref<string>("")
@@ -281,9 +287,12 @@ const currentEntries = computed(() =>
   viewMode.value === "pending" ? patients.value : historyRecords.value
 )
 
+const getEntryKey = (entry: any) =>
+  `${entry?.appointmentId?.toString?.() || "na"}-${entry?.medicalRecordId?.toString?.() || "na"}`
+
 const selectedPatient = computed(() => {
-  if (!selectedPatientId.value) return null
-  return currentEntries.value.find((p: any) => p.patientId?.toString() === selectedPatientId.value) || null
+  if (!selectedEntryKey.value) return null
+  return currentEntries.value.find((p: any) => getEntryKey(p) === selectedEntryKey.value) || null
 })
 
 const filteredPatients = computed(() => {
@@ -295,7 +304,8 @@ const filteredPatients = computed(() => {
     const name = (p.fullName || "").toString().toLowerCase()
     const phone = (p.phone || "").toString().toLowerCase()
     const record = (p.medicalRecordId || "").toString().toLowerCase()
-    return !q || name.includes(q) || phone.includes(q) || record.includes(q)
+    const appointmentCode = (p.appointmentCode || "").toString().toLowerCase()
+    return !q || name.includes(q) || phone.includes(q) || record.includes(q) || appointmentCode.includes(q)
   })
 })
 
@@ -372,6 +382,7 @@ const loadHistoryPatients = async () => {
         grouped.set(mr, {
           medicalRecordId: t.medicalRecordId,
           appointmentId: t.appointmentId,
+          appointmentCode: t.appointmentCode,
           patientId: t.patientId,
           fullName: t.patientName || "",
           phone: t.patientPhone || "",
@@ -389,6 +400,7 @@ const loadTestsForSelected = async (status: string, sourceEntries: any) => {
   loadingTests.value = true
   const entries = sourceEntries.value || []
   if (!entries.length) {
+    selectedEntryKey.value = null
     selectedPatientId.value = null
     selectedRecordId.value = null
     tests.value = []
@@ -396,10 +408,14 @@ const loadTestsForSelected = async (status: string, sourceEntries: any) => {
     return
   }
 
-  const found = entries.find((p: any) => p.patientId?.toString() === selectedPatientId.value && (!selectedRecordId.value || p.medicalRecordId === selectedRecordId.value))
+  const found = entries.find((p: any) => getEntryKey(p) === selectedEntryKey.value)
   if (!found) {
+    selectedEntryKey.value = getEntryKey(entries[0])
     selectedPatientId.value = entries[0].patientId?.toString() || null
     selectedRecordId.value = entries[0].medicalRecordId || null
+  } else {
+    selectedPatientId.value = found.patientId?.toString() || null
+    selectedRecordId.value = found.medicalRecordId || null
   }
 
   if (selectedPatientId.value) {
@@ -416,7 +432,7 @@ const loadTestsForSelected = async (status: string, sourceEntries: any) => {
       status: t.status || (t.result ? "Completed" : "Pending")
     }))
 
-    if (viewMode.value === "history" && selectedRecordId.value) {
+    if (selectedRecordId.value) {
       normalized = normalized.filter((t: any) => t.medicalRecordId === selectedRecordId.value)
     }
 
@@ -434,6 +450,7 @@ const loadTestsForSelected = async (status: string, sourceEntries: any) => {
 }
 
 const handleDepartmentChange = async () => {
+  selectedEntryKey.value = null
   selectedPatientId.value = null
   selectedRecordId.value = null
   historyDateFilter.value = ""
@@ -441,6 +458,7 @@ const handleDepartmentChange = async () => {
 }
 
 const selectPatient = async (p: any) => {
+  selectedEntryKey.value = getEntryKey(p)
   selectedPatientId.value = p.patientId?.toString() || null
   selectedRecordId.value = p.medicalRecordId
   if (viewMode.value === "pending") {
@@ -491,6 +509,7 @@ const startTest = async (test: any) => {
 const switchMode = async (mode: "pending" | "history") => {
   if (viewMode.value === mode) return
   viewMode.value = mode
+  selectedEntryKey.value = null
   selectedPatientId.value = null
   selectedRecordId.value = null
   await loadTests()
@@ -526,6 +545,7 @@ watch(
     const mode = newPath.includes("/history") ? "history" : "pending"
     if (viewMode.value !== mode) {
       viewMode.value = mode
+      selectedEntryKey.value = null
       selectedPatientId.value = null
       selectedRecordId.value = null
       await loadTests()
