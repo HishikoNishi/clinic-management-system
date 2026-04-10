@@ -21,5 +21,8 @@ namespace ClinicManagement.Api.DTOs.Appointments
         public TimeSpan AppointmentTime { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Note { get; set; }
+        public string? PatientCode { get; set; }
+        public string? CitizenId { get; set; }
+        public string? InsuranceCardNumber { get; set; }
     }
 }

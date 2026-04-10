@@ -29,7 +29,7 @@ namespace ClinicManagement.Api.Data
         public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<Department> Departments { get; set; } = null!;
         public DbSet<Specialty> Specialties { get; set; } = null!;
-
+        public DbSet<Medicine> Medicines { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -213,18 +213,47 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
-
+            modelBuilder.Entity<Medicine>(entity =>
+            {
+                entity.HasIndex(m => m.Name); 
+                entity.Property(m => m.Price).HasColumnType("decimal(18,2)");
+            });
+            modelBuilder.Entity<Medicine>().HasData(
+                new Medicine { Id = Guid.Parse("f001f001-1111-1111-1111-111111111111"), Name = "Paracetamol", DefaultDosage = "500mg", Unit = "Viên", Price = 2000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f002f002-2222-2222-2222-222222222222"), Name = "Panadol Extra", DefaultDosage = "500mg", Unit = "Viên", Price = 3500, IsActive = true },
+                new Medicine { Id = Guid.Parse("f003f003-3333-3333-3333-333333333333"), Name = "Efferalgan", DefaultDosage = "500mg", Unit = "Viên", Price = 4000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f004f004-4444-4444-4444-444444444444"), Name = "Hapacol", DefaultDosage = "650mg", Unit = "Gói", Price = 2500, IsActive = true },
+                new Medicine { Id = Guid.Parse("f005f005-5555-5555-5555-555555555555"), Name = "Amoxicillin", DefaultDosage = "500mg", Unit = "Viên", Price = 5000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f006f006-6666-6666-6666-666666666666"), Name = "Augmentin", DefaultDosage = "625mg", Unit = "Viên", Price = 18000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f007f007-7777-7777-7777-777777777777"), Name = "Cefalexin", DefaultDosage = "500mg", Unit = "Viên", Price = 4500, IsActive = true },
+                new Medicine { Id = Guid.Parse("f008f008-8888-8888-8888-888888888888"), Name = "Azithromycin", DefaultDosage = "500mg", Unit = "Viên", Price = 25000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f009f009-9999-9999-9999-999999999999"), Name = "Gaviscon", DefaultDosage = "10ml", Unit = "Gói", Price = 15000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f010f010-0000-0000-0000-000000000010"), Name = "Maalox", DefaultDosage = "400mg", Unit = "Viên", Price = 3000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f011f011-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), Name = "Berberin", DefaultDosage = "100mg", Unit = "Viên", Price = 500, IsActive = true },
+                new Medicine { Id = Guid.Parse("f012f012-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), Name = "Smecta", DefaultDosage = "3g", Unit = "Gói", Price = 5000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f013f013-cccc-cccc-cccc-cccccccccccc"), Name = "Decolgen", DefaultDosage = "N/A", Unit = "Vỉ", Price = 15000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f014f014-dddd-dddd-dddd-dddddddddddd"), Name = "Tiffy", DefaultDosage = "N/A", Unit = "Vỉ", Price = 12000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f015f015-eeee-eeee-eeee-eeeeeeeeeeee"), Name = "Siro Prospan", DefaultDosage = "100ml", Unit = "Chai", Price = 75000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f016f016-ffff-ffff-ffff-ffffffffffff"), Name = "Telfast", DefaultDosage = "180mg", Unit = "Viên", Price = 12000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f017f017-1212-1212-1212-121212121212"), Name = "Vitamin C", DefaultDosage = "500mg", Unit = "Viên sủi", Price = 3000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f018f018-2323-2323-2323-232323232323"), Name = "Enervon", DefaultDosage = "N/A", Unit = "Viên", Price = 2500, IsActive = true },
+                new Medicine { Id = Guid.Parse("f019f019-3434-3434-3434-343434343434"), Name = "Zinc (Kẽm)", DefaultDosage = "20mg", Unit = "Viên", Price = 4000, IsActive = true },
+                new Medicine { Id = Guid.Parse("f020f020-4545-4545-4545-454545454545"), Name = "Dầu cá Omega-3", DefaultDosage = "1000mg", Unit = "Viên", Price = 6000, IsActive = true }
+            );
             modelBuilder.Entity<Patient>(entity =>
             {
                 entity.HasKey(p => p.Id);
+                entity.Property(p => p.FullName).IsRequired().HasMaxLength(150);
+                entity.Property(p => p.Gender).HasConversion<string>().IsRequired();
 
-                entity.Property(p => p.FullName)
-                      .IsRequired()
-                      .HasMaxLength(150);
+                entity.Property(p => p.PatientCode).HasMaxLength(20); 
+                entity.Property(p => p.CitizenId).HasMaxLength(20);
+                entity.Property(p => p.InsuranceCardNumber).HasMaxLength(20);
 
-                entity.Property(p => p.Gender)
-                      .HasConversion<string>()
-                      .IsRequired();
+                entity.HasIndex(p => p.PatientCode).IsUnique();
+                entity.HasIndex(p => p.CitizenId).IsUnique().HasFilter("[CitizenId] IS NOT NULL");
+                entity.HasIndex(p => p.InsuranceCardNumber).IsUnique().HasFilter("[InsuranceCardNumber] IS NOT NULL");
+
             });
             modelBuilder.Entity<Invoice>(entity =>
             {

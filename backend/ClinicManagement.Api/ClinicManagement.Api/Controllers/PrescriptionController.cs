@@ -126,7 +126,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok("Updated successfully");
         }
-
+       
         // DELETE
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)

@@ -8,7 +8,7 @@ using ClinicManagement.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
+
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
@@ -19,13 +19,17 @@ namespace ClinicManagement.Api.Controllers
         private readonly OtpService _otpService;
         private readonly EmailService _emailService;
 
-        public AppointmentsController(ClinicDbContext context, OtpService otpService, EmailService emailService)
+        public AppointmentsController(
+            ClinicDbContext context,
+            OtpService otpService,
+            EmailService emailService)
         {
             _context = context;
             _otpService = otpService;
             _emailService = emailService;
         }
 
+        // ================= CREATE =================
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppointmentDto dto)
         {
@@ -33,28 +37,58 @@ namespace ClinicManagement.Api.Controllers
             var businessStart = new TimeSpan(7, 0, 0);
             var businessEnd = new TimeSpan(22, 0, 0);
 
+            // ================= TRIM =================
+            dto.CitizenId = dto.CitizenId?.Trim();
+            dto.Phone = dto.Phone?.Trim();
+            dto.FullName = dto.FullName?.Trim();
+            dto.Email = dto.Email?.Trim();
+            dto.InsuranceCardNumber = dto.InsuranceCardNumber?.Trim();
+
+            // ================= VALIDATE =================
             if (dto.AppointmentDate.Date < today)
-                return BadRequest(new { message = "Chỉ được đặt lịch từ hôm nay trở đi" });
+                return BadRequest("Chỉ được đặt lịch từ hôm nay trở đi");
 
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
-                return BadRequest(new { message = "Chỉ nhận đặt lịch trong khung giờ làm việc (07:00-22:00)" });
+                return BadRequest("Chỉ nhận đặt lịch 07:00 - 22:00");
 
             if (string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(new { message = "Email là bắt buộc để xác thực OTP" });
+                return BadRequest("Email bắt buộc");
+
+            if (!string.IsNullOrWhiteSpace(dto.CitizenId) &&
+                (!dto.CitizenId.All(char.IsDigit) || dto.CitizenId.Length != 12))
+            {
+                return BadRequest("CCCD phải gồm 12 chữ số");
+            }
 
             var verified = await _otpService.IsVerifiedAsync(dto.Email);
             if (!verified)
-                return BadRequest(new { message = "Email chưa được xác thực OTP hoặc OTP đã hết hạn" });
+                return BadRequest("Email chưa xác thực OTP");
 
-            // 1️⃣ tìm patient theo SĐT + Tên (tránh trùng người)
-            var patient = await _context.Patients
-                .FirstOrDefaultAsync(p =>
-                    p.Phone == dto.Phone &&
-                    p.FullName == dto.FullName);
+            // ================= FIND PATIENT =================
+            Patient? patient = null;
 
-            // 2️⃣ chưa có → tạo mới
+            // ưu tiên CCCD
+            if (!string.IsNullOrWhiteSpace(dto.CitizenId))
+            {
+                patient = await _context.Patients
+                    .FirstOrDefaultAsync(p => p.CitizenId == dto.CitizenId);
+            }
+
+            // fallback theo tên + sđt
             if (patient == null)
             {
+                patient = await _context.Patients
+                    .FirstOrDefaultAsync(p =>
+                        p.Phone == dto.Phone &&
+                        p.FullName == dto.FullName);
+            }
+
+            // ================= CREATE / UPDATE =================
+            if (patient == null)
+            {
+              
+
+                // tạo mới
                 patient = new Patient
                 {
                     Id = Guid.NewGuid(),
@@ -63,13 +97,34 @@ namespace ClinicManagement.Api.Controllers
                     Email = dto.Email,
                     Address = dto.Address,
                     DateOfBirth = dto.DateOfBirth,
-                    Gender = dto.Gender
+                    Gender = dto.Gender,
+                    CitizenId = dto.CitizenId,
+                    InsuranceCardNumber = dto.InsuranceCardNumber
                 };
 
                 _context.Patients.Add(patient);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // update CCCD (nếu chưa có)
+                if (string.IsNullOrWhiteSpace(patient.CitizenId) &&
+                    !string.IsNullOrWhiteSpace(dto.CitizenId))
+                {
+                    patient.CitizenId = dto.CitizenId;
+                }
+
+                // update BHYT
+                if (string.IsNullOrWhiteSpace(patient.InsuranceCardNumber) &&
+                    !string.IsNullOrWhiteSpace(dto.InsuranceCardNumber))
+                {
+                    patient.InsuranceCardNumber = dto.InsuranceCardNumber;
+                }
+
+                await _context.SaveChangesAsync();
             }
 
-            // 3️⃣ chặn đặt trùng giờ
+            // ================= CHECK TRÙNG LỊCH =================
             var existed = await _context.Appointments.AnyAsync(a =>
                 a.PatientId == patient.Id &&
                 a.AppointmentDate == dto.AppointmentDate.Date &&
@@ -78,17 +133,14 @@ namespace ClinicManagement.Api.Controllers
             if (existed)
                 return BadRequest("Bạn đã đặt lịch giờ này rồi");
 
-            // ✅ 4️⃣ TẠO MÃ KHÁM (ĐẶT Ở ĐÂY)
+            // ================= CREATE APPOINTMENT =================
             string code;
-
             do
             {
                 code = CodeGenerator.GenerateAppointmentCode();
             }
-            while (await _context.Appointments
-                .AnyAsync(a => a.AppointmentCode == code));
+            while (await _context.Appointments.AnyAsync(a => a.AppointmentCode == code));
 
-            // 5️⃣ tạo appointment
             var appointment = new Appointment
             {
                 Id = Guid.NewGuid(),
@@ -98,53 +150,42 @@ namespace ClinicManagement.Api.Controllers
                 AppointmentTime = dto.AppointmentTime,
                 Reason = dto.Reason,
                 Status = AppointmentStatus.Pending
-
             };
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            // ✅ 6️⃣ trả mã cho guest xem
-            var responseDto = new AppointmentDetailDto
+            // ================= RESPONSE =================
+            return Ok(new AppointmentDetailDto
             {
                 Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
-                FullName = appointment.Patient.FullName,
-                Phone = appointment.Patient.Phone,
-                Email = appointment.Patient.Email,
-                DateOfBirth = appointment.Patient.DateOfBirth,
-                Gender = appointment.Patient.Gender.ToString(),
-                Address = appointment.Patient.Address,
+                FullName = patient.FullName,
+                Phone = patient.Phone,
+                Email = patient.Email,
+                DateOfBirth = patient.DateOfBirth,
+                Gender = patient.Gender.ToString(),
+                Address = patient.Address,
                 Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
-                CreatedAt = appointment.CreatedAt
-            };
-
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(dto.Email))
-                {
-                    await _emailService.SendAsync(dto.Email, "Xác nhận lịch khám",
-                        $"Mã khám: <b>{appointment.AppointmentCode}</b><br/>Họ tên: {appointment.Patient.FullName}<br/>Ngày: {appointment.AppointmentDate:dd/MM/yyyy} - Giờ: {appointment.AppointmentTime}");
-                }
-            }
-            catch (Exception)
-            {
-                // log email failure quietly
-            }
-
-            return Ok(responseDto);
-
+                CreatedAt = appointment.CreatedAt,
+                PatientCode = patient.PatientCode,
+                CitizenId = patient.CitizenId,
+                InsuranceCardNumber = patient.InsuranceCardNumber
+            });
         }
 
+        // ================= LOOKUP PATIENT =================
         [HttpGet("patient-lookup")]
         [AllowAnonymous]
-        public async Task<IActionResult> LookupPatient([FromQuery] string? phone, [FromQuery] string? email)
+        public async Task<IActionResult> LookupPatient(
+            [FromQuery] string? phone,
+            [FromQuery] string? email)
         {
             if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
-                return BadRequest("Cần nhập SĐT hoặc email");
+                return BadRequest("Nhập SĐT hoặc email");
 
             var patient = await _context.Patients
                 .AsNoTracking()
@@ -153,7 +194,7 @@ namespace ClinicManagement.Api.Controllers
                     (!string.IsNullOrWhiteSpace(email) && p.Email == email));
 
             if (patient == null)
-                return NotFound(new { message = "Không tìm thấy bệnh nhân" });
+                return NotFound("Không tìm thấy");
 
             return Ok(new
             {
@@ -162,9 +203,14 @@ namespace ClinicManagement.Api.Controllers
                 patient.Gender,
                 patient.Phone,
                 patient.Email,
-                patient.Address
+                patient.Address,
+                patient.PatientCode,
+                patient.CitizenId,
+                patient.InsuranceCardNumber
             });
         }
+
+        // ================= GET BY CODE =================
         [HttpGet("{code}")]
         public async Task<IActionResult> GetByCode(string code)
         {
@@ -172,7 +218,8 @@ namespace ClinicManagement.Api.Controllers
                 .Include(a => a.Patient)
                 .FirstOrDefaultAsync(a => a.AppointmentCode == code);
 
-            if (appointment == null) return NotFound("Không tìm thấy lịch khám");
+            if (appointment == null)
+                return NotFound();
 
             return Ok(new AppointmentDetailDto
             {
@@ -188,78 +235,11 @@ namespace ClinicManagement.Api.Controllers
                 Status = appointment.Status.ToString(),
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
-                CreatedAt = appointment.CreatedAt
+                CreatedAt = appointment.CreatedAt,
+                PatientCode = appointment.Patient.PatientCode,
+                CitizenId = appointment.Patient.CitizenId,
+                InsuranceCardNumber = appointment.Patient.InsuranceCardNumber
             });
-
         }
-
-        [HttpPost("search")]
-        public async Task<IActionResult> Search(SearchAppointmentDto dto)
-        {
-            if (string.IsNullOrWhiteSpace(dto.Phone) && string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest(new { message = "Cần nhập số điện thoại hoặc email" });
-
-            var query = _context.Appointments
-                .Include(x => x.Patient)
-                .AsQueryable();
-
-            query = query.Where(x =>
-                (!string.IsNullOrWhiteSpace(dto.Phone) && x.Patient.Phone == dto.Phone) ||
-                (!string.IsNullOrWhiteSpace(dto.Email) && x.Patient.Email == dto.Email));
-
-            if (!string.IsNullOrWhiteSpace(dto.AppointmentCode))
-            {
-                query = query.Where(x => x.AppointmentCode == dto.AppointmentCode);
-            }
-
-            var appointments = await query
-                .OrderByDescending(x => x.CreatedAt)
-                .Take(50)
-                .ToListAsync();
-
-            var result = appointments.Select(appointment => new AppointmentDetailDto
-            {
-                Id = appointment.Id,
-                AppointmentCode = appointment.AppointmentCode,
-                FullName = appointment.Patient.FullName,
-                Phone = appointment.Patient.Phone,
-                Email = appointment.Patient.Email,
-                DateOfBirth = appointment.Patient.DateOfBirth,
-                Gender = appointment.Patient.Gender.ToString(),
-                Address = appointment.Patient.Address,
-                Reason = appointment.Reason,
-                Status = appointment.Status.ToString(),
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
-                CreatedAt = appointment.CreatedAt
-            }).ToList();
-
-            return Ok(result);
-
-        }
-
-        [HttpPost("cancel")]
-        public async Task<IActionResult> Cancel(CancelAppointmentDto dto)
-        {
-            var appointment = await _context.Appointments
-                .Include(a => a.Patient)
-                .FirstOrDefaultAsync(a =>
-                    a.AppointmentCode == dto.AppointmentCode &&
-                    a.Patient.FullName == dto.FullName &&
-                    a.Patient.Phone == dto.Phone);
-
-            if (appointment == null)
-                return NotFound("Không tìm thấy lịch khám");
-
-            appointment.Status = AppointmentStatus.Cancelled;
-
-            await _context.SaveChangesAsync();
-
-            return Ok("Huỷ lịch thành công");
-        }
-
-
     }
-
-
 }
