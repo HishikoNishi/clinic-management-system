@@ -95,17 +95,21 @@
     <div class="card border shadow-sm">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Mã</th>
-              <th>Bệnh nhân</th>
-              <th>SĐT</th>
-              <th>Ngày giờ khám</th>
-              <th>Trạng thái</th>
-              <th>Bác sĩ / Khoa</th>
-              <th class="text-end">Thao tác</th>
-            </tr>
-          </thead>
+        <thead class="table-light">
+  <tr>
+    <th>Mã</th>
+    <th>Bệnh nhân</th>
+    <th>SĐT</th>
+       <th>Mã BN</th>
+    <th>CCCD</th>
+    <th>BHYT</th>
+    <th>Ngày giờ khám</th>
+    <th>Trạng thái</th>
+    <th>Bác sĩ / Khoa</th>
+    <th class="text-end">Thao tác</th>
+  </tr>
+</thead>
+
           <tbody>
             <tr v-if="loading">
               <td colspan="7" class="text-center py-4 text-muted">
@@ -120,6 +124,11 @@
               <td class="text-monospace small">{{ a.appointmentCode }}</td>
               <td class="fw-semibold">{{ a.fullName }}</td>
               <td>{{ a.phone }}</td>
+                <td>{{ a.patientCode || '—' }}</td>
+
+             <td>{{ a.citizenId || '—' }}</td>
+<td>{{ a.insuranceCardNumber || '—' }}</td>
+
               <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
               <td>
                 <span class="badge rounded-pill" :class="statusBadgeClass(a.status)">{{ statusLabelVi(a.status) }}</span>

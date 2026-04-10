@@ -21,6 +21,9 @@
 
       <p><strong>Giới tính:</strong> {{ appointment.gender }}</p>
       <p><strong>Địa chỉ:</strong> {{ appointment.address }}</p>
+      <p><strong>CCCD:</strong> {{ appointment.citizenId || '—' }}</p>
+<p><strong>BHYT:</strong> {{ appointment.insuranceCardNumber || '—' }}</p>
+
       <p><strong>Trạng thái:</strong> {{ appointment.status }}</p>
 
       <p>

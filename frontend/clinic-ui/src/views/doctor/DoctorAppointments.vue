@@ -34,14 +34,18 @@
       <div class="card-body p-0">
         <table class="table mb-0">
           <thead>
-            <tr>
-              <th>Bệnh nhân</th>
-              <th>Điện thoại</th>
-              <th>Ngày khám</th>
-              <th>Trạng thái</th>
-              <th class="text-end">Thao tác</th>
-            </tr>
-          </thead>
+  <tr>
+    <th>Bệnh nhân</th>
+    <th>Điện thoại</th>
+    <th>Mã bệnh nhân</th>
+    <th>CCCD</th>
+    <th>BHYT</th>
+    <th>Ngày khám</th>
+    <th>Trạng thái</th>
+    <th class="text-end">Thao tác</th>
+  </tr>
+</thead>
+
           <tbody>
             <tr v-if="loading">
               <td colspan="5" class="text-center py-4 text-muted">
@@ -52,19 +56,23 @@
               <td colspan="5" class="text-center py-4 text-muted">Không có lịch khám</td>
             </tr>
             <tr v-else v-for="a in filteredAppointments" :key="a.id">
-              <td class="fw-semibold">{{ a.fullName }}</td>
-              <td>{{ a.phone }}</td>
-              <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
-              <td>
-                <span :class="['badge', badgeClass(a.status)]">{{ statusLabel(a.status) }}</span>
-              </td>
-              <td class="text-end">
-                <button class="btn btn-primary btn-sm" @click="goExamine(a.id)">
-                  <i class="bi bi-stethoscope me-1"></i>
-                  {{ a.status === 'Completed' ? 'Xem hồ sơ khám' : 'Khám / tiếp tục' }}
-                </button>
-              </td>
-            </tr>
+  <td class="fw-semibold">{{ a.fullName }}</td>
+  <td>{{ a.phone }}</td>
+  <td>{{ a.patientCode || '—' }}</td>
+  <td>{{ a.citizenId || '—' }}</td>
+  <td>{{ a.insuranceCardNumber || '—' }}</td>
+  <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+  <td>
+    <span :class="['badge', badgeClass(a.status)]">{{ statusLabel(a.status) }}</span>
+  </td>
+  <td class="text-end">
+    <button class="btn btn-primary btn-sm" @click="goExamine(a.id)">
+      <i class="bi bi-stethoscope me-1"></i>
+      {{ a.status === 'Completed' ? 'Xem hồ sơ khám' : 'Khám / tiếp tục' }}
+    </button>
+  </td>
+</tr>
+
           </tbody>
         </table>
       </div>
