@@ -162,7 +162,7 @@ const appointments = ref<any[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const statuses = ['All', 'Pending', 'Confirmed', 'Assigned', 'CheckedIn', 'Completed', 'Cancelled']
+const statuses = ['All', 'Pending', 'Confirmed', 'Assigned', 'CheckedIn', 'Completed', 'Cancelled', 'NoShow']
 const currentStatus = ref('All')
 
 const todayPrefix = () => new Date().toISOString().slice(0, 10)
@@ -179,7 +179,8 @@ const statusCount = computed(() => {
     Assigned: 0,
     CheckedIn: 0,
     Completed: 0,
-    Cancelled: 0
+    Cancelled: 0,
+    NoShow: 0
   }
   for (const a of appointments.value) {
     const s = a.status as string
@@ -213,7 +214,8 @@ const statusLabel = (status: string) => {
     Assigned: 'Đã phân BS',
     CheckedIn: 'Đã check-in',
     Completed: 'Hoàn thành',
-    Cancelled: 'Đã hủy'
+    Cancelled: 'Đã hủy',
+    NoShow: 'Không đến'
   }
   return labels[status] || status
 }
@@ -234,6 +236,8 @@ const statusBadgeClass = (status: string) => {
       return 'text-bg-success'
     case 'Cancelled':
       return 'text-bg-danger'
+      case 'NoShow':
+    return 'text-bg-dark'
     default:
       return 'text-bg-secondary'
   }

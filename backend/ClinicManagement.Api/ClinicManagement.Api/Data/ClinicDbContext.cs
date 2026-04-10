@@ -430,6 +430,15 @@ namespace ClinicManagement.Api.Data
                 new InsurancePlan { Id = Guid.Parse("77777777-0000-0000-0000-000000000002"), Code = "CORP-ACME", Name = "Bảo hiểm công ty ACME", CoveragePercent = 0.5m, Note = "Giảm 50%", IsActive = true },
                 new InsurancePlan { Id = Guid.Parse("77777777-0000-0000-0000-000000000003"), Code = "VIP-GOLD", Name = "VIP Gold", CoveragePercent = 0.9m, Note = "Giảm 90%", IsActive = true }
             );
+            
+            modelBuilder.Entity<Invoice>()
+                .HasIndex(i => i.CreatedAt);
+
+            modelBuilder.Entity<Invoice>()
+                .HasIndex(i => i.InvoiceType);
+
+            modelBuilder.Entity<Invoice>()
+                .HasIndex(i => i.IsPaid);
         }
     }
 }

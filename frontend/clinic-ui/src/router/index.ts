@@ -13,7 +13,6 @@ const routes: RouteRecordRaw[] = [
     name: "GuestDashboard",
     component: () => import("@/views/GuestDashboard.vue")
   },
-
 {
   path: "/login",
   name: "Login",

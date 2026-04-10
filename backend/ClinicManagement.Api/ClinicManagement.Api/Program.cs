@@ -77,6 +77,10 @@ builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
 builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<AppointmentService>();
+builder.Services.AddHostedService<NoShowBackgroundService>();
+builder.Services.AddScoped<AppointmentService>();
+builder.Services.AddScoped<EmailService>();
 
 var jwtKey = configuration["Jwt:Key"]
     ?? throw new ArgumentNullException("Jwt:Key is missing in appsettings.json");
