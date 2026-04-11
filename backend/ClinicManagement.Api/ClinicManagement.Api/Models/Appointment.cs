@@ -64,5 +64,16 @@ namespace ClinicManagement.Api.Models
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
         [JsonIgnore]
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
+        public DateTime GetAppointmentDateTime()
+        {
+            return AppointmentDate.Date.Add(AppointmentTime);
+        }
+        public bool IsNoShow(DateTime now)
+        {
+            return (Status == AppointmentStatus.Pending || Status == AppointmentStatus.Confirmed)
+                   && CheckedInAt == null
+                   && GetAppointmentDateTime().AddMinutes(30) < now;
+        }
     }
 }
