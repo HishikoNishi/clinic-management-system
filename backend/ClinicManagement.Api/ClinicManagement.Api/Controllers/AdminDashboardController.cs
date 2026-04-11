@@ -89,6 +89,104 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(dto);
         }
+        /// <summary>
+        /// Doanh thu theo filter: ngày / tháng / năm / khoa / loại hóa đơn
+        /// </summary>
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetRevenue(
+            [FromQuery] int? year,
+            [FromQuery] int? month,
+            [FromQuery] Guid? departmentId,
+            [FromQuery] string? invoiceType)
+        {
+            var query = _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                        .ThenInclude(d => d.Department)
+                .AsQueryable();
+
+            // ===== FILTER THEO NĂM =====
+            if (year.HasValue)
+            {
+                query = query.Where(i => i.CreatedAt.Year == year.Value);
+            }
+
+            // ===== FILTER THEO THÁNG =====
+            if (month.HasValue)
+            {
+                query = query.Where(i => i.CreatedAt.Month == month.Value);
+            }
+
+            // ===== FILTER THEO LOẠI HÓA ĐƠN =====
+            if (!string.IsNullOrEmpty(invoiceType))
+            {
+                query = query.Where(i => i.InvoiceType.ToString() == invoiceType);
+            }
+
+            // ===== FILTER THEO KHOA =====
+            if (departmentId.HasValue)
+            {
+                query = query.Where(i =>
+                    i.Appointment.Doctor != null &&
+                    i.Appointment.Doctor.DepartmentId == departmentId.Value);
+            }
+
+            var data = await query.ToListAsync();
+
+            // ===== TỔNG DOANH THU =====
+            var totalRevenue = data.Sum(x => x.Amount);
+
+            // ===== GROUP THEO NGÀY =====
+            var byDay = data
+                .GroupBy(x => x.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Label = g.Key.ToString("dd/MM"),
+                    Value = g.Sum(x => x.Amount)
+                })
+                .OrderBy(x => x.Label)
+                .ToList();
+
+            // ===== GROUP THEO THÁNG =====
+            var byMonth = data
+                .GroupBy(x => new { x.CreatedAt.Year, x.CreatedAt.Month })
+                .Select(g => new
+                {
+                    Label = $"{g.Key.Month}/{g.Key.Year}",
+                    Value = g.Sum(x => x.Amount)
+                })
+                .ToList();
+
+            // ===== GROUP THEO KHOA =====
+            var byDepartment = data
+                .GroupBy(x => x.Appointment.Doctor != null ? x.Appointment.Doctor.Department.Name : "Unknown")
+                .Select(g => new
+                {
+                    Label = g.Key,
+                    Value = g.Sum(x => x.Amount)
+                })
+                .ToList();
+
+            // ===== GROUP THEO LOẠI HÓA ĐƠN =====
+            var byType = data
+                .GroupBy(x => x.InvoiceType.ToString())
+                .Select(g => new
+                {
+                    Label = g.Key,
+                    Value = g.Sum(x => x.Amount)
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                totalRevenue,
+                byDay,
+                byMonth,
+                byDepartment,
+                byType
+            });
+        }
     }
 
     public class AdminDashboardStatsDto

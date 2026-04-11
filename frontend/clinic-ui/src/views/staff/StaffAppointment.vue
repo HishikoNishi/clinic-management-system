@@ -69,22 +69,29 @@
       <div class="table-responsive">
         <table>
           <thead>
-            <tr>
-              <th>Mã</th>
-              <th>Bệnh nhân</th>
-              <th>Điện thoại</th>
-              <th>Ngày sinh</th>
-              <th>Ngày khám</th>
-              <th>Trạng thái</th>
-              <th>Triệu chứng</th>
-              <th>Bác sĩ</th>
-              <th>Gán/Điều phối bác sĩ</th>
-            </tr>
-          </thead>
+  <tr>
+    <th>Mã lịch</th>
+    <th>Bệnh nhân</th>
+    <th>Mã BN</th>
+    <th>CCCD</th>
+    <th>BHYT</th>
+    <th>Điện thoại</th>
+    <th>Ngày sinh</th>
+    <th>Ngày khám</th>
+    <th>Trạng thái</th>
+    <th>Yêu cầu của bệnh nhân</th>
+    <th>Bác sĩ</th>
+    
+       <th>Thao tác</th>
+  </tr>
+</thead>
           <tbody>
             <tr v-for="a in filteredAppointments" :key="a.id">
               <td>{{ a.appointmentCode }}</td>
               <td class="fw-semibold">{{ a.fullName }}</td>
+              <td class="text-monospace small">{{ a.patientCode || '—' }}</td>
+              <td class="text-monospace small">{{ a.citizenId || '—' }}</td>
+              <td class="text-monospace small">{{ a.insuranceCardNumber || '—' }}</td>
               <td>{{ a.phone }}</td>
               <td>{{ formatDate(a.dateOfBirth) }}</td>
               <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
@@ -281,6 +288,9 @@ interface Appointment {
   appointmentDate: string
   appointmentTime: string
   reason: string
+  patientCode?: string       
+  citizenId?: string     
+  insuranceCardNumber?: string
   statusDetail: {
     value: string
     doctorName: string

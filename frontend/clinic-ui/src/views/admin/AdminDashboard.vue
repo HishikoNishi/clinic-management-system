@@ -28,14 +28,10 @@
             <i class="bi bi-bar-chart-line me-2 text-primary"></i>
             Lịch khám 14 ngày gần nhất
           </h3>
-          <div class="admin-bar-chart" role="img" :aria-label="'Biểu đồ cột số lịch khám theo ngày'">
+          <div class="admin-bar-chart">
             <div v-for="day in stats.appointmentsLast14Days" :key="day.date" class="admin-bar-wrap">
               <span class="admin-bar-value">{{ day.count }}</span>
-              <div
-                class="admin-bar"
-                :style="{ height: barHeight(day.count) + 'px' }"
-                :title="`${day.date}: ${day.count} lịch`"
-              />
+              <div class="admin-bar" :style="{ height: barHeight(day.count) + 'px' }" />
               <span class="admin-bar-label">{{ day.label }}</span>
             </div>
           </div>
@@ -50,11 +46,7 @@
             <div v-for="row in statusRows" :key="row.key" class="admin-status-row">
               <span class="admin-status-name">{{ row.label }}</span>
               <div class="admin-status-track">
-                <div
-                  class="admin-status-fill"
-                  :class="row.fillClass"
-                  :style="{ width: row.pct + '%' }"
-                />
+                <div class="admin-status-fill" :class="row.fillClass" :style="{ width: row.pct + '%' }" />
               </div>
               <span class="admin-status-count">{{ row.count }}</span>
             </div>
@@ -62,35 +54,79 @@
         </div>
       </section>
 
+      <!-- ===================== ACTIONS ===================== -->
       <div>
         <h5 class="fw-bold mb-3">Hành động nhanh</h5>
         <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary d-flex align-items-center gap-2" @click="$router.push('/doctors')">
-            <i class="bi bi-people"></i>
-            Quản lý bác sĩ
-          </button>
-          <button class="btn btn-outline-primary d-flex align-items-center gap-2" @click="$router.push('/staff')">
-            <i class="bi bi-people"></i>
-            Quản lý nhân viên
-          </button>
-          <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @click="$router.push('/admin/users/create')">
-            <i class="bi bi-person-plus"></i>
-            Thêm người dùng
-          </button>
-          <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @click="$router.push('/appointment')">
-            <i class="bi bi-calendar-event"></i>
-            Lịch khám
-          </button>
+          <button class="btn btn-primary" @click="$router.push('/doctors')">Quản lý bác sĩ</button>
+          <button class="btn btn-outline-primary" @click="$router.push('/staff')">Quản lý nhân viên</button>
+          <button class="btn btn-outline-secondary" @click="$router.push('/admin/users/create')">Thêm người dùng</button>
+          <button class="btn btn-outline-secondary" @click="$router.push('/appointment')">Lịch khám</button>
         </div>
       </div>
+
+      <!-- ===================== REVENUE (NEW) ===================== -->
+      <section class="mt-4" v-if="stats">
+        <h5 class="fw-bold mb-3">Thống kê doanh thu</h5>
+
+        <!-- FILTER 1 HÀNG -->
+        <div class="d-flex gap-2 mb-3">
+          <input v-model="filters.year" type="number" placeholder="Năm" class="form-control form-control-sm" />
+          <input v-model="filters.month" type="number" placeholder="Tháng" class="form-control form-control-sm" />
+
+          <select v-model="filters.invoiceType" class="form-select form-select-sm">
+            <option value="">Tất cả hóa đơn</option>
+            <option value="Clinic">Khám bệnh</option>
+            <option value="Prescription">Đơn thuốc</option>
+          </select>
+
+          <select v-model="filters.departmentId" class="form-select form-select-sm">
+            <option value="">Tất cả khoa</option>
+            <option v-for="d in departments" :key="d.id" :value="d.id">
+              {{ d.name }}
+            </option>
+          </select>
+
+          <button class="btn btn-primary btn-sm" @click="loadRevenue">
+            Lọc
+          </button>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card p-3">
+              <h6>Doanh thu theo ngày</h6>
+              <LineChart :data="lineChartData" />
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card p-3">
+              <h6>Doanh thu theo khoa</h6>
+              <BarChart :data="barChartData" />
+            </div>
+          </div>
+
+          <div class="col-md-12">
+            <div class="card p-3">
+              <h6>Doanh thu theo loại hóa đơn</h6>
+              <LineChart :data="invoiceTypeChartData" />
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
 import '@/styles/layouts/dashboard.css'
 import '@/styles/layouts/admin-dashboard.css'
 
@@ -206,10 +242,69 @@ const loadStats = async () => {
     loading.value = false
   }
 }
+const revenueData = ref<any>(null)
 
+const filters = ref({
+  year: null as number | null,
+  month: null as number | null,
+  departmentId: null as string | null,
+  invoiceType: null as string | null
+})
+
+const departments = ref<any[]>([])
+
+const loadRevenue = async () => {
+  const res = await api.get('/admin/AdminDashboard/revenue', {
+    params: filters.value
+  })
+  revenueData.value = res.data
+}
+
+watch(filters, () => {
+  loadRevenue()
+}, { deep: true })
+
+const loadDepartments = async () => {
+  try {
+    const res = await api.get('/departments')
+    departments.value = res.data
+  } catch {}
+}
+
+const lineChartData = computed(() => {
+  const data = revenueData.value?.byDay || []
+  return {
+    labels: data.map((x: any) => x.label),
+    datasets: [{ label: 'Doanh thu theo ngày', data: data.map((x: any) => x.value) }]
+  }
+})
+
+const barChartData = computed(() => {
+  const data = revenueData.value?.byDepartment || []
+  return {
+    labels: data.map((x: any) => x.label),
+    datasets: [{ label: 'Doanh thu theo khoa', data: data.map((x: any) => x.value) }]
+  }
+})
+
+const invoiceTypeChartData = computed(() => {
+  const data = revenueData.value?.byType || []
+
+  return {
+    labels: data.map((x: any) => x.label),
+    datasets: [
+      {
+        label: 'Doanh thu theo loại hóa đơn',
+        data: data.map((x: any) => x.value)
+      }
+    ]
+  }
+})
 onMounted(() => {
   if (authStore.role === 'Admin') {
     loadStats()
+    loadRevenue()
+    loadDepartments()
   } else {
     error.value = 'Chỉ tài khoản Admin mới xem được thống kê tổng quan.'
   }

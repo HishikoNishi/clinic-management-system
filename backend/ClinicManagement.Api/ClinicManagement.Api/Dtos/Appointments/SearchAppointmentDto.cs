@@ -6,5 +6,7 @@ namespace ClinicManagement.Api.DTOs
         public string? AppointmentCode { get; set; }
         public string? Phone { get; set; }
         public string? Email { get; set; }
+        public string? CitizenId { get; set; }
+        public string? InsuranceCardNumber { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ClinicManagement.Api.Models
@@ -7,6 +8,18 @@ namespace ClinicManagement.Api.Models
     {
         [Key]
         public Guid Id { get; set; }
+
+
+        [MaxLength(20)]
+        public string? PatientCode { get; set; }
+
+        [MaxLength(12)]
+        public string? CitizenId { get; set; }
+
+ 
+        [MaxLength(20)]
+        public string? InsuranceCardNumber { get; set; }
+      
 
         [Required]
         [MaxLength(150)]
@@ -32,13 +45,11 @@ namespace ClinicManagement.Api.Models
 
         public bool IsDeleted { get; set; } = false;
 
-        public DateTime CreatedAt { get; set; }
-            = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
 
         // ✅ navigation
-        public ICollection<Appointment> Appointments { get; set; }
-            = new List<Appointment>();
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
 }

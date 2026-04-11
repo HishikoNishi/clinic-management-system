@@ -95,17 +95,21 @@
     <div class="card border shadow-sm">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Mã</th>
-              <th>Bệnh nhân</th>
-              <th>SĐT</th>
-              <th>Ngày giờ khám</th>
-              <th>Trạng thái</th>
-              <th>Bác sĩ / Khoa</th>
-              <th class="text-end">Thao tác</th>
-            </tr>
-          </thead>
+        <thead class="table-light">
+  <tr>
+    <th>Mã</th>
+    <th>Bệnh nhân</th>
+    <th>SĐT</th>
+       <th>Mã BN</th>
+    <th>CCCD</th>
+    <th>BHYT</th>
+    <th>Ngày giờ khám</th>
+    <th>Trạng thái</th>
+    <th>Bác sĩ / Khoa</th>
+    <th class="text-end">Thao tác</th>
+  </tr>
+</thead>
+
           <tbody>
             <tr v-if="loading">
               <td colspan="7" class="text-center py-4 text-muted">
@@ -120,6 +124,11 @@
               <td class="text-monospace small">{{ a.appointmentCode }}</td>
               <td class="fw-semibold">{{ a.fullName }}</td>
               <td>{{ a.phone }}</td>
+                <td>{{ a.patientCode || '—' }}</td>
+
+             <td>{{ a.citizenId || '—' }}</td>
+<td>{{ a.insuranceCardNumber || '—' }}</td>
+
               <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
               <td>
                 <span class="badge rounded-pill" :class="statusBadgeClass(a.status)">{{ statusLabelVi(a.status) }}</span>
@@ -162,7 +171,7 @@ const appointments = ref<any[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const statuses = ['All', 'Pending', 'Confirmed', 'Assigned', 'CheckedIn', 'Completed', 'Cancelled']
+const statuses = ['All', 'Pending', 'Confirmed', 'Assigned', 'CheckedIn', 'Completed', 'Cancelled', 'NoShow']
 const currentStatus = ref('All')
 
 const todayPrefix = () => new Date().toISOString().slice(0, 10)
@@ -179,7 +188,8 @@ const statusCount = computed(() => {
     Assigned: 0,
     CheckedIn: 0,
     Completed: 0,
-    Cancelled: 0
+    Cancelled: 0,
+    NoShow: 0
   }
   for (const a of appointments.value) {
     const s = a.status as string
@@ -213,7 +223,8 @@ const statusLabel = (status: string) => {
     Assigned: 'Đã phân BS',
     CheckedIn: 'Đã check-in',
     Completed: 'Hoàn thành',
-    Cancelled: 'Đã hủy'
+    Cancelled: 'Đã hủy',
+    NoShow: 'Không đến'
   }
   return labels[status] || status
 }
@@ -234,6 +245,8 @@ const statusBadgeClass = (status: string) => {
       return 'text-bg-success'
     case 'Cancelled':
       return 'text-bg-danger'
+      case 'NoShow':
+    return 'text-bg-dark'
     default:
       return 'text-bg-secondary'
   }

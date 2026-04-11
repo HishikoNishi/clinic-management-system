@@ -139,7 +139,10 @@ namespace ClinicManagement.Api.Data
                     Gender = Gender.Male,
                     Phone = "0911111111",
                     Email = "patient1@example.com",
-                    Address = "HCMC"
+                    Address = "HCMC",
+                    PatientCode = "PATSEED01",
+                    CitizenId = "123456789012",
+                    InsuranceCardNumber = "BHYT123456"
                 });
 
                 var doctorId = await context.Doctors.Select(d => d.Id).FirstOrDefaultAsync();
@@ -159,6 +162,112 @@ namespace ClinicManagement.Api.Data
                         Reason = "Kham tong quat (seed)",
                         Status = AppointmentStatus.Pending
                     });
+                }
+            }
+
+            // Seed paid invoices (for revenue testing)
+            // - Revenue stats uses Payments table (RevenueThisMonth)
+            // - Revenue filter API currently sums Invoice.Amount, so we seed both Invoice + Payment
+            var hasRevenueSeed = await context.Appointments.AsNoTracking()
+                .AnyAsync(a => a.AppointmentCode.StartsWith("APREV"));
+
+            if (!hasRevenueSeed)
+            {
+                var staffId = await context.Staffs.AsNoTracking()
+                    .Where(s => s.Role == "Cashier" || s.Role == "Staff")
+                    .Select(s => s.Id)
+                    .FirstOrDefaultAsync();
+
+                var doctorIds = await context.Doctors.AsNoTracking()
+                    .Select(d => d.Id)
+                    .ToListAsync();
+
+                if (doctorIds.Count > 0)
+                {
+                    var now = DateTime.Now;
+                    var payDates = new[]
+                    {
+                        now.AddDays(-1).Date.AddHours(10),
+                        now.AddDays(-3).Date.AddHours(15),
+                        now.AddDays(-8).Date.AddHours(9),
+                        now.AddMonths(-1).Date.AddHours(11),
+                        now.AddMonths(-2).Date.AddHours(16),
+                        now.AddYears(-1).Date.AddHours(14),
+                    };
+
+                    for (var i = 0; i < payDates.Length; i++)
+                    {
+                        var seedIndex = i + 1;
+                        var patientId = Guid.NewGuid();
+                        var patientCode = $"PATREV{seedIndex:00}";
+                        var citizenId = $"{seedIndex:00}34567890123".Substring(0, 12);
+                        var phone = $"0987000{seedIndex:000}";
+                        var appointmentCode = $"APREV{seedIndex:00}";
+
+                        // Patient
+                        context.Patients.Add(new Patient
+                        {
+                            Id = patientId,
+                            FullName = $"Benh nhan doanh thu {seedIndex}",
+                            DateOfBirth = new DateTime(1990, 1, 1).AddDays(seedIndex * 50),
+                            Gender = (seedIndex % 2 == 0) ? Gender.Female : Gender.Male,
+                            Phone = phone,
+                            Email = $"revenue{seedIndex}@example.com",
+                            Address = "Seed data",
+                            PatientCode = patientCode,
+                            CitizenId = citizenId,
+                            InsuranceCardNumber = $"BHYTREV{seedIndex:000000}"
+                        });
+
+                        // Appointment
+                        var apptId = Guid.NewGuid();
+                        var doctorId = doctorIds[i % doctorIds.Count];
+                        var apptDate = payDates[i].Date;
+                        context.Appointments.Add(new Appointment
+                        {
+                            Id = apptId,
+                            PatientId = patientId,
+                            DoctorId = doctorId,
+                            StaffId = staffId == Guid.Empty ? null : staffId,
+                            AppointmentDate = apptDate,
+                            AppointmentTime = new TimeSpan(9 + (i % 3), 0, 0),
+                            AppointmentCode = appointmentCode,
+                            Reason = "Seed doanh thu (paid)",
+                            Status = AppointmentStatus.Completed,
+                            CreatedAt = payDates[i].AddMinutes(-30),
+                            CheckedInAt = payDates[i].AddHours(-1),
+                            CheckInChannel = "seed"
+                        });
+
+                        // Invoice (paid)
+                        var amount = 150000m + (seedIndex * 50000m);
+                        var invoiceId = Guid.NewGuid();
+                        context.Invoices.Add(new Invoice
+                        {
+                            Id = invoiceId,
+                            AppointmentId = apptId,
+                            InvoiceType = InvoiceType.Clinic,
+                            Amount = amount,
+                            TotalDeposit = 0m,
+                            BalanceDue = amount,
+                            IsPaid = true,
+                            CreatedAt = payDates[i],
+                            PaymentDate = payDates[i]
+                        });
+
+                        // Payment linked to invoice
+                        context.Payments.Add(new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            InvoiceId = invoiceId,
+                            AppointmentId = apptId,
+                            Amount = amount,
+                            DepositAmount = 0m,
+                            IsDeposit = false,
+                            Method = PaymentMethod.cash,
+                            PaymentDate = payDates[i]
+                        });
+                    }
                 }
             }
 

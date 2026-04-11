@@ -6,9 +6,11 @@
           <h6 class="mb-0">Thông tin bệnh nhân</h6>
         </div>
       <div class="card-body">
+        <p class="mb-1"><span class="text-muted">Mã bệnh nhân:</span> <strong>{{ patient.patientCode || '—' }}</strong></p>
           <p class="mb-1"><span class="text-muted">Họ tên:</span> <strong>{{ patient.fullName }}</strong></p>
           <p class="mb-1"><span class="text-muted">Điện thoại:</span> <strong>{{ patient.phone }}</strong></p>
-          <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
+          <p class="mb-1"><span class="text-muted">CCCD:</span> <strong>{{ patient.citizenId || '—' }}</strong></p>
+<p class="mb-1"><span class="text-muted">Số BHYT:</span> <strong>{{ patient.InsuranceCardNumber || '—' }}</strong></p>          <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
           <p class="mb-1"><span class="text-muted">Mã hẹn:</span> <strong>{{ appointment.appointmentCode }}</strong></p>
           <p class="mb-1"><span class="text-muted">Ngày giờ:</span> <strong>{{ formatDateTime(appointment.appointmentDate, appointment.appointmentTime) }}</strong></p>
           <hr />
@@ -132,9 +134,12 @@
     <div class="card shadow-sm mt-3">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="mb-0">Đơn thuốc</h6>
-        <button class="btn btn-outline-primary btn-sm" type="button" @click="addRow">
-          <i class="bi bi-plus"></i> Thêm thuốc
-        </button>
+        <div class="d-flex gap-2">
+  <button class="btn btn-outline-primary btn-sm" type="button" @click="openMedicineModal">
+    <i class="bi bi-search"></i> Tìm & Chọn thuốc
+  </button>
+  
+</div>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive prescription-table">
@@ -164,7 +169,15 @@
       </div>
     </div>
 
-    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
+   <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="mb-0">📋 Xét nghiệm đã yêu cầu</h6>
+    <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
+      Làm mới
+    </button>
+  </div>
+  
+  <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="mb-0">Xét nghiệm đã yêu cầu</h6>
         <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
@@ -203,6 +216,57 @@
       </button>
     </div>
   </div>
+  </div>
+  <div v-if="showMedicineModal" class="modal-backdrop" @click="showMedicineModal = false">
+  <div class="modal-content medicine-modal" @click.stop>
+    <div class="modal-header">
+      <h5 class="modal-title">📦 Danh mục thuốc & Vật tư</h5>
+      <button class="btn-close" @click="showMedicineModal = false"></button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group mb-3">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+<input 
+  v-model="medicineSearch" 
+  type="text" 
+  class="form-control" 
+  placeholder="Gõ tên thuốc hoặc hàm lượng để lọc nhanh..." 
+  autocomplete="off"
+/>      </div>
+      
+      <div class="table-responsive" style="max-height: 450px;">
+        <table class="table table-hover align-middle">
+          <thead class="sticky-top bg-light">
+            <tr>
+              <th>Tên thuốc & Hàm lượng</th>
+              <th>ĐVT</th>
+              <th>Đơn giá</th>
+              <th style="width: 90px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="m in filteredMedicines" :key="m.id" @click="addMedicineFromModal(m)" style="cursor: pointer;">
+              <td>
+                <div class="fw-bold text-primary">{{ m.name }}</div>
+                <div class="small text-secondary">
+                  <i class="bi bi-capsule"></i> {{ m.defaultDosage || "Không có liều mặc định" }}
+                </div>
+              </td>
+              <td><span class="badge bg-light text-dark border">{{ m.unit }}</span></td>
+              <td><strong class="text-danger">{{ m.price?.toLocaleString() }}đ</strong></td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary">Chọn</button>
+              </td>
+            </tr>
+            <tr v-if="filteredMedicines.length === 0">
+              <td colspan="4" class="text-center py-4 text-muted">Không tìm thấy thuốc phù hợp</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -228,6 +292,76 @@ const saving = ref(false)
 const error = ref<string | null>(null)
 const dataFromRecord = ref<any | null>(null)
 
+const showMedicineModal = ref(false)
+const medicineSearch = ref("")
+const medicines = ref<any[]>([])
+
+const loadMedicines = async () => {
+  try {
+    const { data } = await api.get('/Medicines')
+    medicines.value = data || []
+  } catch (err) { console.error("Lỗi tải thuốc", err) }
+}
+
+const filteredMedicines = computed(() => {
+  const s = medicineSearch.value.toLowerCase().trim();
+  
+  // Nếu không gõ gì, hiện 20 thuốc đầu tiên cho nhẹ trang
+  if (!s) return medicines.value.slice(0, 20);
+
+  // Lọc theo tên và liều mặc định.
+  return medicines.value.filter(m => {
+    const name = (m.name || "").toLowerCase();
+    const dosage = (m.defaultDosage || "").toLowerCase();
+    
+    return name.includes(s) || dosage.includes(s);
+  });
+});
+const openMedicineModal = () => {
+  medicineSearch.value = ""
+  showMedicineModal.value = true
+}
+
+const addMedicineFromModal = (m: any) => {
+  const fullMedicineName = m.defaultDosage ? `${m.name} ${m.defaultDosage}` : m.name;
+  
+  // 1. Tìm xem thuốc này đã có trong đơn chưa (so sánh tên thuốc)
+  const existingItem = form.prescriptionItems.find(
+    (item: any) => item.medicineName === fullMedicineName
+  );
+
+  if (existingItem) {
+    // 2. Nếu đã có, tăng số lượng lên 1
+    existingItem.quantity = (Number(existingItem.quantity) || 0) + 1;
+  } else {
+    // 3. Nếu chưa có, kiểm tra dòng đầu tiên có đang trống không
+    const firstItem = form.prescriptionItems[0] as any;
+    
+    if (form.prescriptionItems.length === 1 && (!firstItem.medicineName || firstItem.medicineName.trim() === "")) {
+      // Điền vào dòng trống duy nhất
+      firstItem.medicineName = fullMedicineName;
+      firstItem.dosage = m.defaultDosage || "";
+      firstItem.quantity = 1;
+    } else {
+      // Thêm dòng mới hoàn toàn
+      form.prescriptionItems.push({ 
+        medicineName: fullMedicineName, 
+        dosage: m.defaultDosage || "", 
+        quantity: 1 
+      });
+    }
+  }
+  
+  showMedicineModal.value = false;
+};
+onMounted(() => {
+  if (!authStore.token) {
+    router.push("/login")
+    return
+  }
+  loadDetail()
+  loadMedicines() // Thêm dòng này
+})
 const form = reactive({
   diagnosis: "",
   notes: "",
@@ -317,11 +451,16 @@ const loadDetail = async () => {
     currentMedicalRecordId.value = data.currentMedicalRecordId || null
     dataFromRecord.value = data
     Object.assign(appointment, data.appointment || {})
-    Object.assign(patient, {
-      fullName: data.appointment?.fullName,
-      phone: data.appointment?.phone,
-      dateOfBirth: data.appointment?.dateOfBirth
-    })
+   Object.assign(patient, {
+  fullName: data.appointment?.fullName,
+  phone: data.appointment?.phone,
+  dateOfBirth: data.appointment?.dateOfBirth,
+  patientCode: data.appointment?.patientCode, 
+  citizenId: data.appointment?.citizenId,
+  // Thử tất cả các trường hợp tên biến có thể trả về từ API
+  InsuranceCardNumber: data.appointment?.insuranceCardNumber 
+  
+})
     history.value = data.medicalHistory || []
 
     // Prefill from current medical record if exists
@@ -449,7 +588,6 @@ const submit = async () => {
       requestClinicalTest: form.requestClinicalTest,
       clinicalTestNames,
       prescriptionItems,
-      // giữ lại bảo hiểm/phụ thu/giảm trừ đã có (nếu không muốn đổi)
       insuranceCoverPercent: dataFromRecord.value?.insuranceCoverPercent ?? 0,
       surcharge: dataFromRecord.value?.surcharge ?? 0,
       discount: dataFromRecord.value?.discount ?? 0
@@ -475,13 +613,7 @@ const submit = async () => {
 
 const goBack = () => router.push("/doctor/appointments")
 
-onMounted(() => {
-  if (!authStore.token) {
-    router.push("/login")
-    return
-  }
-  loadDetail()
-})
+
 </script>
 
 <style src="@/styles/layouts/doctor-exam.css"></style>

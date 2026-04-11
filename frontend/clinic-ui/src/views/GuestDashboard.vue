@@ -207,7 +207,29 @@
                   <span v-if="bookingErrors.address" class="form-error">{{ bookingErrors.address }}</span>
                 </div>
               </div>
-
+<div class="form-row">
+  <div class="form-group">
+    <label class="form-label">Số CCCD/Passport</label>
+    <input 
+      v-model="bookingForm.CitizenId" 
+      type="text" 
+      class="form-input" 
+      :readonly="isReturning"
+      maxlength="12"
+      placeholder="Nhập số CCCD"
+    />
+  </div>
+  <div class="form-group">
+    <label class="form-label">Mã số BHYT (nếu có)</label>
+    <input 
+      v-model="bookingForm.insuranceNumber" 
+      type="text" 
+      class="form-input" 
+      :readonly="isReturning"
+      placeholder="Nhập mã BHYT"
+    />
+  </div>
+</div>
               <!-- OTP -->
               <div class="form-row align-items-end otp-row">
                 <div class="form-group flex-grow-1">
@@ -458,6 +480,8 @@ const bookingForm = reactive({
   phone: '',
   email: '',
   address: '',
+  CitizenId: '', // Thêm mới
+  insuranceNumber: '', // Thêm mới
   appointmentDate: '',
   appointmentTime: '',
   reason: ''
@@ -611,6 +635,8 @@ const applyPrefill = (data: any) => {
   bookingForm.phone = normalizePhoneInput(data.phone || '')
   bookingForm.email = data.email || ''
   bookingForm.address = data.address || ''
+  bookingForm.CitizenId = data.citizenId || '' // Điền CCCD cũ
+  bookingForm.insuranceNumber = data.insuranceCardNumber || '' // Điền BHYT cũ
   isReturning.value = true
 }
 
@@ -711,6 +737,8 @@ const submitBooking = async () => {
       phone: bookingForm.phone,
       email: bookingForm.email,
       address: bookingForm.address,
+      citizenId: bookingForm.CitizenId,
+      insuranceCardNumber: bookingForm.insuranceNumber,
       appointmentDate: bookingForm.appointmentDate,
       appointmentTime: bookingForm.appointmentTime + ':00',
       reason: reasonWithDept
@@ -721,7 +749,12 @@ const submitBooking = async () => {
     bookingSuccessRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     addRecent(response.data)
   } catch (error: any) {
-    bookingError.value = error.response?.data?.message || 'Không thể đặt lịch khám. Vui lòng thử lại.'
+    const raw = error?.response?.data
+    const msg =
+      typeof raw === 'string'
+        ? raw
+        : (raw?.message || raw?.error || raw?.title || null)
+    bookingError.value = msg || 'Không thể đặt lịch khám. Vui lòng thử lại.'
     console.error('Booking error:', error)
   } finally {
     bookingLoading.value = false
