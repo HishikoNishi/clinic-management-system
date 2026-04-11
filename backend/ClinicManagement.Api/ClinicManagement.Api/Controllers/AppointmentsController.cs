@@ -79,9 +79,19 @@ namespace ClinicManagement.Api.Controllers
 
             if (patient == null)
             {
+                // Sinh mã bệnh nhân ngay lúc đăng ký (để Staff thấy được ở danh sách lịch).
+                // Check-in phía Staff vẫn chỉ sinh nếu PatientCode đang thiếu.
+                string patientCode;
+                do
+                {
+                    patientCode = CodeGenerator.GeneratePatientCode();
+                }
+                while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
+
                 patient = new Patient
                 {
                     Id = Guid.NewGuid(),
+                    PatientCode = patientCode,
                     FullName = dto.FullName,
                     Phone = dto.Phone,
                     Email = dto.Email,
@@ -97,6 +107,18 @@ namespace ClinicManagement.Api.Controllers
             }
             else
             {
+                if (string.IsNullOrWhiteSpace(patient.PatientCode))
+                {
+                    string patientCode;
+                    do
+                    {
+                        patientCode = CodeGenerator.GeneratePatientCode();
+                    }
+                    while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
+
+                    patient.PatientCode = patientCode;
+                }
+
                 if (string.IsNullOrWhiteSpace(patient.CitizenId) &&
                     !string.IsNullOrWhiteSpace(dto.CitizenId))
                 {

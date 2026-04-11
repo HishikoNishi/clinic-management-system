@@ -24,7 +24,7 @@ namespace ClinicManagement.Api.Services
 
                 await service.MarkNoShowAppointments();
 
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
     }

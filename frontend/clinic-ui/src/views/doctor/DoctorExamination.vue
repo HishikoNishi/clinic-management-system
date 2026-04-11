@@ -238,20 +238,18 @@
         <table class="table table-hover align-middle">
           <thead class="sticky-top bg-light">
             <tr>
-              <th>Mã thuốc</th>
               <th>Tên thuốc & Hàm lượng</th>
               <th>ĐVT</th>
               <th>Đơn giá</th>
-              <th style="width: 100px;"></th>
+              <th style="width: 90px;"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="m in filteredMedicines" :key="m.id" @click="addMedicineFromModal(m)" style="cursor: pointer;">
-              <td><small class="text-muted">{{ m.medicineCode }}</small></td>
               <td>
                 <div class="fw-bold text-primary">{{ m.name }}</div>
                 <div class="small text-secondary">
-                  <i class="bi bi-capsule"></i> {{ m.dosageForm }} {{ m.strength ? ' - ' + m.strength : '' }}
+                  <i class="bi bi-capsule"></i> {{ m.defaultDosage || "Không có liều mặc định" }}
                 </div>
               </td>
               <td><span class="badge bg-light text-dark border">{{ m.unit }}</span></td>
@@ -261,7 +259,7 @@
               </td>
             </tr>
             <tr v-if="filteredMedicines.length === 0">
-              <td colspan="5" class="text-center py-4 text-muted">Không tìm thấy thuốc phù hợp</td>
+              <td colspan="4" class="text-center py-4 text-muted">Không tìm thấy thuốc phù hợp</td>
             </tr>
           </tbody>
         </table>
@@ -311,13 +309,12 @@ const filteredMedicines = computed(() => {
   // Nếu không gõ gì, hiện 20 thuốc đầu tiên cho nhẹ trang
   if (!s) return medicines.value.slice(0, 20);
 
-  // Lọc thông minh: Tìm trong Tên, Mã thuốc, và cả Hàm lượng (Strength)
+  // Lọc theo tên và liều mặc định.
   return medicines.value.filter(m => {
     const name = (m.name || "").toLowerCase();
-    const code = (m.medicineCode || "").toLowerCase();
-    const strength = (m.strength || "").toLowerCase();
+    const dosage = (m.defaultDosage || "").toLowerCase();
     
-    return name.includes(s) || code.includes(s) || strength.includes(s);
+    return name.includes(s) || dosage.includes(s);
   });
 });
 const openMedicineModal = () => {
@@ -326,7 +323,7 @@ const openMedicineModal = () => {
 }
 
 const addMedicineFromModal = (m: any) => {
-  const fullMedicineName = m.strength ? `${m.name} ${m.strength}` : m.name;
+  const fullMedicineName = m.defaultDosage ? `${m.name} ${m.defaultDosage}` : m.name;
   
   // 1. Tìm xem thuốc này đã có trong đơn chưa (so sánh tên thuốc)
   const existingItem = form.prescriptionItems.find(

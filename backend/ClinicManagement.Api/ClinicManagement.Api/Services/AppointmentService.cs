@@ -38,7 +38,7 @@ namespace ClinicManagement.Api.Services
                 var appointmentDateTime = appt.AppointmentDate.Date
                     .Add(appt.AppointmentTime);
 
-                if (appointmentDateTime.AddMinutes(1) < now)
+                if (appointmentDateTime.AddMinutes(30) < now)
                 {
                     // ✅ CHỐNG SPAM MAIL (chỉ xử lý khi chưa phải NoShow)
                     if (appt.Status != AppointmentStatus.NoShow)
