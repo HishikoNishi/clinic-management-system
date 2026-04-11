@@ -111,18 +111,30 @@
               >
                 <div class="d-flex align-items-start justify-content-between gap-2">
                   <div class="min-w-0">
-                    <div class="fw-semibold text-truncate">{{ p.fullName || '—' }}</div>
+                    <div class="fw-bold text-truncate">{{ p.fullName || '—' }}</div>
+                    
                     <div class="text-muted small text-truncate">
-                      <i class="bi bi-telephone me-1" aria-hidden="true"></i>{{ p.phone || '—' }}
+                      <i class="bi bi-person-badge me-1"></i>Mã BN: <strong>{{ p.patientCode || '—' }}</strong> 
+                      <span class="mx-1">|</span>
+                      <i class="bi bi-telephone me-1"></i> SĐT:{{ p.phone || '—' }}
+                    </div>
+
+                    <div class="text-muted small text-truncate">
+                      <i class="bi bi-card-heading me-1"></i>CCCD: {{ p.citizenId || '—' }}
                     </div>
                     <div class="text-muted small text-truncate">
-                      <i class="bi bi-file-earmark-medical me-1" aria-hidden="true"></i>{{ p.medicalRecordId || '—' }}
+                      <i class="bi bi-shield-check me-1"></i>BHYT: {{ p.insuranceCardNumber || '—' }}
+                    </div>
+
+                    <div class="text-muted small text-truncate">
+                      <i class="bi bi-file-earmark-medical me-1"></i>Hồ sơ: {{ p.medicalRecordId || '—' }}
                     </div>
                     <div class="text-muted small text-truncate">
-                      <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ p.appointmentCode || p.appointmentId || '—' }}
+                      <i class="bi bi-upc-scan me-1"></i>Mã hẹn: {{ p.appointmentCode || p.appointmentId || '—' }}
                     </div>
+                    
                     <div v-if="viewMode === 'history'" class="text-muted small">
-                      <i class="bi bi-calendar3 me-1"></i>{{ p.recordDate || '—' }}
+                      <i class="bi bi-calendar3 me-1"></i>Ngày: {{ p.recordDate || '—' }}
                     </div>
                   </div>
                   <span v-if="viewMode === 'pending'" class="badge rounded-pill text-bg-primary">
@@ -386,7 +398,10 @@ const loadHistoryPatients = async () => {
           patientId: t.patientId,
           fullName: t.patientName || "",
           phone: t.patientPhone || "",
-          recordDate: date
+          recordDate: date,
+          patientCode: t.patientCode, 
+  citizenId: t.citizenId,
+  insuranceCardNumber: t.insuranceCardNumber,
         })
       }
     })
