@@ -30,6 +30,9 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
         <div class="small text-muted mb-3">
           Hóa đơn: <span class="fw-semibold">{{ invoice.id }}</span><br />
           Bệnh nhân: <span class="fw-semibold">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</span><br />
+          <div>Mã BN: <span class="fw-semibold text-dark">{{ invoice.patientCode || invoice.appointment?.patient?.patientCode || '—' }}</span></div>
+      <div>Số CCCD: <span class="fw-semibold text-dark">{{ invoice.citizenId || invoice.appointment?.patient?.citizenId || '—' }}</span></div>
+      <div>Mã BHYT: <span class="fw-semibold text-dark">{{ invoice.insuranceCardNumber || invoice.appointment?.patient?.insuranceCardNumber || '—' }}</span></div>
           Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</span><br />
           Loại: <span class="badge bg-light text-dark">{{ invoice.invoiceType === 'Drug' ? 'Thuốc' : 'Khám' }}</span><br />
           <span v-if="invoice.insuranceCoverPercent && invoice.insuranceCoverPercent > 0">
