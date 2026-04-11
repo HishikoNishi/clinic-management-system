@@ -17,5 +17,8 @@ namespace ClinicManagement.Api.Dtos.ClinicalTests
         public Guid? PatientId { get; set; }
         public string? PatientName { get; set; }
         public string? PatientPhone { get; set; }
+        public string? PatientCode { get; set; }
+        public string? CitizenId { get; set; }
+        public string? InsuranceCardNumber { get; set; }
     }
 }

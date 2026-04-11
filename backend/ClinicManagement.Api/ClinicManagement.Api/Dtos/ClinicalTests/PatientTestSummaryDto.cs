@@ -11,5 +11,8 @@ namespace ClinicManagement.Api.Dtos.ClinicalTests
         public int PendingCount { get; set; }
         public Guid AppointmentId { get; set; }
         public Guid MedicalRecordId { get; set; }
+        public string? PatientCode { get; set; }
+        public string? CitizenId { get; set; }
+        public string? InsuranceCardNumber { get; set; }
     }
 }
