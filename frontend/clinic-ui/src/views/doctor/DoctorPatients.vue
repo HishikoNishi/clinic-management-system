@@ -23,9 +23,14 @@
         <table class="table mb-0 align-middle">
           <thead>
             <tr>
+               <th>Mã bệnh nhân</th>
               <th>Họ tên</th>
               <th>SĐT</th>
+
               <th>Tuổi</th>
+             
+    <th>CCCD</th>
+    <th>BHYT</th>
               <th>Ghi chú</th>
               <th class="text-end">Hành động</th>
             </tr>
@@ -40,9 +45,13 @@
               <td colspan="5" class="text-center py-3 text-muted">Không có bệnh nhân.</td>
             </tr>
             <tr v-else v-for="p in filteredPatients" :key="p.id">
+                <td>{{ p.patientCode || '—' }}</td>
               <td class="fw-semibold">{{ p.fullName }}</td>
               <td>{{ p.phone }}</td>
               <td>{{ calcAge(p.dateOfBirth) }}</td>
+            
+              <td>{{ p.citizenId || '—' }}</td>
+              <td>{{ p.insuranceCardNumber || '—' }}</td>
               <td>{{ p.note }}</td>
               <td class="text-end">
                 <button class="btn btn-outline-primary btn-sm" @click="goDetail(p.id)">

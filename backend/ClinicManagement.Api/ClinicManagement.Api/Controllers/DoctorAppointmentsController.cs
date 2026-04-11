@@ -58,6 +58,10 @@ namespace ClinicManagement.Api.Controllers
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 CreatedAt = appointment.CreatedAt,
+                PatientCode = appointment.Patient?.PatientCode,
+                CitizenId = appointment.Patient?.CitizenId,
+                InsuranceCardNumber = appointment.Patient?.InsuranceCardNumber,
+
                 StatusDetail = new AppointmentStatusDto
                 {
                     Value = appointment.Status.ToString(),
@@ -111,6 +115,9 @@ namespace ClinicManagement.Api.Controllers
                 AppointmentDate = a.AppointmentDate,
                 AppointmentTime = a.AppointmentTime,
                 CreatedAt = a.CreatedAt,
+                PatientCode = a.Patient != null ? a.Patient.PatientCode : null,
+                CitizenId = a.Patient != null ? a.Patient.CitizenId : null,
+                InsuranceCardNumber = a.Patient != null ? a.Patient.InsuranceCardNumber : null,
                 StatusDetail = new AppointmentStatusDto
                 {
                     Value = a.Status.ToString(),
@@ -209,7 +216,10 @@ namespace ClinicManagement.Api.Controllers
                     Status = appointment.Status.ToString(),
                     AppointmentDate = appointment.AppointmentDate,
                     AppointmentTime = appointment.AppointmentTime,
-                    CreatedAt = appointment.CreatedAt
+                    CreatedAt = appointment.CreatedAt,
+                    PatientCode = appointment.Patient?.PatientCode,
+                    CitizenId = appointment.Patient?.CitizenId,
+                    InsuranceCardNumber = appointment.Patient?.InsuranceCardNumber
                 },
                 MedicalHistory = history,
                 Diagnosis = currentRecord?.Diagnosis,

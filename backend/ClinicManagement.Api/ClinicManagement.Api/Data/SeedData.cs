@@ -139,7 +139,10 @@ namespace ClinicManagement.Api.Data
                     Gender = Gender.Male,
                     Phone = "0911111111",
                     Email = "patient1@example.com",
-                    Address = "HCMC"
+                    Address = "HCMC",
+                    PatientCode = "PATSEED01",
+                    CitizenId = "123456789012",
+                    InsuranceCardNumber = "BHYT123456"
                 });
 
                 var doctorId = await context.Doctors.Select(d => d.Id).FirstOrDefaultAsync();

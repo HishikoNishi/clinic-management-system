@@ -126,7 +126,28 @@
               <div v-if="errors.address" class="form-error">{{ errors.address }}</div>
             </div>
           </div>
-
+<div class="form-row">
+  <div class="form-group">
+    <label class="form-label">Số CCCD</label>
+    <input 
+      v-model="form.citizenId" 
+      type="text" 
+      class="form-control" 
+      placeholder="Nhập 12 số CCCD"
+      maxlength="12"
+  
+    />
+  </div>
+  <div class="form-group">
+    <label class="form-label">Mã số BHYT</label>
+    <input 
+      v-model="form.insuranceCardNumber" 
+      type="text" 
+      class="form-control" 
+      placeholder="Ví dụ: GD479..."
+    />
+  </div>
+</div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Ngày khám *</label>
@@ -230,11 +251,12 @@ const form = reactive({
   phone: '',
   email: '',
   address: '',
+  citizenId: '',         
+  insuranceCardNumber: '', 
   appointmentDate: todayStr,
   appointmentTime: '',
   reason: ''
 })
-
 const errors = reactive({
   fullName: '',
   dateOfBirth: '',
@@ -372,13 +394,16 @@ const lookupPatient = async () => {
       }
     })
 
-    form.fullName = data.fullName || ''
-    form.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
-    form.gender = mapGenderToOption(data.gender)
-    form.phone = normalizePhoneInput(data.phone || '')
-    form.email = data.email || ''
-    form.address = data.address || ''
-    isReturning.value = true
+// Trong hàm lookupPatient
+form.fullName = data.fullName || ''
+form.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
+form.gender = mapGenderToOption(data.gender)
+form.phone = normalizePhoneInput(data.phone || '')
+form.email = data.email || ''
+form.address = data.address || ''
+form.citizenId = data.citizenId || '' // Thêm dòng này
+form.insuranceCardNumber = data.insuranceCardNumber || '' // Thêm dòng này
+isReturning.value = true
   } catch (error: any) {
     lookupError.value = getErrorMessage(error, 'Không tìm thấy hồ sơ bệnh nhân')
     isReturning.value = false
@@ -444,9 +469,12 @@ const submitBooking = async () => {
       phone: form.phone.trim(),
       email: form.email.trim() || null,
       address: form.address.trim(),
+      
       appointmentDate: form.appointmentDate,
-      appointmentTime: `${form.appointmentTime.trim()}:00`,
-      reason: reasonWithDepartment
+citizenId: form.citizenId.trim() || null,
+  insuranceCardNumber: form.insuranceCardNumber.trim() || null,
+  appointmentTime: `${form.appointmentTime.trim()}:00`,
+  reason: reasonWithDepartment
     })
 
     bookingResponse.value = response.data
