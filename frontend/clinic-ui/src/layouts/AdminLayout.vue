@@ -18,6 +18,7 @@ const navItems = computed(() => {
       { label: "Bác sĩ", icon: "person-workspace", path: "/doctors" },
       { label: "Khoa", icon: "building", path: "/departments" },
       { label: "Chuyên khoa", icon: "layers", path: "/specialties" },
+      { label: "Thuốc", icon: "capsule-pill", path: "/medicines" },
       { label: "Nhân viên", icon: "people", path: "/staff" },
       { label: "Tạo tài khoản", icon: "person-plus", path: "/admin/users/create" }
     ]

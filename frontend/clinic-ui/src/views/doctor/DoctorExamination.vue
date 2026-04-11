@@ -208,14 +208,15 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2 mt-3">
+   
+  </div>
+   <div class="d-flex justify-content-end gap-2 mt-3">
       <button class="btn btn-outline-secondary" @click="goBack">Quay lại</button>
       <button class="btn btn-primary" @click="submit" :disabled="saving">
         <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
         Lưu khám
       </button>
     </div>
-  </div>
   </div>
   <div v-if="showMedicineModal" class="modal-backdrop" @click="showMedicineModal = false">
   <div class="modal-content medicine-modal" @click.stop>

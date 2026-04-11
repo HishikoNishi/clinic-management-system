@@ -72,7 +72,10 @@
   <tr>
     <th>Mã lịch</th>
     <th>Bệnh nhân</th>
-    <th>Mã BN</th> <th>CCCD</th>   <th>BHYT</th>   <th>Điện thoại</th>
+    <th>Mã BN</th>
+    <th>CCCD</th>
+    <th>BHYT</th>
+    <th>Điện thoại</th>
     <th>Ngày sinh</th>
     <th>Ngày khám</th>
     <th>Trạng thái</th>
@@ -86,9 +89,9 @@
             <tr v-for="a in filteredAppointments" :key="a.id">
               <td>{{ a.appointmentCode }}</td>
               <td class="fw-semibold">{{ a.fullName }}</td>
-<td class="text-monospace small">
-  {{ a.patientCode || a.patientCode || '—' }}
-</td>  <td class="text-monospace">{{ a.insuranceCardNumber || '—' }}</td>
+              <td class="text-monospace small">{{ a.patientCode || '—' }}</td>
+              <td class="text-monospace small">{{ a.citizenId || '—' }}</td>
+              <td class="text-monospace small">{{ a.insuranceCardNumber || '—' }}</td>
               <td>{{ a.phone }}</td>
               <td>{{ formatDate(a.dateOfBirth) }}</td>
               <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
