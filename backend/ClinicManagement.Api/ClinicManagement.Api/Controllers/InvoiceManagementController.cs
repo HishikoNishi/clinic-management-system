@@ -266,6 +266,7 @@ namespace ClinicManagement.Api.Controllers
                 InvoiceType = invoice.InvoiceType.ToString(),
                 AppointmentCode = invoice.Appointment?.AppointmentCode,
                 PatientName = invoice.Appointment?.Patient?.FullName,
+                invoice.Appointment.AppointmentDate, 
                 invoice.Amount,
                 invoice.TotalDeposit,
                 invoice.BalanceDue,
@@ -281,7 +282,10 @@ namespace ClinicManagement.Api.Controllers
                     {
                         invoice.Appointment.Patient.FullName,
                         invoice.Appointment.Patient.Phone,
-                        invoice.Appointment.Patient.Email
+                        invoice.Appointment.Patient.Email,
+                        invoice.Appointment.Patient.PatientCode,       
+                        invoice.Appointment.Patient.CitizenId,       
+                        invoice.Appointment.Patient.InsuranceCardNumber
                     }
                 },
                 payments = invoice.Payments?.Select(p => new
