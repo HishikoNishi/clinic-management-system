@@ -20,6 +20,10 @@ namespace ClinicManagement.Api.Models
         public string Treatment { get; set; } = string.Empty;
 
         public string Note { get; set; } = string.Empty;
+        public float Height { get; set; }   
+        public float Weight { get; set; }   
+        public float BMI { get; set; }      
+        public string UnderlyingDiseases { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

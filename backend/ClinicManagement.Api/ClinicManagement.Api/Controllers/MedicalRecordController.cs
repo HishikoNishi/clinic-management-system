@@ -32,6 +32,13 @@ namespace ClinicManagement.Api.Controllers
                     Diagnosis = r.Diagnosis,
                     Treatment = r.Treatment,
                     Note = r.Note,
+
+                    // 👇 THÊM
+                    Height = r.Height,
+                    Weight = r.Weight,
+                    BMI = r.BMI,
+                    UnderlyingDiseases = r.UnderlyingDiseases,
+
                     CreatedAt = r.CreatedAt
                 })
                 .ToListAsync();
@@ -54,6 +61,13 @@ namespace ClinicManagement.Api.Controllers
                     Diagnosis = r.Diagnosis,
                     Treatment = r.Treatment,
                     Note = r.Note,
+
+                    // 👇 THÊM
+                    Height = r.Height,
+                    Weight = r.Weight,
+                    BMI = r.BMI,
+                    UnderlyingDiseases = r.UnderlyingDiseases,
+
                     CreatedAt = r.CreatedAt
                 })
                 .FirstOrDefaultAsync();
@@ -75,19 +89,25 @@ namespace ClinicManagement.Api.Controllers
 
             var userId = Guid.Parse(userIdClaim);
 
-            // tìm doctor từ user
             var doctor = await _context.Doctors
                 .FirstOrDefaultAsync(d => d.UserId == userId);
 
             if (doctor == null)
                 return BadRequest("User is not a doctor");
 
-            // tìm appointment
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
             if (appointment == null)
                 return BadRequest("Appointment not found");
+
+            // 👇 VALIDATE + BMI
+            if (dto.Height <= 0 || dto.Weight <= 0)
+            {
+                return BadRequest("Chiều cao và cân nặng phải > 0");
+            }
+
+            var bmi = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
 
             var record = new MedicalRecord
             {
@@ -99,6 +119,13 @@ namespace ClinicManagement.Api.Controllers
                 Diagnosis = dto.Diagnosis,
                 Treatment = dto.Treatment,
                 Note = dto.Note,
+
+                // 👇 THÊM
+                Height = dto.Height,
+                Weight = dto.Weight,
+                BMI = bmi,
+                UnderlyingDiseases = dto.UnderlyingDiseases,
+
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -114,6 +141,13 @@ namespace ClinicManagement.Api.Controllers
                 Diagnosis = record.Diagnosis,
                 Treatment = record.Treatment,
                 Note = record.Note,
+
+                // 👇 THÊM
+                Height = record.Height,
+                Weight = record.Weight,
+                BMI = record.BMI,
+                UnderlyingDiseases = record.UnderlyingDiseases,
+
                 CreatedAt = record.CreatedAt
             });
         }
@@ -127,10 +161,22 @@ namespace ClinicManagement.Api.Controllers
             if (record == null)
                 return NotFound();
 
+            // 👇 VALIDATE
+            if (dto.Height <= 0 || dto.Weight <= 0)
+            {
+                return BadRequest("Chiều cao và cân nặng phải > 0");
+            }
+
             record.Symptoms = dto.Symptoms;
             record.Diagnosis = dto.Diagnosis;
             record.Treatment = dto.Treatment;
             record.Note = dto.Note;
+
+            // 👇 THÊM
+            record.Height = dto.Height;
+            record.Weight = dto.Weight;
+            record.BMI = dto.Weight / ((dto.Height / 100) * (dto.Height / 100));
+            record.UnderlyingDiseases = dto.UnderlyingDiseases;
 
             await _context.SaveChangesAsync();
 
@@ -143,6 +189,13 @@ namespace ClinicManagement.Api.Controllers
                 Diagnosis = record.Diagnosis,
                 Treatment = record.Treatment,
                 Note = record.Note,
+
+                // 👇 THÊM
+                Height = record.Height,
+                Weight = record.Weight,
+                BMI = record.BMI,
+                UnderlyingDiseases = record.UnderlyingDiseases,
+
                 CreatedAt = record.CreatedAt
             });
         }
