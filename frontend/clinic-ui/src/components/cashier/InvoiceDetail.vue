@@ -20,50 +20,143 @@ const prettyType = (t: string) => {
 }
 const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning text-dark'
 </script>
-
 <template>
-  <div class="card shadow-sm h-100">
-    <div class="card-body">
-      <h5 class="card-title mb-3">Chi tiết hóa đơn</h5>
+  <div class="card border-0 shadow-sm h-100 invoice-card">
+    <div class="card-header bg-white py-3 border-bottom-0">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-primary">
+          <i class="bi bi-receipt-cutoff me-2"></i>Chi tiết hóa đơn
+        </h5>
+        <div v-if="invoice" :class="`status-pill ${invoice.isPaid ? 'paid' : 'unpaid'}`">
+          {{ invoice.isPaid ? '● Đã thanh toán' : '● Chờ thanh toán' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body pt-0">
       <div v-if="invoice">
         <slot name="top" />
-        <div class="small text-muted mb-3">
-          Hóa đơn: <span class="fw-semibold">{{ invoice.id }}</span><br />
-          Bệnh nhân: <span class="fw-semibold">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</span><br />
-          <div>Mã BN: <span class="fw-semibold text-dark">{{ invoice.patientCode || invoice.appointment?.patient?.patientCode || '—' }}</span></div>
-      <div>Số CCCD: <span class="fw-semibold text-dark">{{ invoice.citizenId || invoice.appointment?.patient?.citizenId || '—' }}</span></div>
-      <div>Mã BHYT: <span class="fw-semibold text-dark">{{ invoice.insuranceCardNumber || invoice.appointment?.patient?.insuranceCardNumber || '—' }}</span></div>
-          Lịch hẹn: <span class="text-monospace">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</span><br />
-          Loại: <span class="badge bg-light text-dark">{{ invoice.invoiceType === 'Drug' ? 'Thuốc' : 'Khám' }}</span><br />
-          <span v-if="invoice.insuranceCoverPercent && invoice.insuranceCoverPercent > 0">
-            Bảo hiểm: <span class="badge bg-info text-dark">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</span>
-            <span v-if="invoice.insurancePlanCode" class="text-muted">({{ invoice.insurancePlanCode }})</span><br />
-          </span>
-          Trạng thái: <span :class="`badge ${statusBadge(invoice.isPaid)}`">{{ invoice.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}</span><br />
-          Ngày tạo: {{ formatDateTime(invoice.createdAt) }}<br />
-          Ngày thanh toán: {{ formatDateTime(invoice.paymentDate) }}<br />
-          Phương thức: {{ invoice.payments?.[0]?.method ?? "-" }}<br />
-          Tạm ứng: {{ formatCurrency(invoice.totalDeposit ?? 0) }} | Còn thu: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}
+
+        <div class="row g-3 mb-4 p-3 bg-light rounded-3 admin-info">
+          <div class="col-6 col-md-4">
+            <div class="label">Bệnh nhân</div>
+            <div class="value fw-bold text-dark">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="label">Mã bệnh nhân</div>
+            <div class="value fw-bold text-primary">{{ invoice.patientCode || invoice.appointment?.patient?.patientCode || '—' }}</div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="label">Ngày tạo</div>
+            <div class="value">{{ formatDateTime(invoice.createdAt) }}</div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="label">Mã BHYT</div>
+            <div class="value text-truncate">{{ invoice.insuranceCardNumber || invoice.appointment?.patient?.insuranceCardNumber || '—' }}</div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="label">Loại hóa đơn</div>
+            <div class="value">
+               <span :class="['badge', invoice.invoiceType === 'Drug' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary']">
+                {{ invoice.invoiceType === 'Drug' ? 'Toa thuốc' : 'Dịch vụ khám' }}
+               </span>
+            </div>
+          </div>
+          <div class="col-6 col-md-4" v-if="invoice.insuranceCoverPercent">
+            <div class="label">BHYT Chi trả</div>
+            <div class="value fw-bold text-success">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</div>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <div class="fw-semibold">Hạng mục:</div>
-          <ul class="list-group list-group-flush">
-            <li
-              v-for="line in invoice.invoiceLines"
-              :key="line.id"
-              class="list-group-item d-flex justify-content-between"
-            >
-              <span>{{ line.description }} <span v-if="line.itemType" class="badge bg-light text-dark ms-1">{{ prettyType(line.itemType) }}</span></span>
-              <span :class="line.amount < 0 ? 'text-success' : ''">{{ formatCurrency(line.amount) }}</span>
-            </li>
-          </ul>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle border-light">
+            <thead class="bg-light-subtle text-muted small text-uppercase">
+              <tr>
+                <th style="width: 40%">Nội dung</th>
+                <th class="text-center">SL/Liều</th>
+                <th class="text-end">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="line in invoice.invoiceLines" :key="line.id">
+                <td>
+                  <div class="fw-bold text-dark">{{ line.description }}</div>
+                  <small class="text-muted text-uppercase" style="font-size: 0.7rem;">
+                    {{ prettyType(line.itemType) }}
+                  </small>
+                </td>
+                <td class="text-center">
+                  <div v-if="line.itemType === 'Drug'">
+                    <span class="fw-bold">{{ line.quantity ?? line.duration ?? 1 }}</span>
+                    <div class="small text-muted text-truncate" style="max-width: 80px;">{{ line.dosage ?? '—' }}</div>
+                  </div>
+                  <span v-else class="text-muted">—</span>
+                </td>
+                <td class="text-end">
+                  <span :class="line.amount < 0 ? 'text-success fw-bold' : 'fw-bold text-dark'">
+                    {{ formatCurrency(line.amount) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="fw-semibold">Tổng sau trừ tạm ứng: {{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</div>
-        <div class="text-muted small">* Đã bao gồm phí dịch vụ, phí thu/giảm trừ và tạm ứng.</div>
+
+        <div class="mt-4 p-3 rounded-3 border-top border-2 border-primary-subtle bg-white">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Tạm ứng đã thu:</span>
+            <span class="fw-bold">{{ formatCurrency(invoice.totalDeposit ?? 0) }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-0">
+            <span class="h6 mb-0 fw-bold">Tổng tiền phải trả:</span>
+            <span class="h4 mb-0 fw-bold text-danger">{{ formatCurrency(invoice.balanceDue ?? invoice.amount) }}</span>
+          </div>
+        </div>
+
         <slot />
       </div>
-      <div v-else class="text-muted">Chọn một hóa đơn để xem chi tiết.</div>
+
+      <div v-else class="text-center py-5">
+        <i class="bi bi-file-earmark-text display-1 text-light"></i>
+        <p class="text-muted mt-3">Chọn một hóa đơn từ danh sách để xem chi tiết.</p>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.invoice-card {
+  border-radius: 12px;
+}
+.admin-info .label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.admin-info .value {
+  font-size: 0.9rem;
+}
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.status-pill.paid {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+.status-pill.unpaid {
+  background-color: #fff3cd;
+  color: #856404;
+}
+.table thead th {
+  border-bottom-width: 1px;
+  font-weight: 600;
+  padding: 12px 8px;
+}
+.table tbody td {
+  padding: 12px 8px;
+}
+</style>
