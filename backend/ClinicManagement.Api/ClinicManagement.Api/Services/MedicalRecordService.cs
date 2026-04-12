@@ -87,7 +87,6 @@ public class MedicalRecordService
 
             if (validPrescriptionItems != null && validPrescriptionItems.Any())
             {
-                // Có đơn thuốc mới: thay thế hoặc tạo mới
                 if (existingPrescription != null)
                 {
                     if (existingPrescription.PrescriptionDetails != null)
@@ -97,27 +96,45 @@ public class MedicalRecordService
                     _context.Prescriptions.Remove(existingPrescription);
                 }
 
+                // 2. Tạo đơn mới
                 var prescription = new Prescription
                 {
                     Id = Guid.NewGuid(),
                     MedicalRecordId = medicalRecord.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    PrescriptionDetails = validPrescriptionItems.Select(item => new PrescriptionDetail
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var details = new List<PrescriptionDetail>();
+
+                foreach (var item in validPrescriptionItems)
+                {
+                    // Only search by MedicineName since PrescriptionItemDto does not have MedicineId
+                    var searchName = item.MedicineName?.Trim();
+
+                    var medicine = await _context.Medicines
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(m => m.Name == searchName);
+
+                    details.Add(new PrescriptionDetail
                     {
                         Id = Guid.NewGuid(),
+                        PrescriptionId = prescription.Id,
+                        // MedicineId is set from found medicine, or null if not found
+                        MedicineId = medicine?.Id,
                         MedicineName = item.MedicineName,
                         Dosage = item.Dosage ?? string.Empty,
                         Duration = item.Quantity > 0 ? item.Quantity : 1,
+                        TotalQuantity = item.Quantity > 0 ? item.Quantity : 1,
+                        UnitPrice = medicine?.Price ?? 0,
                         Frequency = string.Empty
-                    }).ToList()
-                };
+                    });
+                }
+
+                prescription.PrescriptionDetails = details;
                 _context.Prescriptions.Add(prescription);
             }
-            else
-            {
-                // Không gửi đơn mới: giữ lại đơn hiện có (nếu có)
-            }
 
+            // ... (đoạn code phía dưới giữ nguyên)
             // Replace clinical tests (tránh cộng dồn qua nhiều lần lưu)
             var existingTests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecord.Id)

@@ -14,6 +14,7 @@ const prescriptionId = ref('')
 const creatingDrug = ref(false)
 const payMethod = ref<PaymentMethod>('cash')
 const payosLoading = ref(false)
+const paying = ref(false)
 const payosData = ref<PayOsCreateResponse | null>(null)
 const showPayOsModal = ref(false)
 
@@ -41,6 +42,23 @@ const openPayOs = async () => {
     error.value = err?.response?.data?.message ?? 'Không tạo được QR PayOS'
   } finally {
     payosLoading.value = false
+  }
+}
+
+const payInvoiceCash = async () => {
+  if (!invoice.value) return
+  paying.value = true
+  error.value = ''
+  try {
+    const amount = invoice.value.balanceDue ?? invoice.value.amount
+    await invoiceApi.payInvoice({ invoiceId: invoice.value.id, amount, method: 'cash' })
+    alert('Thanh toán tiền mặt thành công')
+    await fetchInvoice(invoice.value.id)
+    await loadData()
+  } catch (err: any) {
+    error.value = err?.response?.data?.message ?? 'Không thanh toán được hóa đơn'
+  } finally {
+    paying.value = false
   }
 }
 
@@ -186,8 +204,17 @@ watch(filterStatus, loadData)
             <select v-model="payMethod" class="form-select form-select-sm" style="width: 140px;">
               <option value="cash">Tiền mặt</option>
               <option value="banker">Chuyển khoản</option>
-              <option value="card">Thẻ</option>
+              <option :disabled="true" value="card">Thẻ(Sắp có)</option>
             </select>
+            <button
+              v-if="payMethod === 'cash'"
+              class="btn btn-success btn-sm"
+              :disabled="paying"
+              @click="payInvoiceCash"
+            >
+              <span v-if="paying" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Thanh toán tiền mặt
+            </button>
             <button class="btn btn-outline-primary btn-sm" :disabled="payosLoading" @click="openPayOs">
               <span v-if="payosLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
               QR PayOS

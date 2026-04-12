@@ -7,6 +7,7 @@ export interface InvoiceLine {
   description: string
   itemType: string
   amount: number
+  quantity?: number
 }
 
 export interface InvoiceDetail {
