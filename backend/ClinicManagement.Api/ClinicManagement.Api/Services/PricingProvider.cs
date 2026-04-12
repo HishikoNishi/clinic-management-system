@@ -35,9 +35,25 @@ namespace ClinicManagement.Api.Services
         {
             if (string.IsNullOrWhiteSpace(medicineName)) return 0m;
             EnsureLoaded();
-            return _cache.DrugPrices
-                .FirstOrDefault(x => string.Equals(x.Name, medicineName, StringComparison.OrdinalIgnoreCase))
-                ?.Price ?? 0m;
+            var name = medicineName.Trim();
+
+            var exact = _cache.DrugPrices
+                .FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (exact != null) return exact.Price;
+
+            // Prefix match: allow "Paracetamol 500mg" to match config "Paracetamol"
+            var match = _cache.DrugPrices
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+                .Select(x => new { Item = x, Key = x.Name.Trim() })
+                .Where(x => name.StartsWith(x.Key, StringComparison.OrdinalIgnoreCase) &&
+                            (name.Length == x.Key.Length ||
+                             char.IsWhiteSpace(name[x.Key.Length]) ||
+                             name[x.Key.Length] == '-' ||
+                             name[x.Key.Length] == '('))
+                .OrderByDescending(x => x.Key.Length)
+                .FirstOrDefault();
+
+            return match?.Item.Price ?? 0m;
         }
 
         public decimal GetTestPrice(string testName)
