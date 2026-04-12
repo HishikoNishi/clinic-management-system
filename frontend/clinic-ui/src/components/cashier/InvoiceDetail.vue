@@ -37,36 +37,57 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
       <div v-if="invoice">
         <slot name="top" />
 
-        <div class="row g-3 mb-4 p-3 bg-light rounded-3 admin-info">
-          <div class="col-6 col-md-4">
-            <div class="label">Bệnh nhân</div>
-            <div class="value fw-bold text-dark">{{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}</div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="label">Mã bệnh nhân</div>
-            <div class="value fw-bold text-primary">{{ invoice.patientCode || invoice.appointment?.patient?.patientCode || '—' }}</div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="label">Ngày tạo</div>
-            <div class="value">{{ formatDateTime(invoice.createdAt) }}</div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="label">Mã BHYT</div>
-            <div class="value text-truncate">{{ invoice.insuranceCardNumber || invoice.appointment?.patient?.insuranceCardNumber || '—' }}</div>
-          </div>
-          <div class="col-6 col-md-4">
-            <div class="label">Loại hóa đơn</div>
-            <div class="value">
-               <span :class="['badge', invoice.invoiceType === 'Drug' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary']">
-                {{ invoice.invoiceType === 'Drug' ? 'Toa thuốc' : 'Dịch vụ khám' }}
-               </span>
-            </div>
-          </div>
-          <div class="col-6 col-md-4" v-if="invoice.insuranceCoverPercent">
-            <div class="label">BHYT Chi trả</div>
-            <div class="value fw-bold text-success">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</div>
-          </div>
-        </div>
+       
+     <div class="mb-4 p-3 bg-light rounded-3 admin-info">
+  <!-- Tên bệnh nhân nổi bật -->
+  <div class="mb-3" >
+  
+    <div class="h4 fw-bold"> 
+       <div class="label">Bệnh nhân</div>
+      {{ invoice.patientName || invoice.appointment?.patient?.fullName || '—' }}
+    </div>
+  </div>
+
+  <!-- Các thông tin khác nhỏ hơn -->
+  <div class="row g-3">
+    <div class="col-6 col-md-4">
+      <div class="label">ID Hóa đơn</div>
+      <div class="value  text-dark">{{ invoice.id }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Mã bệnh nhân</div>
+      <div class="value  text-dark">{{ invoice.patientCode || invoice.appointment?.patient?.patientCode || '—' }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Mã lịch khám</div>
+      <div class="value  text-dark">{{ invoice.appointmentCode || invoice.appointment?.appointmentCode || '—' }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Ngày tạo</div>
+      <div class="value">{{ formatDateTime(invoice.createdAt) }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Số CCCD</div>
+      <div class="value text-dark">{{ invoice.citizenId || invoice.appointment?.patient?.citizenId || '—' }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Mã BHYT</div>
+      <div class="value text-truncate">{{ invoice.insuranceCardNumber || invoice.appointment?.patient?.insuranceCardNumber || '—' }}</div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="label">Loại hóa đơn</div>
+      <div class="value">
+        <span :class="['badge', invoice.invoiceType === 'Drug' ? 'bg-info-subtle text-info' : 'bg-primary-subtle text-primary']">
+          {{ invoice.invoiceType === 'Drug' ? 'Toa thuốc' : 'Dịch vụ khám' }}
+        </span>
+      </div>
+    </div>
+    <div class="col-6 col-md-4" v-if="invoice.insuranceCoverPercent">
+      <div class="label">BHYT Chi trả</div>
+      <div class="value fw-bold text-success">{{ Math.round(invoice.insuranceCoverPercent * 100) }}%</div>
+    </div>
+  </div>
+</div>
 
         <div class="table-responsive">
           <table class="table table-hover align-middle border-light">
@@ -87,7 +108,7 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
                 </td>
                 <td class="text-center">
                   <div v-if="line.itemType === 'Drug'">
-                    <span class="fw-bold">{{ line.quantity ?? line.duration ?? 1 }}</span>
+                    <span class="fw-bold">{{ line.duration ?? 1 }}</span>
                     <div class="small text-muted text-truncate" style="max-width: 80px;">{{ line.dosage ?? '—' }}</div>
                   </div>
                   <span v-else class="text-muted">—</span>
@@ -159,4 +180,19 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
 .table tbody td {
   padding: 12px 8px;
 }
+.admin-info .label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.admin-info .value {
+  font-size: 0.9rem;
+
+}
+.admin-info .h4 {
+  margin: 0;
+  text-align: center;
+}
+
 </style>
