@@ -170,16 +170,8 @@
     </div>
 
    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h6 class="mb-0">📋 Xét nghiệm đã yêu cầu</h6>
-    <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
-      Làm mới
-    </button>
-  </div>
-  
-  <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Xét nghiệm đã yêu cầu</h6>
+        <h6 class="mb-0">📋 Xét nghiệm đã yêu cầu</h6>
         <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
           Làm mới
         </button>
@@ -215,7 +207,6 @@
         Lưu khám
       </button>
     </div>
-  </div>
   </div>
   <div v-if="showMedicineModal" class="modal-backdrop" @click="showMedicineModal = false">
   <div class="modal-content medicine-modal" @click.stop>

@@ -34,18 +34,67 @@ namespace ClinicManagement.Api.Services
             decimal subtotal = 0m;
             var lines = new List<InvoiceLine>();
 
+            // Prefer medicine catalog prices (admin-managed) over billing.json (fallback).
+            var medicineCatalog = await _context.Medicines
+                .AsNoTracking()
+                .Select(m => new { m.Id, m.Name, m.Price })
+                .ToListAsync();
+
             if (prescription.PrescriptionDetails != null)
             {
                 foreach (var d in prescription.PrescriptionDetails)
                 {
-                    var price = _pricing.GetDrugPrice(d.MedicineName);
-                    if (price <= 0) continue;
-                    var qty = d.Duration > 0 ? d.Duration : 1;
-                    var amount = price * qty;
+                    var qty = d.TotalQuantity > 0 ? d.TotalQuantity : (d.Duration > 0 ? d.Duration : 1);
+
+                    decimal unitPrice = 0m;
+                    if (d.UnitPrice > 0)
+                    {
+                        unitPrice = d.UnitPrice;
+                    }
+                    else if (d.MedicineId.HasValue)
+                    {
+                        unitPrice = medicineCatalog.FirstOrDefault(m => m.Id == d.MedicineId.Value)?.Price ?? 0m;
+                    }
+
+                    if (unitPrice <= 0)
+                    {
+                        var medName = (d.MedicineName ?? string.Empty).Trim();
+
+                        // 1) Exact match by name
+                        unitPrice = medicineCatalog
+                            .FirstOrDefault(m => string.Equals(m.Name, medName, StringComparison.OrdinalIgnoreCase))
+                            ?.Price ?? 0m;
+
+                        // 2) Prefix match: "Paracetamol 500mg" -> "Paracetamol"
+                        if (unitPrice <= 0 && !string.IsNullOrWhiteSpace(medName))
+                        {
+                            var match = medicineCatalog
+                                .Where(m =>
+                                    !string.IsNullOrWhiteSpace(m.Name) &&
+                                    medName.StartsWith(m.Name, StringComparison.OrdinalIgnoreCase) &&
+                                    (medName.Length == m.Name.Length ||
+                                     char.IsWhiteSpace(medName[m.Name.Length]) ||
+                                     medName[m.Name.Length] == '-' ||
+                                     medName[m.Name.Length] == '('))
+                                .OrderByDescending(m => m.Name.Length)
+                                .FirstOrDefault();
+                            unitPrice = match?.Price ?? 0m;
+                        }
+                    }
+
+                    if (unitPrice <= 0)
+                    {
+                        // Fallback to billing.json config
+                        unitPrice = _pricing.GetDrugPrice(d.MedicineName);
+                    }
+
+                    var amount = unitPrice * qty;
                     subtotal += amount;
                     lines.Add(new InvoiceLine
                     {
-                        Description = $"Thuoc: {d.MedicineName}",
+                        Description = unitPrice > 0
+                            ? $"Thuoc: {d.MedicineName}"
+                            : $"Thuoc: {d.MedicineName} (chua cau hinh gia)",
                         ItemType = "Drug",
                         Amount = amount
                     });
@@ -243,7 +292,7 @@ namespace ClinicManagement.Api.Services
                     ItemType = "DepositRefund",
                     Amount = -depositRefund
                 });
-                balanceDue = 0; // da hoan phan du, khong con phai thu
+                balanceDue = 0;
             }
 
             // Upsert invoice by appointment (Clinic type)

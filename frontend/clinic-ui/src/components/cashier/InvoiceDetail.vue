@@ -51,8 +51,12 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
               :key="line.id"
               class="list-group-item d-flex justify-content-between"
             >
-              <span>{{ line.description }} <span v-if="line.itemType" class="badge bg-light text-dark ms-1">{{ prettyType(line.itemType) }}</span></span>
-              <span :class="line.amount < 0 ? 'text-success' : ''">{{ formatCurrency(line.amount) }}</span>
+              <span>
+              {{ line.description }}
+              <span v-if="line.itemType" class="badge bg-light text-dark ms-1">{{ prettyType(line.itemType) }}</span>
+              <span v-if="line.quantity != null" class="badge bg-secondary text-white ms-1">SL: {{ line.quantity }}</span>
+            </span>
+            <span :class="line.amount < 0 ? 'text-success' : ''">{{ formatCurrency(line.amount) }}</span>
             </li>
           </ul>
         </div>
