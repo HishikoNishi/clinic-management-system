@@ -266,7 +266,6 @@ namespace ClinicManagement.Api.Controllers
                 InvoiceType = invoice.InvoiceType.ToString(),
                 AppointmentCode = invoice.Appointment?.AppointmentCode,
                 PatientName = invoice.Appointment?.Patient?.FullName,
-                invoice.Appointment.AppointmentDate, 
                 invoice.Amount,
                 invoice.TotalDeposit,
                 invoice.BalanceDue,
