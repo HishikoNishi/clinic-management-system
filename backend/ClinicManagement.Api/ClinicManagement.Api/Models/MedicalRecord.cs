@@ -13,7 +13,32 @@ namespace ClinicManagement.Api.Models
 
         public Guid PatientId { get; set; }
 
+        // Chief complaint / lý do vào khám chính
         public string Symptoms { get; set; }
+
+        public string? DetailedSymptoms { get; set; }
+
+        public string? PastMedicalHistory { get; set; }
+
+        public string? Allergies { get; set; }
+
+        public string? Occupation { get; set; }
+
+        public string? Habits { get; set; }
+
+        public decimal? HeightCm { get; set; }
+
+        public decimal? WeightKg { get; set; }
+
+        public decimal? Bmi { get; set; }
+
+        public int? HeartRate { get; set; }
+
+        public string? BloodPressure { get; set; }
+
+        public decimal? Temperature { get; set; }
+
+        public int? Spo2 { get; set; }
 
         public string Diagnosis { get; set; }
 

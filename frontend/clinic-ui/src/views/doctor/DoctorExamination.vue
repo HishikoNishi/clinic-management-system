@@ -10,7 +10,7 @@
           <p class="mb-1"><span class="text-muted">Họ tên:</span> <strong>{{ patient.fullName }}</strong></p>
           <p class="mb-1"><span class="text-muted">Điện thoại:</span> <strong>{{ patient.phone }}</strong></p>
           <p class="mb-1"><span class="text-muted">CCCD:</span> <strong>{{ patient.citizenId || '—' }}</strong></p>
-<p class="mb-1"><span class="text-muted">Số BHYT:</span> <strong>{{ patient.InsuranceCardNumber || '—' }}</strong></p>          <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
+          <p class="mb-1"><span class="text-muted">Số BHYT:</span> <strong>{{ patient.insuranceCardNumber || patient.InsuranceCardNumber || '—' }}</strong></p>          <p class="mb-1"><span class="text-muted">Tuổi:</span> <strong>{{ age }}</strong></p>
           <p class="mb-1"><span class="text-muted">Mã hẹn:</span> <strong>{{ appointment.appointmentCode }}</strong></p>
           <p class="mb-1"><span class="text-muted">Ngày giờ:</span> <strong>{{ formatDateTime(appointment.appointmentDate, appointment.appointmentTime) }}</strong></p>
           <hr />
@@ -37,6 +37,14 @@
               <button class="btn btn-sm btn-outline-secondary" @click="historyDetail = null">Đóng</button>
             </div>
             <div class="small mt-1">Ghi chú: {{ historyDetail.note || '—' }}</div>
+            <div class="small mt-1">Lý do vào khám: {{ historyDetail.chiefComplaint || '—' }}</div>
+            <div class="small mt-1">Triệu chứng chi tiết: {{ historyDetail.detailedSymptoms || '—' }}</div>
+            <div class="small mt-1">Tiền sử bệnh: {{ historyDetail.pastMedicalHistory || '—' }}</div>
+            <div class="small mt-1">Dị ứng: {{ historyDetail.allergies || '—' }}</div>
+            <div class="small mt-1">Nghề nghiệp: {{ historyDetail.occupation || '—' }}</div>
+            <div class="small mt-1">Thói quen: {{ historyDetail.habits || '—' }}</div>
+            <div class="small mt-1">Sinh hiệu: HR {{ historyDetail.heartRate || '—' }}, HA {{ historyDetail.bloodPressure || '—' }}, Nhiệt {{ historyDetail.temperature || '—' }}°C, SpO₂ {{ historyDetail.spo2 || '—' }}%</div>
+            <div class="small mt-1">Nhân trắc: Cao {{ historyDetail.heightCm || '—' }} cm, Nặng {{ historyDetail.weightKg || '—' }} kg, BMI {{ historyDetail.bmi || '—' }}</div>
             <div class="small mt-1">BHYT: {{ Math.round((historyDetail.insuranceCoverPercent || 0) * 100) }}%</div>
             <div class="small mt-1">Phụ thu/Giảm trừ: {{ historyDetail.surcharge }} / {{ historyDetail.discount }}</div>
             <div class="mt-2">
@@ -72,6 +80,32 @@
             <label class="form-label">Ghi chú</label>
             <textarea v-model="form.notes" class="form-control" rows="3"></textarea>
           </div>
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Lý do vào khám</label>
+              <textarea v-model="form.chiefComplaint" class="form-control" rows="2" placeholder="Lý do vào khám chính"></textarea>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Triệu chứng chi tiết</label>
+              <textarea v-model="form.detailedSymptoms" class="form-control" rows="2" placeholder="Mô tả chi tiết triệu chứng"></textarea>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Bệnh nền / tiền sử bệnh</label>
+              <textarea v-model="form.pastMedicalHistory" class="form-control" rows="2" placeholder="Ví dụ: tăng huyết áp, tiểu đường..."></textarea>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Dị ứng</label>
+              <textarea v-model="form.allergies" class="form-control" rows="2" placeholder="Thuốc, thức ăn, thời tiết..."></textarea>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Nghề nghiệp</label>
+              <input v-model="form.occupation" type="text" class="form-control" placeholder="Nhân viên văn phòng, học sinh..." />
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Thói quen</label>
+              <input v-model="form.habits" type="text" class="form-control" placeholder="Hút thuốc, uống rượu, ít vận động..." />
+            </div>
+          </div>
           <div class="form-check">
             <input v-model="form.requestClinicalTest" class="form-check-input" type="checkbox" id="testReq" />
             <label class="form-check-label" for="testReq">Yêu cầu xét nghiệm</label>
@@ -103,71 +137,87 @@
 
       <div class="card shadow-sm">
         <div class="card-header">
-          <h6 class="mb-0">Chỉ số sinh hiệu</h6>
+          <h6 class="mb-0">Chỉ số sinh hiệu & nhân trắc</h6>
         </div>
         <div class="card-body">
-          <div class="row g-3">
-            <div class="col-6 col-md-3">
-              <label class="form-label">Nhịp tim (bpm)</label>
-              <input v-model="form.vitals.heartRate" type="number" min="30" max="220" class="form-control" placeholder="80" />
+          <section class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 small text-uppercase text-secondary">Chỉ số sinh hiệu & nhân trắc</h6>
             </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label">HA (mmHg)</label>
-              <input v-model="form.vitals.bloodPressure" type="text" class="form-control" placeholder="120/80" />
+            <div class="row g-3">
+              <div class="col-6 col-md-3">
+                <label class="form-label">Chiều cao (cm)</label>
+                <input v-model="form.vitals.heightCm" type="number" min="30" max="250" step="0.1" class="form-control" placeholder="170" />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">Cân nặng (kg)</label>
+                <input v-model="form.vitals.weightKg" type="number" min="1" max="400" step="0.1" class="form-control" placeholder="65" />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">BMI</label>
+                <input :value="computedBmi" type="text" class="form-control" placeholder="Tự tính" readonly />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">Nhịp tim (bpm)</label>
+                <input v-model="form.vitals.heartRate" type="number" min="30" max="220" class="form-control" placeholder="80" />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">HA (mmHg)</label>
+                <input v-model="form.vitals.bloodPressure" type="text" class="form-control" placeholder="120/80" />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">Nhiệt độ (°C)</label>
+                <input v-model="form.vitals.temperature" type="number" step="0.1" min="34" max="42" class="form-control" placeholder="37.0" />
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label">SpO₂ (%)</label>
+                <input v-model="form.vitals.spo2" type="number" min="70" max="100" class="form-control" placeholder="98" />
+              </div>
             </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label">Nhiệt độ (°C)</label>
-              <input v-model="form.vitals.temperature" type="number" step="0.1" min="34" max="41.5" class="form-control" placeholder="37.0" />
+            <small class="text-muted d-block mt-2">Các chỉ số này sẽ được lưu riêng trong hồ sơ khám để xem lại và thống kê.</small>
+          </section>
+
+          <hr class="my-4" />
+
+          <section>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 small text-uppercase text-secondary">Đơn thuốc</h6>
+              <button class="btn btn-outline-primary btn-sm" type="button" @click="openMedicineModal">
+                <i class="bi bi-search"></i> Tìm & Chọn thuốc
+              </button>
             </div>
-            <div class="col-6 col-md-3">
-              <label class="form-label">SpO₂ (%)</label>
-              <input v-model="form.vitals.spo2" type="number" min="70" max="100" class="form-control" placeholder="98" />
+            <div class="table-responsive prescription-table">
+              <table class="table mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tên thuốc</th>
+                    <th>Liều dùng</th>
+                    <th style="width: 120px;">Số lượng</th>
+                    <th style="width: 70px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, idx) in form.prescriptionItems" :key="idx">
+                    <td><input v-model="item.medicineName" class="form-control" placeholder="Paracetamol" /></td>
+                    <td><input v-model="item.dosage" class="form-control" placeholder="500mg x 3 lần/ngày" /></td>
+                    <td><input v-model.number="item.quantity" type="number" min="1" class="form-control" /></td>
+                    <td class="text-end">
+                      <button class="btn btn-outline-danger btn-sm" type="button" @click="removeRow(idx)" :disabled="form.prescriptionItems.length === 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-          <small class="text-muted d-block mt-2">Các chỉ số này sẽ được lưu kèm trong ghi chú hồ sơ.</small>
+          </section>
         </div>
       </div>
     </div>
-
+  </div>
     <div v-if="error" class="alert alert-danger mt-2 py-2">{{ error }}</div>
 
-    <div class="card shadow-sm mt-3">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h6 class="mb-0">Đơn thuốc</h6>
-        <div class="d-flex gap-2">
-  <button class="btn btn-outline-primary btn-sm" type="button" @click="openMedicineModal">
-    <i class="bi bi-search"></i> Tìm & Chọn thuốc
-  </button>
-  
-</div>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive prescription-table">
-          <table class="table mb-0 align-middle">
-            <thead class="table-light">
-              <tr>
-                <th>Tên thuốc</th>
-                <th>Liều dùng</th>
-                <th style="width: 120px;">Số lượng</th>
-                <th style="width: 70px;"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, idx) in form.prescriptionItems" :key="idx">
-                <td><input v-model="item.medicineName" class="form-control" placeholder="Paracetamol" /></td>
-                <td><input v-model="item.dosage" class="form-control" placeholder="500mg x 3 lần/ngày" /></td>
-                <td><input v-model.number="item.quantity" type="number" min="1" class="form-control" /></td>
-                <td class="text-end">
-                  <button class="btn btn-outline-danger btn-sm" type="button" @click="removeRow(idx)" :disabled="form.prescriptionItems.length === 1">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+
 
    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -207,7 +257,6 @@
         Lưu khám
       </button>
     </div>
-  </div>
   <div v-if="showMedicineModal" class="modal-backdrop" @click="showMedicineModal = false">
   <div class="modal-content medicine-modal" @click.stop>
     <div class="modal-header">
@@ -256,6 +305,7 @@
         </table>
       </div>
     </div>
+  
   </div>
 </div>
 </template>
@@ -314,11 +364,12 @@ const openMedicineModal = () => {
 }
 
 const addMedicineFromModal = (m: any) => {
-  const fullMedicineName = m.defaultDosage ? `${m.name} ${m.defaultDosage}` : m.name;
+  const medicineName = m.name;
+  const dosage = m.defaultDosage || "";
   
   // 1. Tìm xem thuốc này đã có trong đơn chưa (so sánh tên thuốc)
   const existingItem = form.prescriptionItems.find(
-    (item: any) => item.medicineName === fullMedicineName
+    (item: any) => item.medicineName === medicineName
   );
 
   if (existingItem) {
@@ -330,14 +381,14 @@ const addMedicineFromModal = (m: any) => {
     
     if (form.prescriptionItems.length === 1 && (!firstItem.medicineName || firstItem.medicineName.trim() === "")) {
       // Điền vào dòng trống duy nhất
-      firstItem.medicineName = fullMedicineName;
-      firstItem.dosage = m.defaultDosage || "";
+      firstItem.medicineName = medicineName;
+      firstItem.dosage = dosage;
       firstItem.quantity = 1;
     } else {
       // Thêm dòng mới hoàn toàn
       form.prescriptionItems.push({ 
-        medicineName: fullMedicineName, 
-        dosage: m.defaultDosage || "", 
+        medicineName: medicineName, 
+        dosage: dosage, 
         quantity: 1 
       });
     }
@@ -354,6 +405,12 @@ onMounted(() => {
   loadMedicines() // Thêm dòng này
 })
 const form = reactive({
+  chiefComplaint: "",
+  detailedSymptoms: "",
+  pastMedicalHistory: "",
+  allergies: "",
+  occupation: "",
+  habits: "",
   diagnosis: "",
   notes: "",
   requestClinicalTest: false,
@@ -361,6 +418,8 @@ const form = reactive({
   clinicalTestName: "",
   clinicalTests: [""],
   vitals: {
+    heightCm: "",
+    weightKg: "",
     heartRate: "",
     bloodPressure: "",
     temperature: "",
@@ -375,6 +434,15 @@ const age = computed(() => {
   const diff = Date.now() - dob.getTime()
   const ageDt = new Date(diff)
   return Math.abs(ageDt.getUTCFullYear() - 1970)
+})
+
+const computedBmi = computed(() => {
+  const height = form.vitals.heightCm ? Number(form.vitals.heightCm) : 0
+  const weight = form.vitals.weightKg ? Number(form.vitals.weightKg) : 0
+  if (!height || !weight || height <= 0 || weight <= 0) return ""
+  const bmi = weight / Math.pow(height / 100, 2)
+  if (!Number.isFinite(bmi)) return ""
+  return bmi.toFixed(1)
 })
 
 const addRow = () => {
@@ -449,12 +517,26 @@ const loadDetail = async () => {
   patientCode: data.appointment?.patientCode, 
   citizenId: data.appointment?.citizenId,
   // Thử tất cả các trường hợp tên biến có thể trả về từ API
+  insuranceCardNumber: data.appointment?.insuranceCardNumber,
   InsuranceCardNumber: data.appointment?.insuranceCardNumber 
   
 })
     history.value = data.medicalHistory || []
 
     // Prefill from current medical record if exists
+    if (data.chiefComplaint) form.chiefComplaint = data.chiefComplaint
+    else if (data.appointment?.reason) form.chiefComplaint = data.appointment.reason
+    if (data.detailedSymptoms) form.detailedSymptoms = data.detailedSymptoms
+    if (data.pastMedicalHistory) form.pastMedicalHistory = data.pastMedicalHistory
+    if (data.allergies) form.allergies = data.allergies
+    if (data.occupation) form.occupation = data.occupation
+    if (data.habits) form.habits = data.habits
+    if (data.heightCm !== null && data.heightCm !== undefined) form.vitals.heightCm = String(data.heightCm)
+    if (data.weightKg !== null && data.weightKg !== undefined) form.vitals.weightKg = String(data.weightKg)
+    if (data.heartRate !== null && data.heartRate !== undefined) form.vitals.heartRate = String(data.heartRate)
+    if (data.bloodPressure) form.vitals.bloodPressure = data.bloodPressure
+    if (data.temperature !== null && data.temperature !== undefined) form.vitals.temperature = String(data.temperature)
+    if (data.spo2 !== null && data.spo2 !== undefined) form.vitals.spo2 = String(data.spo2)
     if (data.diagnosis) form.diagnosis = data.diagnosis
     if (data.note) form.notes = data.note
     if (Array.isArray(data.prescriptionItems) && data.prescriptionItems.length) {
@@ -509,6 +591,8 @@ const submit = async () => {
   const hr = form.vitals.heartRate ? Number(form.vitals.heartRate) : null
   const temp = form.vitals.temperature ? Number(form.vitals.temperature) : null
   const spo2 = form.vitals.spo2 ? Number(form.vitals.spo2) : null
+  const height = form.vitals.heightCm ? Number(form.vitals.heightCm) : null
+  const weight = form.vitals.weightKg ? Number(form.vitals.weightKg) : null
   let bpOk = true
   if (form.vitals.bloodPressure) {
     const m = form.vitals.bloodPressure.match(/^\s*(\d{2,3})\s*\/\s*(\d{2,3})\s*$/)
@@ -519,12 +603,14 @@ const submit = async () => {
     }
   }
   const vitalOut =
-    (hr !== null && (hr < 30 || hr > 200)) ||
-    (temp !== null && (temp < 34 || temp > 41.5)) ||
+    (hr !== null && (hr < 30 || hr > 220)) ||
+    (temp !== null && (temp < 34 || temp > 42)) ||
     (spo2 !== null && (spo2 < 70 || spo2 > 100)) ||
+    (height !== null && (height < 30 || height > 250)) ||
+    (weight !== null && (weight < 1 || weight > 400)) ||
     !bpOk
   if (vitalOut) {
-    alert("Chỉ số sinh hiệu vượt giới hạn thực tế (HR 30–200, nhiệt 34–41.5°C, SpO₂ 70–100%, HA hợp lệ dạng 120/80 và 70–250 / 40–150).")
+    alert("Chỉ số vượt giới hạn thực tế (HR 30–220, nhiệt 34–42°C, SpO₂ 70–100%, cao 30–250cm, nặng 1–400kg, HA hợp lệ theo dạng 120/80 và trong khoảng 70–250 / 40–150).")
     return
   }
 
@@ -550,14 +636,7 @@ const submit = async () => {
   saving.value = true
   error.value = null
   try {
-    const vitalsNote = [
-      form.vitals.heartRate ? `Nhịp tim: ${form.vitals.heartRate} bpm` : null,
-      form.vitals.bloodPressure ? `HA: ${form.vitals.bloodPressure} mmHg` : null,
-      form.vitals.temperature ? `Nhiệt độ: ${form.vitals.temperature} °C` : null,
-      form.vitals.spo2 ? `SpO₂: ${form.vitals.spo2}%` : null
-    ].filter(Boolean).join(" | ")
-
-    const combinedNotes = [form.notes, vitalsNote].filter(Boolean).join(" --- ")
+    const combinedNotes = form.notes.trim()
 
     const clinicalTestNames = form.requestClinicalTest
       ? (form.clinicalTests
@@ -576,6 +655,18 @@ const submit = async () => {
       appointmentId,
       diagnosis: form.diagnosis,
       notes: combinedNotes,
+      chiefComplaint: form.chiefComplaint,
+      detailedSymptoms: form.detailedSymptoms,
+      pastMedicalHistory: form.pastMedicalHistory,
+      allergies: form.allergies,
+      occupation: form.occupation,
+      habits: form.habits,
+      heightCm: form.vitals.heightCm ? Number(form.vitals.heightCm) : null,
+      weightKg: form.vitals.weightKg ? Number(form.vitals.weightKg) : null,
+      bloodPressure: form.vitals.bloodPressure,
+      heartRate: form.vitals.heartRate ? Number(form.vitals.heartRate) : null,
+      temperature: form.vitals.temperature ? Number(form.vitals.temperature) : null,
+      spo2: form.vitals.spo2 ? Number(form.vitals.spo2) : null,
       requestClinicalTest: form.requestClinicalTest,
       clinicalTestNames,
       prescriptionItems,

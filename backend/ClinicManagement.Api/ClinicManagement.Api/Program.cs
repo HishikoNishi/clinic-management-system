@@ -140,6 +140,26 @@ using (var scope = app.Services.CreateScope())
         dbContext.Database.ExecuteSqlRaw("UPDATE Invoices SET InvoiceType = 'Clinic' WHERE InvoiceType IS NULL OR InvoiceType = ''");
     }
     catch { }
+
+    // Bổ sung cột cho hồ sơ khám trên DB hiện có
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('dbo.MedicalRecords', 'DetailedSymptoms') IS NULL ALTER TABLE dbo.MedicalRecords ADD DetailedSymptoms NVARCHAR(MAX) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'PastMedicalHistory') IS NULL ALTER TABLE dbo.MedicalRecords ADD PastMedicalHistory NVARCHAR(MAX) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Allergies') IS NULL ALTER TABLE dbo.MedicalRecords ADD Allergies NVARCHAR(MAX) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Occupation') IS NULL ALTER TABLE dbo.MedicalRecords ADD Occupation NVARCHAR(200) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Habits') IS NULL ALTER TABLE dbo.MedicalRecords ADD Habits NVARCHAR(MAX) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'HeightCm') IS NULL ALTER TABLE dbo.MedicalRecords ADD HeightCm DECIMAL(5,2) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'WeightKg') IS NULL ALTER TABLE dbo.MedicalRecords ADD WeightKg DECIMAL(5,2) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Bmi') IS NULL ALTER TABLE dbo.MedicalRecords ADD Bmi DECIMAL(5,2) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'HeartRate') IS NULL ALTER TABLE dbo.MedicalRecords ADD HeartRate INT NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'BloodPressure') IS NULL ALTER TABLE dbo.MedicalRecords ADD BloodPressure NVARCHAR(20) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Temperature') IS NULL ALTER TABLE dbo.MedicalRecords ADD Temperature DECIMAL(4,1) NULL;
+IF COL_LENGTH('dbo.MedicalRecords', 'Spo2') IS NULL ALTER TABLE dbo.MedicalRecords ADD Spo2 INT NULL;
+");
+    }
+    catch { }
     await SeedData.SeedAsync(scope.ServiceProvider);
 }
 
