@@ -13,5 +13,7 @@ namespace ClinicManagement.Api.Models
         public string ItemType { get; set; } = "Consultation";
 
         public decimal Amount { get; set; }
+        public string Dosage { get; internal set; }
+        public int Duration { get; internal set; }
     }
 }

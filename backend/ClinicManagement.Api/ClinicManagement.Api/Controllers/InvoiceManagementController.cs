@@ -307,7 +307,9 @@ namespace ClinicManagement.Api.Controllers
                     l.Id,
                     l.Description,
                     l.ItemType,
-                    l.Amount
+                    l.Amount,
+                    l.Dosage,   
+                    l.Duration
                 })
             };
         }
