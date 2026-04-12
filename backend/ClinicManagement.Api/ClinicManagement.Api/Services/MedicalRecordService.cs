@@ -85,9 +85,11 @@ public class MedicalRecordService
                 .Where(item => !string.IsNullOrWhiteSpace(item.MedicineName))
                 .ToList();
 
+            // ... (đoạn code phía trên giữ nguyên)
+
             if (validPrescriptionItems != null && validPrescriptionItems.Any())
             {
-                // Có đơn thuốc mới: thay thế hoặc tạo mới
+                // 1. Xóa đơn cũ nếu có (đoạn này Nhàn đã viết đúng)
                 if (existingPrescription != null)
                 {
                     if (existingPrescription.PrescriptionDetails != null)
@@ -97,27 +99,48 @@ public class MedicalRecordService
                     _context.Prescriptions.Remove(existingPrescription);
                 }
 
+                // 2. Tạo đơn mới
                 var prescription = new Prescription
                 {
                     Id = Guid.NewGuid(),
                     MedicalRecordId = medicalRecord.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    PrescriptionDetails = validPrescriptionItems.Select(item => new PrescriptionDetail
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var details = new List<PrescriptionDetail>();
+
+                foreach (var item in validPrescriptionItems)
+                {
+                    // Tạo biến cục bộ để EF không bị nhầm lẫn kiểu dữ liệu
+                    var searchId = item.MedicineId as Guid?;
+                    var searchName = item.MedicineName?.Trim();
+
+                    var medicine = await _context.Medicines
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(m =>
+                            (searchId != null && m.Id == searchId) ||
+                            (m.Name == searchName));
+
+                    details.Add(new PrescriptionDetail
                     {
                         Id = Guid.NewGuid(),
+                        PrescriptionId = prescription.Id,
+                        // Ép kiểu rõ ràng ở đây
+                        MedicineId = searchId ?? medicine?.Id,
                         MedicineName = item.MedicineName,
                         Dosage = item.Dosage ?? string.Empty,
                         Duration = item.Quantity > 0 ? item.Quantity : 1,
+                        TotalQuantity = item.Quantity > 0 ? item.Quantity : 1,
+                        UnitPrice = medicine?.Price ?? 0,
                         Frequency = string.Empty
-                    }).ToList()
-                };
+                    });
+                }
+
+                prescription.PrescriptionDetails = details;
                 _context.Prescriptions.Add(prescription);
             }
-            else
-            {
-                // Không gửi đơn mới: giữ lại đơn hiện có (nếu có)
-            }
 
+            // ... (đoạn code phía dưới giữ nguyên)
             // Replace clinical tests (tránh cộng dồn qua nhiều lần lưu)
             var existingTests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecord.Id)
