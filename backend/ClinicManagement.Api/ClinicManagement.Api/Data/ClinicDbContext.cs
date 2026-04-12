@@ -213,6 +213,29 @@ namespace ClinicManagement.Api.Data
                       .OnDelete(DeleteBehavior.SetNull);
             });
 
+            modelBuilder.Entity<MedicalRecord>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.Property(r => r.Symptoms).HasMaxLength(1000);
+                entity.Property(r => r.DetailedSymptoms).HasMaxLength(4000);
+                entity.Property(r => r.PastMedicalHistory).HasMaxLength(4000);
+                entity.Property(r => r.Allergies).HasMaxLength(2000);
+                entity.Property(r => r.Occupation).HasMaxLength(200);
+                entity.Property(r => r.Habits).HasMaxLength(2000);
+                entity.Property(r => r.BloodPressure).HasMaxLength(20);
+                entity.Property(r => r.HeightCm).HasColumnType("decimal(5,2)");
+                entity.Property(r => r.WeightKg).HasColumnType("decimal(5,2)");
+                entity.Property(r => r.Bmi).HasColumnType("decimal(5,2)");
+                entity.Property(r => r.Temperature).HasColumnType("decimal(4,1)");
+                entity.Property(r => r.InsuranceCoverPercent).HasColumnType("decimal(5,2)");
+                entity.Property(r => r.Surcharge).HasColumnType("decimal(18,2)");
+                entity.Property(r => r.Discount).HasColumnType("decimal(18,2)");
+                entity.HasOne<Appointment>()
+                      .WithMany()
+                      .HasForeignKey(r => r.AppointmentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             modelBuilder.Entity<Medicine>(entity =>
             {
                 entity.HasIndex(m => m.Name); 

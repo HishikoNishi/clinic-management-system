@@ -12,6 +12,20 @@ namespace ClinicManagement.Api.Dtos.MedicalRecords
         [Required]
         public string Diagnosis { get; set; } = string.Empty;
 
+        public string? ChiefComplaint { get; set; }
+        public string? DetailedSymptoms { get; set; }
+        public string? PastMedicalHistory { get; set; }
+        public string? Allergies { get; set; }
+        public string? Occupation { get; set; }
+        public string? Habits { get; set; }
+
+        public decimal? HeightCm { get; set; }
+        public decimal? WeightKg { get; set; }
+        public string? BloodPressure { get; set; }
+        public int? HeartRate { get; set; }
+        public decimal? Temperature { get; set; }
+        public int? Spo2 { get; set; }
+
         public string? Notes { get; set; }
 
         public bool RequestClinicalTest { get; set; }

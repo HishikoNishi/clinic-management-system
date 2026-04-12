@@ -207,29 +207,31 @@
                   <span v-if="bookingErrors.address" class="form-error">{{ bookingErrors.address }}</span>
                 </div>
               </div>
-<div class="form-row">
-  <div class="form-group">
-    <label class="form-label">Số CCCD/Passport</label>
-    <input 
-      v-model="bookingForm.CitizenId" 
-      type="text" 
-      class="form-input" 
-      :readonly="isReturning"
-      maxlength="12"
-      placeholder="Nhập số CCCD"
-    />
-  </div>
-  <div class="form-group">
-    <label class="form-label">Mã số BHYT (nếu có)</label>
-    <input 
-      v-model="bookingForm.insuranceNumber" 
-      type="text" 
-      class="form-input" 
-      :readonly="isReturning"
-      placeholder="Nhập mã BHYT"
-    />
-  </div>
-</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Số CCCD/Passport</label>
+                  <input 
+                    v-model="bookingForm.CitizenId" 
+                    type="tel" 
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    class="form-input" 
+                    :readonly="isReturning"
+                    maxlength="12"
+                    placeholder="Nhập số CCCD"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Mã số BHYT (nếu có)</label>
+                  <input 
+                    v-model="bookingForm.insuranceNumber" 
+                    type="text" 
+                    class="form-input" 
+                    :readonly="isReturning"
+                    placeholder="Nhập mã BHYT"
+                  />
+                </div>
+              </div>
               <!-- OTP -->
               <div class="form-row align-items-end otp-row">
                 <div class="form-group flex-grow-1">
