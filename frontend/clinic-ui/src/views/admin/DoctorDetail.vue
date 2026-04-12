@@ -3,7 +3,6 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/services/api'
 import '@/styles/layouts/doctor-detail.css'
-
 const route = useRoute()
 const doctorId = route.params.id
 
@@ -161,117 +160,122 @@ const onAvatarSelected = async (e: Event) => {
   }
 }
 </script>
-
 <template>
-  <div class="doctor-page">
-    <div class="container">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <div class="doctor-page-container">
+    <div class="container" v-if="doctor">
+      
+      <div class="page-header-box d-flex justify-content-between align-items-center">
         <div>
-          <h2 class="mb-1">Chi tiết bác sĩ</h2>
-          <p class="text-muted mb-0">Xem và chỉnh sửa thông tin bác sĩ.</p>
+          <h2 class="page-title mb-1">Chi tiết bác sĩ</h2>
+          <p class="text-muted mb-0">Quản lý thông tin hồ sơ bác sĩ trực tiếp</p>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <button class="btn btn-primary" @click="openEdit">Sửa thông tin</button>
+        <div class="header-actions">
+          <button v-if="!showEdit" class="btn-primary" @click="openEdit">
+            <i class="bi bi-pencil-square me-2"></i>Sửa thông tin
+          </button>
+          <div v-else class="d-flex gap-2">
+            <button class="btn-update" @click="saveDoctor" :disabled="uploadLoading">Lưu thay đổi</button>
+            <button class="btn-cancel" @click="showEdit = false">Hủy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-info-card" :class="{ 'is-editing': showEdit }">
+        
+        <div class="doctor-profile-section">
+          <div class="avatar-container-inline">
+            <img :src="editForm.avatarUrl || doctor?.avatarUrl || '/default-avatar.png'" class="main-avatar" />
+            <div v-if="showEdit" class="avatar-upload-overlay" @click="$refs.fileInputRef.click()">
+              <i v-if="!uploadLoading" class="bi bi-camera-fill"></i>
+              <div v-else class="spinner-border spinner-border-sm text-light"></div>
+            </div>
+          </div>
+          <input ref="fileInputRef" type="file" accept="image/*" class="d-none" @change="onAvatarSelected" />
+          
+          <div v-if="!showEdit" class="mt-2">
+            <span :class="['status-badge-modern', doctorBadgeClass(doctor?.status)]">
+              {{ doctorStatusLabel(doctor?.status) }}
+            </span>
+          </div>
+          <p v-else class="text-primary small fw-bold mt-2">Click ảnh để đổi</p>
+        </div>
+
+        <div class="doctor-details-grid">
+          
+          <div class="detail-box">
+            <label>Họ và tên</label>
+            <p v-if="!showEdit">{{ doctor?.fullName }}</p>
+            <input v-else v-model="editForm.fullName" class="form-control-modern" />
+          </div>
+
+          <div class="detail-box">
+            <label>Mã bác sĩ</label>
+            <p v-if="!showEdit">{{ doctor?.code }}</p>
+            <input v-else v-model="editForm.code" class="form-control-modern" />
+          </div>
+
+          <div class="detail-box">
+            <label>Khoa</label>
+            <p v-if="!showEdit">{{ doctor?.departmentName }}</p>
+            <select v-else v-model="editForm.departmentId" class="form-select-modern">
+              <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">{{ dep.name }}</option>
+            </select>
+          </div>
+
+          <div class="detail-box">
+            <label>Chuyên khoa</label>
+            <p v-if="!showEdit">{{ doctor?.specialtyName }}</p>
+            <select v-else v-model="editForm.specialtyId" class="form-select-modern" :disabled="!editForm.departmentId">
+              <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">{{ s.name }}</option>
+            </select>
+          </div>
+
+          <div class="detail-box full-row">
+            <label>Số giấy phép hành nghề</label>
+            <p v-if="!showEdit">{{ doctor?.licenseNumber }}</p>
+            <input v-else v-model="editForm.licenseNumber" class="form-control-modern" />
+          </div>
+
         </div>
       </div>
 
-      <!-- Thông tin bác sĩ -->
-      <div class="doctor-info card mb-4">
-      <div class="row g-4 align-items-center">
-        <div class="col-md-3 text-center">
-          <img :src="doctor?.avatarUrl || '/default-avatar.png'" class="avatar" />
+      <div class="appointments-section">
+        <div class="section-header">
+          <h4 class="mb-0 fw-bold">Lịch khám của {{ doctor?.fullName }}</h4>
+          <div class="d-flex gap-2">
+            <input v-model="searchTerm" class="search-box" placeholder="Tìm bệnh nhân..." />
+          </div>
         </div>
-        <div class="col-md-9">
-          <h3 class="doctor-name">Tên: {{ doctor?.fullName }}</h3>
-          <p><strong>Mã:</strong> {{ doctor?.code }}</p>
-          <p><strong>Chuyên khoa:</strong> {{ doctor?.specialtyName }}</p>
-          <p><strong>Khoa:</strong> {{ doctor?.departmentName }}</p>
-          <p><strong>Số giấy phép:</strong> {{ doctor?.licenseNumber }}</p>
-          <span :class="['badge', doctorBadgeClass(doctor?.status)]">
-            {{ doctorStatusLabel(doctor?.status) }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lịch khám -->
-    <div class="appointments card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Lịch khám của bác sĩ</h4>
-        <input v-model="searchTerm" class="form-control search-box" placeholder="Tìm bệnh nhân..." />
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Mã lịch</th>
-              <th>Bệnh nhân</th>
-              <th>Điện thoại</th>
-              <th>Ngày</th>
-              <th>Giờ</th>
-              <th>Lý do</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="a in filteredAppointments" :key="a.id">
-              <td class="fw-semibold">{{ a.appointmentCode }}</td>
-              <td>{{ a.fullName }}</td>
-              <td>{{ a.phone }}</td>
-              <td>{{ a.appointmentDate }}</td>
-              <td>{{ a.appointmentTime }}</td>
-              <td>{{ a.reason }}</td>
-              <td>
-                <span :class="['badge', a.status === 'Completed' ? 'bg-secondary' : 'bg-success']">
-                  {{ appointmentStatusLabel(a.status) }}
-                </span>
-              </td>
-            </tr>
-            <tr v-if="filteredAppointments.length === 0">
-              <td colspan="7" class="text-center text-muted py-3">Không có lịch khám nào</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Modal chỉnh sửa -->
-    <div v-if="showEdit" class="modal-backdrop">
-      <div class="modal-content p-4">
-        <h4>Cập nhật thông tin bác sĩ</h4>
-        <input v-model="editForm.fullName" class="form-control mb-2" placeholder="Tên bác sĩ" />
-        <input v-model="editForm.code" class="form-control mb-2" placeholder="Mã bác sĩ" />
-
-        <select v-model="editForm.departmentId" class="form-select mb-2">
-          <option value="">Chọn khoa</option>
-         <option v-for="dep in departments" :key="dep.id" :value="dep.id.toString()">
-  {{ dep.name }}
-</option>
-        </select>
-
-        <select v-model="editForm.specialtyId" class="form-select mb-2" :disabled="!editForm.departmentId">
-          <option value="">Chọn chuyên khoa</option>
-         <option v-for="s in specialties" :key="s.id" :value="s.id.toString()">
-  {{ s.name }}
-</option>
-        </select>
-
-        <input v-model="editForm.licenseNumber" class="form-control mb-2" placeholder="Số giấy phép" />
-        <label class="form-label mt-2">Ảnh bác sĩ</label>
-        <input v-model="editForm.avatarUrl" class="form-control mb-2" placeholder="Link ảnh (tuỳ chọn nếu không upload)" />
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <input type="file" accept="image/*" @change="onAvatarSelected" :disabled="uploadLoading" />
-          <span v-if="uploadLoading" class="small text-muted">Đang tải...</span>
-        </div>
-        <div v-if="uploadError" class="text-danger small mb-2">{{ uploadError }}</div>
-        <img v-if="editForm.avatarUrl" :src="editForm.avatarUrl" class="avatar-preview mt-2" />
-
-        <div class="text-end mt-3">
-          <button class="btn btn-secondary me-2" @click="showEdit=false">Hủy</button>
-          <button class="btn btn-success" @click="saveDoctor">Lưu</button>
+        <div class="table-responsive">
+          <table class="table table-custom align-middle">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Bệnh nhân</th>
+                <th>Điện thoại</th>
+                <th>Ngày khám</th>
+                <th>Giờ</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="a in filteredAppointments" :key="a.id">
+                <td class="fw-bold">{{ a.appointmentCode }}</td>
+                <td>{{ a.fullName }}</td>
+                <td>{{ a.phone }}</td>
+                <td>{{ a.appointmentDate }}</td>
+                <td>{{ a.appointmentTime }}</td>
+                <td>
+                  <span :class="['status-pill', a.status === 'Completed' ? 'pill-gray' : 'pill-green']">
+                    {{ appointmentStatusLabel(a.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+
     </div>
   </div>
 </template>
