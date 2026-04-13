@@ -181,7 +181,16 @@ namespace ClinicManagement.Api.Controllers
                     : null,
                 PatientPhone = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt2) 
                     ? apt2.Patient?.Phone 
-                    : null
+                    : null,
+                PatientCode = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt3)
+        ? apt3.Patient?.PatientCode 
+        : null,
+                CitizenId = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt4)
+        ? apt4.Patient?.CitizenId 
+        : null,
+                InsuranceCardNumber = t.MedicalRecord != null && appointmentMap.TryGetValue(t.MedicalRecord.AppointmentId, out var apt5)
+        ? apt5.Patient?.InsuranceCardNumber 
+        : null
             }).ToList();
 
             return Ok(result);
@@ -250,7 +259,10 @@ namespace ClinicManagement.Api.Controllers
                         : null,
                     PendingCount = g.Count(),
                     AppointmentId = g.Key.AppointmentId,
-                    MedicalRecordId = g.Key.MedicalRecordId
+                    MedicalRecordId = g.Key.MedicalRecordId,
+                    PatientCode = appointmentMap.TryGetValue(g.Key.AppointmentId, out var apt4) ? apt4.Patient?.PatientCode : null,
+                    CitizenId = appointmentMap.TryGetValue(g.Key.AppointmentId, out var apt5) ? apt5.Patient?.CitizenId : null,
+                    InsuranceCardNumber = appointmentMap.TryGetValue(g.Key.AppointmentId, out var apt6) ? apt6.Patient?.InsuranceCardNumber : null,
                 })
                 .OrderByDescending(x => x.PendingCount)
                 .ToList();

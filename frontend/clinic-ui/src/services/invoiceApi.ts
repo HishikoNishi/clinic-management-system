@@ -25,6 +25,9 @@ export interface InvoiceDetail {
   paymentDate?: string
   insuranceCoverPercent?: number
   insurancePlanCode?: string
+  patientCode?: string;      
+  citizenId?: string;          
+  insuranceCardNumber?: string;
   appointment?: {
     id: string
     appointmentCode?: string
@@ -32,6 +35,9 @@ export interface InvoiceDetail {
       fullName?: string
       phone?: string
       email?: string
+      patientCode?: string;      
+      citizenId?: string;          
+      insuranceCardNumber?: string;
     }
   }
   payments?: {
@@ -64,6 +70,9 @@ export interface InvoiceListItem {
   createdAt?: string
   paymentDate?: string
   patientName?: string
+  patientCode?: string;     
+  citizenId?: string;        
+  insuranceCardNumber?: string;
 }
 
 export const invoiceApi = {
