@@ -15,6 +15,7 @@ const departments = ref<any[]>([])
 const specialties = ref<any[]>([])
 const uploadLoading = ref(false)
 const uploadError = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 onMounted(async () => {
   await loadDoctor()
@@ -170,6 +171,9 @@ const onAvatarSelected = async (e: Event) => {
           <p class="text-muted mb-0">Quản lý thông tin hồ sơ bác sĩ trực tiếp</p>
         </div>
         <div class="header-actions">
+          <button v-if="!showEdit" class="btn btn-outline-primary me-2" @click="$router.push(`/doctors/${doctorId}/schedules`)">
+            <i class="bi bi-calendar3 me-2"></i>Lịch làm việc
+          </button>
           <button v-if="!showEdit" class="btn-primary" @click="openEdit">
             <i class="bi bi-pencil-square me-2"></i>Sửa thông tin
           </button>
@@ -185,7 +189,7 @@ const onAvatarSelected = async (e: Event) => {
         <div class="doctor-profile-section">
           <div class="avatar-container-inline">
             <img :src="editForm.avatarUrl || doctor?.avatarUrl || '/default-avatar.png'" class="main-avatar" />
-            <div v-if="showEdit" class="avatar-upload-overlay" @click="$refs.fileInputRef.click()">
+            <div v-if="showEdit" class="avatar-upload-overlay" @click="fileInputRef?.click()">
               <i v-if="!uploadLoading" class="bi bi-camera-fill"></i>
               <div v-else class="spinner-border spinner-border-sm text-light"></div>
             </div>

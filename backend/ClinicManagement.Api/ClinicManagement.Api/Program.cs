@@ -75,6 +75,7 @@ builder.Services.AddScoped<OtpService>();
 builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
+builder.Services.AddScoped<DoctorScheduleService>();
 builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AppointmentService>();

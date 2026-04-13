@@ -34,6 +34,18 @@ namespace ClinicManagement.Api.Models
         public User User { get; set; } = null!;
         public ICollection<Appointment> Appointments { get; set; }
         = new List<Appointment>();
+        public ICollection<DoctorSchedule> Schedules { get; set; }
+        = new List<DoctorSchedule>();
+        public ICollection<DoctorWeeklySchedule> WeeklySchedules { get; set; }
+        = new List<DoctorWeeklySchedule>();
+        public ICollection<DoctorScheduleOverrideDay> ScheduleOverrideDays { get; set; }
+        = new List<DoctorScheduleOverrideDay>();
+        public ICollection<DoctorShiftRequest> ShiftRequests { get; set; }
+        = new List<DoctorShiftRequest>();
+        public ICollection<DoctorShiftRequest> PreferredShiftRequests { get; set; }
+        = new List<DoctorShiftRequest>();
+        public ICollection<DoctorShiftRequest> ReplacementShiftRequests { get; set; }
+        = new List<DoctorShiftRequest>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

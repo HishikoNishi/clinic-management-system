@@ -5,7 +5,7 @@
         <div class="staff-eyebrow">Staff</div>
         <h2 class="staff-title">Đặt lịch tại quầy</h2>
         <p class="staff-subtitle">
-          Tạo nhanh lịch khám cho khách đến trực tiếp, không cần OTP nhưng vẫn giữ đúng ngày hợp lệ và giờ hành chính.
+          Tạo lịch nhanh cho khách đến trực tiếp, chọn luôn bác sĩ và slot đang trống.
         </p>
       </div>
       <button type="button" class="btn btn-outline-primary" @click="router.push('/staff/appointments')">
@@ -38,7 +38,7 @@
           <div class="lookup-head">
             <div>
               <div class="lookup-title">Bệnh nhân cũ?</div>
-              <div class="lookup-note">Nhập số điện thoại hoặc email để điền nhanh thông tin có sẵn.</div>
+              <div class="lookup-note">Nhập số điện thoại hoặc email để điền nhanh thông tin đã có.</div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary" @click="showLookup = !showLookup">
               {{ showLookup ? 'Ẩn' : 'Mở tra cứu' }}
@@ -73,13 +73,7 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Họ và tên *</label>
-              <input
-                ref="fullNameInput"
-                v-model="form.fullName"
-                type="text"
-                class="form-control"
-                :readonly="isReturning"
-              />
+              <input ref="fullNameInput" v-model="form.fullName" type="text" class="form-control" :readonly="isReturning" />
               <div v-if="errors.fullName" class="form-error">{{ errors.fullName }}</div>
             </div>
             <div class="form-group">
@@ -126,55 +120,56 @@
               <div v-if="errors.address" class="form-error">{{ errors.address }}</div>
             </div>
           </div>
-<div class="form-row">
-  <div class="form-group">
-    <label class="form-label">Số CCCD</label>
-    <input 
-      v-model="form.citizenId" 
-      type="text" 
-      class="form-control" 
-      placeholder="Nhập 12 số CCCD"
-      maxlength="12"
-  
-    />
-  </div>
-  <div class="form-group">
-    <label class="form-label">Mã số BHYT</label>
-    <input 
-      v-model="form.insuranceCardNumber" 
-      type="text" 
-      class="form-control" 
-      placeholder="Ví dụ: GD479..."
-    />
-  </div>
-</div>
+
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Ngày khám *</label>
-              <input v-model="form.appointmentDate" type="date" class="form-control" />
-              <div v-if="errors.appointmentDate" class="form-error">{{ errors.appointmentDate }}</div>
+              <label class="form-label">Số CCCD</label>
+              <input v-model="form.citizenId" type="text" class="form-control" placeholder="Nhập 12 số CCCD" maxlength="12" />
             </div>
             <div class="form-group">
-              <label class="form-label">Giờ khám *</label>
-              <input
-                v-model="form.appointmentTime"
-                type="text"
-                class="form-control"
-                placeholder="HH:MM, ví dụ 09:00 hoặc 21:30"
-                inputmode="numeric"
-              />
-              <div v-if="errors.appointmentTime" class="form-error">{{ errors.appointmentTime }}</div>
+              <label class="form-label">Mã số BHYT</label>
+              <input v-model="form.insuranceCardNumber" type="text" class="form-control" placeholder="Ví dụ: GD479..." />
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Khoa mong muốn</label>
-            <select v-model="selectedDepartmentId" class="form-select">
-              <option value="">Chưa chọn / để staff sắp xếp sau</option>
-              <option v-for="department in departments" :key="department.id" :value="department.id">
-                {{ department.name }}
-              </option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Ngày khám *</label>
+              <input v-model="form.appointmentDate" type="date" class="form-control" :min="todayStr" />
+              <div v-if="errors.appointmentDate" class="form-error">{{ errors.appointmentDate }}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Khoa mong muốn (tùy chọn)</label>
+              <select v-model="selectedDepartmentId" class="form-select">
+                <option value="">Tất cả khoa</option>
+                <option v-for="department in departments" :key="department.id" :value="department.id">
+                  {{ department.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Bác sĩ *</label>
+              <select v-model="form.doctorId" class="form-select">
+                <option value="">Chọn bác sĩ</option>
+                <option v-for="doctor in filteredDoctors" :key="doctor.id" :value="doctor.id">
+                  {{ doctor.fullName }} - {{ doctor.departmentName }}
+                </option>
+              </select>
+              <div v-if="errors.doctorId" class="form-error">{{ errors.doctorId }}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Slot khám *</label>
+              <select v-model="form.appointmentTime" class="form-select" :disabled="!form.doctorId || !form.appointmentDate || slotLoading">
+                <option value="">{{ slotLoading ? 'Đang tải slot...' : 'Chọn slot khám' }}</option>
+                <option v-for="slot in availableSlots" :key="slot.id || `${slot.shiftCode}-${slot.startTime}`" :value="String(slot.startTime).slice(0, 5)">
+                  {{ slot.slotLabel }}
+                </option>
+              </select>
+              <div v-if="errors.appointmentTime" class="form-error">{{ errors.appointmentTime }}</div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -199,18 +194,17 @@
       <aside class="booking-card side-card">
         <div class="tip-badge">Quy trình gợi ý</div>
         <ol class="tip-list">
-          <li>Nhập nhanh thông tin bệnh nhân hoặc tra cứu hồ sơ cũ.</li>
-          <li>Chọn ngày từ hôm nay trở đi và nhập giờ trong khung 07:00 - 22:00.</li>
-          <li>Thêm khoa mong muốn để staff dễ gán bác sĩ sau đó.</li>
-          <li>Sau khi tạo thành công, quay lại trang lịch khám để gán bác sĩ và check-in.</li>
+          <li>Tra cứu nhanh hồ sơ cũ nếu bệnh nhân đã từng khám.</li>
+          <li>Chọn ngày làm việc, bác sĩ và slot còn trống.</li>
+          <li>Tạo lịch xong thì sang danh sách để check-in và thu tạm ứng.</li>
         </ol>
 
         <div class="helper-card">
           <div class="helper-title">Lưu ý</div>
           <ul>
             <li>Không cần OTP vì bệnh nhân đã có mặt tại quầy.</li>
-            <li>Email có thể bỏ trống, nhưng số điện thoại vẫn nên có để tra cứu lịch sau này.</li>
-            <li>Nếu bệnh nhân đặt trùng đúng ngày giờ cũ, hệ thống sẽ báo và không tạo thêm.</li>
+            <li>Slot chỉ hiện khi bác sĩ đã được cấu hình lịch làm việc.</li>
+            <li>Hệ thống tự chặn trùng giờ của cả bệnh nhân và bác sĩ.</li>
           </ul>
         </div>
       </aside>
@@ -219,14 +213,16 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
+import { doctorScheduleService } from '@/services/doctorScheduleService'
+import { toLocalDateInputValue } from '@/utils/date'
 
 const router = useRouter()
 const fullNameInput = ref<HTMLInputElement | null>(null)
 
-const todayStr = new Date().toISOString().slice(0, 10)
+const todayStr = toLocalDateInputValue()
 
 const showLookup = ref(true)
 const lookupPhone = ref('')
@@ -240,7 +236,10 @@ const submitError = ref('')
 const bookingSuccess = ref(false)
 const bookingResponse = ref<any>(null)
 const departments = ref<any[]>([])
+const doctors = ref<any[]>([])
 const selectedDepartmentId = ref('')
+const availableSlots = ref<any[]>([])
+const slotLoading = ref(false)
 
 const normalizePhoneInput = (value: string) => value.replace(/\D/g, '').slice(0, 11)
 
@@ -251,12 +250,14 @@ const form = reactive({
   phone: '',
   email: '',
   address: '',
-  citizenId: '',         
-  insuranceCardNumber: '', 
+  citizenId: '',
+  insuranceCardNumber: '',
   appointmentDate: todayStr,
+  doctorId: '',
   appointmentTime: '',
   reason: ''
 })
+
 const errors = reactive({
   fullName: '',
   dateOfBirth: '',
@@ -265,9 +266,17 @@ const errors = reactive({
   email: '',
   address: '',
   appointmentDate: '',
+  doctorId: '',
   appointmentTime: '',
   reason: ''
 })
+
+const filteredDoctors = computed(() =>
+  doctors.value.filter((doctor) =>
+    doctor.status === 'Active' &&
+    (!selectedDepartmentId.value || doctor.departmentId === selectedDepartmentId.value)
+  )
+)
 
 const clearErrors = () => {
   errors.fullName = ''
@@ -277,6 +286,7 @@ const clearErrors = () => {
   errors.email = ''
   errors.address = ''
   errors.appointmentDate = ''
+  errors.doctorId = ''
   errors.appointmentTime = ''
   errors.reason = ''
 }
@@ -340,29 +350,14 @@ const validateForm = () => {
     ok = false
   }
 
-  if (!form.appointmentTime.trim()) {
-    errors.appointmentTime = 'Giờ khám là bắt buộc'
+  if (!form.doctorId) {
+    errors.doctorId = 'Vui lòng chọn bác sĩ'
     ok = false
-  } else {
-    const match = form.appointmentTime.trim().match(/^(\d{2}):(\d{2})$/)
-    if (!match) {
-      errors.appointmentTime = 'Giờ phải có định dạng HH:MM'
-      ok = false
-    } else {
-      const hours = Number(match[1])
-      const minutes = Number(match[2])
-      const totalMinutes = hours * 60 + minutes
-      const businessStart = 7 * 60
-      const businessEnd = 22 * 60
+  }
 
-      if (hours > 23 || minutes > 59) {
-        errors.appointmentTime = 'Giờ không hợp lệ'
-        ok = false
-      } else if (totalMinutes < businessStart || totalMinutes > businessEnd) {
-        errors.appointmentTime = 'Chỉ nhận lịch trong khung 07:00 - 22:00'
-        ok = false
-      }
-    }
+  if (!form.appointmentTime.trim()) {
+    errors.appointmentTime = 'Slot khám là bắt buộc'
+    ok = false
   }
 
   if (!form.reason.trim()) {
@@ -376,6 +371,33 @@ const validateForm = () => {
 const loadDepartments = async () => {
   const response = await api.get('/Departments')
   departments.value = response.data ?? []
+}
+
+const loadDoctors = async () => {
+  const response = await api.get('/Doctor')
+  doctors.value = Array.isArray(response.data) ? response.data : []
+}
+
+const loadAvailableSlots = async () => {
+  availableSlots.value = []
+
+  if (!form.doctorId || !form.appointmentDate) {
+    form.appointmentTime = ''
+    return
+  }
+
+  try {
+    slotLoading.value = true
+    const slots = await doctorScheduleService.getAvailableSlots(form.doctorId, form.appointmentDate)
+    availableSlots.value = slots
+
+    const hasSelectedSlot = slots.some((slot) => slot.startTime?.startsWith(form.appointmentTime))
+    if (!hasSelectedSlot) {
+      form.appointmentTime = ''
+    }
+  } finally {
+    slotLoading.value = false
+  }
 }
 
 const lookupPatient = async () => {
@@ -394,16 +416,15 @@ const lookupPatient = async () => {
       }
     })
 
-// Trong hàm lookupPatient
-form.fullName = data.fullName || ''
-form.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
-form.gender = mapGenderToOption(data.gender)
-form.phone = normalizePhoneInput(data.phone || '')
-form.email = data.email || ''
-form.address = data.address || ''
-form.citizenId = data.citizenId || '' // Thêm dòng này
-form.insuranceCardNumber = data.insuranceCardNumber || '' // Thêm dòng này
-isReturning.value = true
+    form.fullName = data.fullName || ''
+    form.dateOfBirth = data.dateOfBirth?.slice(0, 10) || ''
+    form.gender = mapGenderToOption(data.gender)
+    form.phone = normalizePhoneInput(data.phone || '')
+    form.email = data.email || ''
+    form.address = data.address || ''
+    form.citizenId = data.citizenId || ''
+    form.insuranceCardNumber = data.insuranceCardNumber || ''
+    isReturning.value = true
   } catch (error: any) {
     lookupError.value = getErrorMessage(error, 'Không tìm thấy hồ sơ bệnh nhân')
     isReturning.value = false
@@ -425,10 +446,14 @@ const resetForm = async () => {
   form.phone = ''
   form.email = ''
   form.address = ''
+  form.citizenId = ''
+  form.insuranceCardNumber = ''
   form.appointmentDate = todayStr
+  form.doctorId = ''
   form.appointmentTime = ''
   form.reason = ''
   selectedDepartmentId.value = ''
+  availableSlots.value = []
   submitError.value = ''
   bookingSuccess.value = false
   bookingResponse.value = null
@@ -469,12 +494,12 @@ const submitBooking = async () => {
       phone: form.phone.trim(),
       email: form.email.trim() || null,
       address: form.address.trim(),
-      
+      citizenId: form.citizenId.trim() || null,
+      insuranceCardNumber: form.insuranceCardNumber.trim() || null,
       appointmentDate: form.appointmentDate,
-citizenId: form.citizenId.trim() || null,
-  insuranceCardNumber: form.insuranceCardNumber.trim() || null,
-  appointmentTime: `${form.appointmentTime.trim()}:00`,
-  reason: reasonWithDepartment
+      doctorId: form.doctorId,
+      appointmentTime: `${form.appointmentTime.trim()}:00`,
+      reason: reasonWithDepartment
     })
 
     bookingResponse.value = response.data
@@ -486,8 +511,21 @@ citizenId: form.citizenId.trim() || null,
   }
 }
 
+watch(selectedDepartmentId, () => {
+  if (form.doctorId && !filteredDoctors.value.some((doctor) => doctor.id === form.doctorId)) {
+    form.doctorId = ''
+    form.appointmentTime = ''
+    availableSlots.value = []
+  }
+})
+
+watch([() => form.doctorId, () => form.appointmentDate], () => {
+  loadAvailableSlots()
+})
+
 onMounted(async () => {
   await loadDepartments()
+  await loadDoctors()
   fullNameInput.value?.focus()
 })
 </script>
