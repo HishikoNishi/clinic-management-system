@@ -108,8 +108,8 @@ const statusBadge = (isPaid: boolean) => isPaid ? 'bg-success' : 'bg-warning tex
                 </td>
                 <td class="text-center">
                   <div v-if="line.itemType === 'Drug'">
-                    <span class="fw-bold">{{ line.duration ?? 1 }}</span>
-                    <div class="small text-muted text-truncate" style="max-width: 80px;">{{ line.dosage ?? '—' }}</div>
+                    <span class="fw-bold">{{ (line as any).duration ?? 1 }}</span>
+                    <div class="small text-muted text-truncate" style="max-width: 80px;">{{ (line as any).dosage ?? '—' }}</div>
                   </div>
                   <span v-else class="text-muted">—</span>
                 </td>

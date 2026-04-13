@@ -23,14 +23,14 @@
 
               <dt class="col-5 text-muted">Giới tính</dt>
               <dd class="col-7 fw-semibold">{{ patient.gender || '—' }}</dd>
-              <dt class="col-5 text-muted">Mã bệnh nhân</dt>
-              <dd class="col-7 fw-semibold">{{ patient.patientCode || '—' }}</dd>
+  <dt class="col-5 text-muted">Mã bệnh nhân</dt>
+  <dd class="col-7 fw-semibold">{{ patient.patientCode || '—' }}</dd>
 
-              <dt class="col-5 text-muted">CCCD</dt>
-              <dd class="col-7 fw-semibold">{{ patient.citizenId || '—' }}</dd>
+  <dt class="col-5 text-muted">CCCD</dt>
+  <dd class="col-7 fw-semibold">{{ patient.citizenId || '—' }}</dd>
 
-              <dt class="col-5 text-muted">BHYT</dt>
-              <dd class="col-7 fw-semibold">{{ patient.insuranceCardNumber || '—' }}</dd>
+  <dt class="col-5 text-muted">BHYT</dt>
+  <dd class="col-7 fw-semibold">{{ patient.insuranceCardNumber || patient.InsuranceCardNumber || '—' }}</dd>
 
               <dt class="col-5 text-muted">Email</dt>
               <dd class="col-7">{{ patient.email || '—' }}</dd>
@@ -65,6 +65,17 @@
               <div class="mb-3">
                 <div class="text-muted small">Ghi chú</div>
                 <div>{{ latestRecord.note || '—' }}</div>
+              </div>
+              <div class="mb-3">
+                <div class="text-muted small">Thông tin bổ sung</div>
+                <div class="small"><strong>Lý do vào khám:</strong> {{ latestRecord.chiefComplaint || '—' }}</div>
+                <div class="small"><strong>Triệu chứng chi tiết:</strong> {{ latestRecord.detailedSymptoms || '—' }}</div>
+                <div class="small"><strong>Tiền sử bệnh:</strong> {{ latestRecord.pastMedicalHistory || '—' }}</div>
+                <div class="small"><strong>Dị ứng:</strong> {{ latestRecord.allergies || '—' }}</div>
+                <div class="small"><strong>Nghề nghiệp:</strong> {{ latestRecord.occupation || '—' }}</div>
+                <div class="small"><strong>Thói quen:</strong> {{ latestRecord.habits || '—' }}</div>
+                <div class="small"><strong>Sinh hiệu:</strong> HR {{ latestRecord.heartRate || '—' }}, HA {{ latestRecord.bloodPressure || '—' }}, Nhiệt {{ latestRecord.temperature || '—' }}°C, SpO₂ {{ latestRecord.spo2 || '—' }}%</div>
+                <div class="small"><strong>Nhân trắc:</strong> Cao {{ latestRecord.heightCm || '—' }} cm, Nặng {{ latestRecord.weightKg || '—' }} kg, BMI {{ latestRecord.bmi || '—' }}</div>
               </div>
               <div class="mb-3">
                 <div class="text-muted small">Xét nghiệm</div>
@@ -127,6 +138,14 @@
         </div>
         <div class="small mb-1">Chẩn đoán: <strong>{{ selectedRecord.diagnosis || '—' }}</strong></div>
         <div class="small mb-1">Ghi chú: {{ selectedRecord.note || '—' }}</div>
+        <div class="small mb-1"><strong>Lý do vào khám:</strong> {{ selectedRecord.chiefComplaint || '—' }}</div>
+        <div class="small mb-1"><strong>Triệu chứng chi tiết:</strong> {{ selectedRecord.detailedSymptoms || '—' }}</div>
+        <div class="small mb-1"><strong>Tiền sử bệnh:</strong> {{ selectedRecord.pastMedicalHistory || '—' }}</div>
+        <div class="small mb-1"><strong>Dị ứng:</strong> {{ selectedRecord.allergies || '—' }}</div>
+        <div class="small mb-1"><strong>Nghề nghiệp:</strong> {{ selectedRecord.occupation || '—' }}</div>
+        <div class="small mb-1"><strong>Thói quen:</strong> {{ selectedRecord.habits || '—' }}</div>
+        <div class="small mb-1">Sinh hiệu: HR {{ selectedRecord.heartRate || '—' }}, HA {{ selectedRecord.bloodPressure || '—' }}, Nhiệt {{ selectedRecord.temperature || '—' }}°C, SpO₂ {{ selectedRecord.spo2 || '—' }}%</div>
+        <div class="small mb-1">Nhân trắc: Cao {{ selectedRecord.heightCm || '—' }} cm, Nặng {{ selectedRecord.weightKg || '—' }} kg, BMI {{ selectedRecord.bmi || '—' }}</div>
         <div class="small mb-1">BHYT: {{ Math.round((selectedRecord.insuranceCoverPercent || 0) * 100) }}%</div>
         <div class="small mb-1">Phụ thu/Giảm trừ: {{ selectedRecord.surcharge }} / {{ selectedRecord.discount }}</div>
         <div class="mt-2">
@@ -185,6 +204,7 @@ const patientId = route.params.id as string
 
 const patient = reactive<any>({})
 const records = ref<any[]>([])
+const latestRecordDetail = ref<any | null>(null)
 const selectedRecord = ref<any | null>(null)
 const selectedTests = ref<any[]>([])
 const recordsLoading = ref(false)
@@ -201,7 +221,7 @@ const age = computed(() => {
   return Math.max(0, Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000)))
 })
 
-const latestRecord = computed(() => records.value[0] || null)
+const latestRecord = computed(() => latestRecordDetail.value || records.value[0] || null)
 const olderRecords = computed(() => records.value.slice(1))
 
 const formatDate = (d?: string) => {
@@ -233,7 +253,7 @@ const loadRecords = async () => {
     const res = await api.get(`/medical-record/patient/${patientId}`)
     records.value = res.data ?? []
     if (records.value.length) {
-      await loadTests(records.value[0].id)
+      await loadLatestRecordDetail(records.value[0].id)
     }
   } catch (err: any) {
     console.error(err)
@@ -254,6 +274,17 @@ const loadTests = async (recordId: string) => {
     testsError.value = err?.response?.data?.message || "Không tải được xét nghiệm"
   } finally {
     testsLoading.value = false
+  }
+}
+
+const loadLatestRecordDetail = async (recordId: string) => {
+  try {
+    const res = await api.get(`/medical-record/${recordId}`)
+    latestRecordDetail.value = res.data
+    const testRes = await api.get(`/ClinicalTests/medical-record/${recordId}`)
+    tests.value = testRes.data ?? []
+  } catch (err: any) {
+    console.error(err)
   }
 }
 

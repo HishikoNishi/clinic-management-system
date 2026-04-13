@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Dtos.MedicalRecords;
 using System.Linq;
 using ClinicManagement.Api.Services;
+using System.Text.RegularExpressions;
 
 public class MedicalRecordService
 {
@@ -60,7 +61,8 @@ public class MedicalRecordService
                 _context.MedicalRecords.Add(medicalRecord);
             }
 
-            // Ưu tiên giá trị đã lưu (ví dụ đã xác thực BHYT khi check-in) nếu payload không gửi hoặc =0
+            ValidateClinicalMeasures(dto);
+
             var insurance = dto.InsuranceCoverPercent;
             if (insurance <= 0 && medicalRecord.InsuranceCoverPercent > 0)
             {
@@ -68,8 +70,20 @@ public class MedicalRecordService
             }
             insurance = FinanceHelper.Clamp01(insurance);
 
+            medicalRecord.Symptoms = NormalizeText(dto.ChiefComplaint) ?? appointment.Reason ?? medicalRecord.Symptoms ?? string.Empty;
+            medicalRecord.DetailedSymptoms = NormalizeText(dto.DetailedSymptoms) ?? medicalRecord.DetailedSymptoms;
+            medicalRecord.PastMedicalHistory = NormalizeText(dto.PastMedicalHistory) ?? medicalRecord.PastMedicalHistory;
+            medicalRecord.Allergies = NormalizeText(dto.Allergies) ?? medicalRecord.Allergies;
+            medicalRecord.Occupation = NormalizeText(dto.Occupation) ?? medicalRecord.Occupation;
+            medicalRecord.Habits = NormalizeText(dto.Habits) ?? medicalRecord.Habits;
+            medicalRecord.HeightCm = dto.HeightCm ?? medicalRecord.HeightCm;
+            medicalRecord.WeightKg = dto.WeightKg ?? medicalRecord.WeightKg;
+            medicalRecord.Bmi = CalculateBmi(medicalRecord.WeightKg, medicalRecord.HeightCm);
+            medicalRecord.HeartRate = dto.HeartRate ?? medicalRecord.HeartRate;
+            medicalRecord.BloodPressure = NormalizeBloodPressure(dto.BloodPressure) ?? medicalRecord.BloodPressure;
+            medicalRecord.Temperature = dto.Temperature ?? medicalRecord.Temperature;
+            medicalRecord.Spo2 = dto.Spo2 ?? medicalRecord.Spo2;
             medicalRecord.Diagnosis = dto.Diagnosis;
-            // EF column Treatment không nullable, ghi cùng chẩn đoán để tránh null
             medicalRecord.Treatment = dto.Diagnosis;
             medicalRecord.Note = dto.Notes ?? string.Empty;
             medicalRecord.InsuranceCoverPercent = insurance;
@@ -89,7 +103,6 @@ public class MedicalRecordService
 
             if (validPrescriptionItems != null && validPrescriptionItems.Any())
             {
-                // 1. Xóa đơn cũ nếu có (đoạn này Nhàn đã viết đúng)
                 if (existingPrescription != null)
                 {
                     if (existingPrescription.PrescriptionDetails != null)
@@ -194,10 +207,10 @@ public class MedicalRecordService
         }
     }
 
-    public async Task<IEnumerable<BasicMedicalHistoryDto>> GetPatientRecordsForDoctor(Guid patientId, Guid doctorUserId)
-    {
-        var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == doctorUserId);
-        if (doctor == null) throw new InvalidOperationException("Doctor not found");
+        public async Task<IEnumerable<BasicMedicalHistoryDto>> GetPatientRecordsForDoctor(Guid patientId, Guid doctorUserId)
+        {
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == doctorUserId);
+            if (doctor == null) throw new InvalidOperationException("Doctor not found");
 
         var hasRelation = await _context.Appointments.AnyAsync(a => a.PatientId == patientId && a.DoctorId == doctor.Id);
         if (!hasRelation) throw new InvalidOperationException("No permission to view this patient");
@@ -215,5 +228,65 @@ public class MedicalRecordService
             .ToListAsync();
 
         return records;
+    }
+
+    private static string? NormalizeText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static decimal? CalculateBmi(decimal? weightKg, decimal? heightCm)
+    {
+        if (!weightKg.HasValue || !heightCm.HasValue) return null;
+        if (weightKg <= 0 || heightCm <= 0) return null;
+
+        var heightM = heightCm.Value / 100m;
+        if (heightM <= 0) return null;
+
+        return Math.Round(weightKg.Value / (heightM * heightM), 1);
+    }
+
+    private static string? NormalizeBloodPressure(string? bloodPressure)
+    {
+        if (string.IsNullOrWhiteSpace(bloodPressure)) return null;
+        var match = Regex.Match(bloodPressure.Trim(), @"^(\d{2,3})\s*/\s*(\d{2,3})$");
+        return match.Success ? $"{match.Groups[1].Value}/{match.Groups[2].Value}" : null;
+    }
+
+    private static (int Systolic, int Diastolic)? ParseBloodPressure(string? bloodPressure)
+    {
+        if (string.IsNullOrWhiteSpace(bloodPressure)) return null;
+        var match = Regex.Match(bloodPressure.Trim(), @"^(\d{2,3})\s*/\s*(\d{2,3})$");
+        if (!match.Success) return null;
+        return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+    }
+
+    private static void ValidateClinicalMeasures(ExaminationRequestDto dto)
+    {
+        if (dto.HeightCm.HasValue && (dto.HeightCm < 30m || dto.HeightCm > 250m))
+            throw new InvalidOperationException("Chiều cao phải trong khoảng 30-250 cm");
+
+        if (dto.WeightKg.HasValue && (dto.WeightKg < 1m || dto.WeightKg > 400m))
+            throw new InvalidOperationException("Cân nặng phải trong khoảng 1-400 kg");
+
+        if (dto.HeartRate.HasValue && (dto.HeartRate < 30 || dto.HeartRate > 220))
+            throw new InvalidOperationException("Nhịp tim phải trong khoảng 30-220 bpm");
+
+        if (dto.Temperature.HasValue && (dto.Temperature < 34m || dto.Temperature > 42m))
+            throw new InvalidOperationException("Nhiệt độ phải trong khoảng 34-42 °C");
+
+        if (dto.Spo2.HasValue && (dto.Spo2 < 70 || dto.Spo2 > 100))
+            throw new InvalidOperationException("SpO2 phải trong khoảng 70-100%");
+
+        var parsedBp = ParseBloodPressure(dto.BloodPressure);
+        if (!string.IsNullOrWhiteSpace(dto.BloodPressure) && parsedBp == null)
+            throw new InvalidOperationException("Huyết áp phải theo dạng 120/80");
+
+        if (parsedBp.HasValue)
+        {
+            var (systolic, diastolic) = parsedBp.Value;
+            if (systolic < 70 || systolic > 250 || diastolic < 40 || diastolic > 150 || systolic <= diastolic)
+                throw new InvalidOperationException("Huyết áp vượt giới hạn hợp lệ");
+        }
     }
 }

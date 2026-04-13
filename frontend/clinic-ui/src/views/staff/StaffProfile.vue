@@ -145,6 +145,7 @@ const handleFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
   if (!target.files || !target.files.length || !staff.value) return
   const file = target.files[0]
+  if (!file) return
   
   const formData = new FormData()
   formData.append('file', file)
