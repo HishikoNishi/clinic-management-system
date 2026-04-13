@@ -122,37 +122,50 @@ medName.StartsWith(m.Name, StringComparison.OrdinalIgnoreCase) &&
             var total = subtotal - insuranceDiscount;
             if (total < 0) total = 0;
 
-            // Thay vì tìm theo prescriptionId, Nhàn hãy tìm theo appointmentId + loại Drug
+            // --- ĐOẠN UPSERT HÓA ĐƠN THUỐC ---
+
+            // Tìm hóa đơn thuốc cũ của cuộc hẹn này (nếu có)
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId && i.InvoiceType == InvoiceType.Drug);
 
             if (invoice == null)
             {
-                // Tạo mới nếu chưa từng có hóa đơn thuốc cho cuộc hẹn này
+                // TẠO MỚI nếu chưa từng có hóa đơn thuốc cho cuộc hẹn này
                 invoice = new Invoice
                 {
                     Id = Guid.NewGuid(),
                     AppointmentId = appointmentId,
-                    PrescriptionId = prescriptionId, // Gán ID đơn thuốc mới nhất
+                    PrescriptionId = prescriptionId, // Gán ID đơn thuốc hiện tại
                     InvoiceType = InvoiceType.Drug,
-                    // ... các trường khác giữ nguyên
+                    Amount = total,
+                    BalanceDue = total,
+                    TotalDeposit = 0,               // Thuốc thường không tính tạm ứng từ trước
+                    CreatedAt = DateTime.UtcNow,
+                    IsPaid = false,
+                    PaymentDate = null,
                 };
                 _context.Invoices.Add(invoice);
             }
             else
             {
-                if (invoice.IsPaid) return invoice; // Đã thu tiền thì không cho sửa
-                                                    // Cập nhật quan trọng: Gán lại PrescriptionId mới nhất cho hóa đơn cũ
+                // CẬP NHẬT nếu đã có hóa đơn nhưng chưa thu tiền
+                if (invoice.IsPaid) return invoice; // Đã thu tiền thì giữ nguyên, không cho sửa
+
+                // Cập nhật lại các giá trị quan trọng theo đơn thuốc mới nhất
                 invoice.PrescriptionId = prescriptionId;
                 invoice.Amount = total;
                 invoice.BalanceDue = total;
 
-                // Làm sạch dòng cũ để nạp dòng mới
-                _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
-                invoice.InvoiceLines.Clear();
+                // Làm sạch dòng cũ để nạp dòng mới (Tránh bị nhân đôi dòng chi phí)
+                if (invoice.InvoiceLines != null && invoice.InvoiceLines.Any())
+                {
+                    _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
+                    invoice.InvoiceLines.Clear();
+                }
             }
 
+            // Thêm các dòng chi tiết mới (InvoiceLines) vào
             foreach (var line in lines)
             {
                 line.InvoiceId = invoice.Id;
@@ -161,6 +174,7 @@ medName.StartsWith(m.Name, StringComparison.OrdinalIgnoreCase) &&
 
             await _context.SaveChangesAsync();
             return invoice;
+
         }
 
         public async Task<Invoice?> GenerateInvoiceAsync(Guid appointmentId)
