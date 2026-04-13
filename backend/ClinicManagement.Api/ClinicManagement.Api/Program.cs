@@ -160,6 +160,31 @@ IF COL_LENGTH('dbo.MedicalRecords', 'Spo2') IS NULL ALTER TABLE dbo.MedicalRecor
 ");
     }
     catch { }
+
+    // Bổ sung cột cho InvoiceLines (dùng cho hóa đơn thuốc)
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('dbo.InvoiceLines', 'Dosage') IS NULL
+BEGIN
+    ALTER TABLE dbo.InvoiceLines ADD Dosage NVARCHAR(MAX) NOT NULL CONSTRAINT DF_InvoiceLines_Dosage DEFAULT ('');
+END
+ELSE
+BEGIN
+    UPDATE dbo.InvoiceLines SET Dosage = '' WHERE Dosage IS NULL;
+END
+
+IF COL_LENGTH('dbo.InvoiceLines', 'Duration') IS NULL
+BEGIN
+    ALTER TABLE dbo.InvoiceLines ADD Duration INT NOT NULL CONSTRAINT DF_InvoiceLines_Duration DEFAULT (0);
+END
+ELSE
+BEGIN
+    UPDATE dbo.InvoiceLines SET Duration = 0 WHERE Duration IS NULL;
+END
+");
+    }
+    catch { }
     await SeedData.SeedAsync(scope.ServiceProvider);
 }
 
