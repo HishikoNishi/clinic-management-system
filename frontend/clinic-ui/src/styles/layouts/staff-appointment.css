@@ -200,13 +200,23 @@ table tr:hover {
   color: var(--color-text-main);
 }
 
-.status.completed {
+.status.checkedin {
   background: var(--color-info-bg);
+  color: var(--color-text-main);
+}
+
+.status.completed {
+  background: var(--color-success-bg);
   color: var(--color-text-main);
 }
 
 .status.cancelled {
   background: var(--color-danger-bg);
+  color: var(--color-text-main);
+}
+
+.status.noshow {
+  background: #f3f4f6;
   color: var(--color-text-main);
 }
 

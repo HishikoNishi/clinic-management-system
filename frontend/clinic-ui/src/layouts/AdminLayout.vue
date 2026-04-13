@@ -1,54 +1,55 @@
 <script setup lang="ts">
-import { computed, ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import { useAuthStore } from "@/stores/auth"
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 
-const role = computed(() => authStore.role || "Guest")
+const role = computed(() => authStore.role || 'Guest')
 
 const navItems = computed(() => {
-  if (role.value === "Admin") {
+  if (role.value === 'Admin') {
     return [
-      { label: "Tổng quan", icon: "speedometer2", path: "/dashboard" },
-      { label: "Lịch khám", icon: "calendar-event", path: "/appointment" },
-      { label: "Bác sĩ", icon: "person-workspace", path: "/doctors" },
-      { label: "Khoa", icon: "building", path: "/departments" },
-      { label: "Chuyên khoa", icon: "layers", path: "/specialties" },
-      { label: "Thuốc", icon: "capsule-pill", path: "/medicines" },
-      { label: "Nhân viên", icon: "people", path: "/staff" },
-      { label: "Tạo tài khoản", icon: "person-plus", path: "/admin/users/create" }
+      { label: 'Tổng quan', icon: 'speedometer2', path: '/dashboard' },
+      { label: 'Lịch khám', icon: 'calendar-event', path: '/appointment' },
+      { label: 'Bác sĩ', icon: 'person-workspace', path: '/doctors' },
+      { label: 'Yêu cầu đổi ca', icon: 'arrow-left-right', path: '/admin/shift-requests' },
+      { label: 'Khoa', icon: 'building', path: '/departments' },
+      { label: 'Chuyên khoa', icon: 'layers', path: '/specialties' },
+      { label: 'Thuốc', icon: 'capsule-pill', path: '/medicines' },
+      { label: 'Nhân viên', icon: 'people', path: '/staff' },
+      { label: 'Tạo tài khoản', icon: 'person-plus', path: '/admin/users/create' }
     ]
   }
 
-  if (role.value === "Staff") {
+  if (role.value === 'Staff') {
     return [
-      { label: "Lịch khám", icon: "calendar-check", path: "/staff/appointments" },
-      { label: "Đặt lịch tại quầy", icon: "calendar-plus", path: "/staff/create-appointment" },
-      { label: "Tài khoản của tôi", icon: "person-circle", path: "/staff/profile" }
+      { label: 'Lich kham', icon: 'calendar-check', path: '/staff/appointments' },
+      { label: 'Đặt lịch tại quầy', icon: 'calendar-plus', path: '/staff/create-appointment' },
+      { label: 'Tài khoản của tôi', icon: 'person-circle', path: '/staff/profile' }
     ]
   }
 
-  if (role.value === "Doctor") {
+  if (role.value === 'Doctor') {
     return [
-      { label: "Lịch khám", icon: "calendar-heart", path: "/doctor/appointments" }
+      { label: 'Lich kham', icon: 'calendar-heart', path: '/doctor/appointments' }
     ]
   }
 
-  if (role.value === "Technician") {
+  if (role.value === 'Technician') {
     return [
-      { label: "Xét nghiệm chờ", icon: "list-check", path: "/technician/tests" },
-      { label: "Lịch sử xét nghiệm", icon: "clock-history", path: "/technician/tests/history" }
+      { label: 'Xet nghiem cho', icon: 'list-check', path: '/technician/tests' },
+      { label: 'Lịch sử xét nghiệm', icon: 'clock-history', path: '/technician/tests/history' }
     ]
   }
 
   return []
 })
 
-const homePath = computed(() => navItems.value[0]?.path ?? "/home")
+const homePath = computed(() => navItems.value[0]?.path ?? '/home')
 
 const go = (path: string) => {
   router.push(path)
@@ -64,7 +65,7 @@ const toggleSidebar = () => {
 
 const logout = () => {
   authStore.logout()
-  router.push("/login")
+  router.push('/login')
 }
 </script>
 

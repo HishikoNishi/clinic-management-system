@@ -543,7 +543,7 @@ const statusLabel = (status: string) => {
   const labels: { [key: string]: string } = {
     All: 'Tất cả',
     Pending: 'Chờ xử lý',
-    Confirmed: 'Đã xác nhận',
+    Confirmed: 'Đã đặt lịch với bác sĩ',
     CheckedIn: 'Đã check-in',
     Completed: 'Hoàn thành',
     Cancelled: 'Đã hủy',

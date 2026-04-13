@@ -79,6 +79,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/doctor/DoctorAppointments.vue"),
     meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
   },
+  {
+    path: "/doctor/my-schedule",
+    name: "DoctorMySchedule",
+    component: () => import("@/views/doctor/DoctorMySchedule.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
 
   // Backward compatibility for older doctor path
   {
@@ -119,6 +125,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/doctor/DoctorProfile.vue"),
     meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
   },
+  {
+    path: "/doctor/shift-requests",
+    name: "DoctorShiftRequests",
+    component: () => import("@/views/doctor/DoctorShiftRequests.vue"),
+    meta: { layout: "doctor", requiresAuth: true, role: "Doctor" }
+  },
 
   {
     path: "/doctors",
@@ -148,6 +160,18 @@ const routes: RouteRecordRaw[] = [
     path: '/doctors/:id',
     name: 'DoctorDetail',
     component: () => import('@/views/admin/DoctorDetail.vue'),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
+    path: '/doctors/:id/schedules',
+    name: 'DoctorSchedules',
+    component: () => import('@/views/admin/DoctorSchedulesView.vue'),
+    meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
+  },
+  {
+    path: '/admin/shift-requests',
+    name: 'AdminShiftRequests',
+    component: () => import('@/views/admin/AdminShiftRequests.vue'),
     meta: { layout: "dashboard", requiresAuth: true, role: "Admin" }
   },
 
