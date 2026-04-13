@@ -1,36 +1,64 @@
 <template>
   <div class="appointment-detail">
     <h2>Chi tiết lịch khám</h2>
-   <div v-if="appointment" class="detail-card">
-  <div class="detail-row"><span class="label">Mã lịch khám:</span> {{ appointment.appointmentCode }}</div>
-  <div class="detail-row"><span class="label">Mã bệnh nhân:</span> {{ appointment.patientCode || '—' }}</div>
-  <div class="detail-row"><span class="label">Bệnh nhân:</span> {{ appointment.fullName }}</div>
-  <div class="detail-row"><span class="label">CCCD:</span> {{ appointment.citizenId || '—' }}</div>
-  <div class="detail-row"><span class="label">BHYT:</span> {{ appointment.insuranceCardNumber || '—' }}</div>
-  <div class="detail-row"><span class="label">Điện thoại:</span> {{ appointment.phone }}</div>
-  <div class="detail-row"><span class="label">Email:</span> {{ appointment.email }}</div>
-  <div class="detail-row"><span class="label">Ngày sinh:</span> {{ formatDate(appointment.dateOfBirth) }}</div>
-  <div class="detail-row"><span class="label">Giới tính:</span> {{ appointment.gender }}</div>
-  <div class="detail-row"><span class="label">Địa chỉ:</span> {{ appointment.address }}</div>
-  <div class="detail-row"><span class="label">Lý do:</span> {{ appointment.reason }}</div>
-  <div class="detail-row">
-    <span class="label">Trạng thái:</span>
-    <span :class="'status ' + appointment.status.toLowerCase()">{{ appointment.status }}</span>
-  </div>
-  <div class="detail-row">
-    <span class="label text-primary">Bác sĩ:</span>
-    <template v-if="appointment.statusDetail?.doctorName">
-      {{ appointment.statusDetail.doctorName }}
-      <span v-if="appointment.statusDetail.doctorCode">({{ appointment.statusDetail.doctorCode }})</span>
-    </template>
-    <template v-else>
-      <span class="text-muted">Chưa gán</span>
-    </template>
-  </div>
-</div>
+    
+    <div v-if="appointment" class="detail-card">
+      <div class="detail-row">
+        <span class="label">Mã lịch khám:</span> {{ appointment.appointmentCode }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Mã bệnh nhân:</span> {{ appointment.patientCode || '—' }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Bệnh nhân:</span> {{ appointment.fullName }}
+      </div>
+      <div class="detail-row">
+        <span class="label">CCCD:</span> {{ appointment.citizenId || '—' }}
+      </div>
+      <div class="detail-row">
+        <span class="label">BHYT:</span> {{ appointment.insuranceCardNumber || '—' }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Điện thoại:</span> {{ appointment.phone }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Email:</span> {{ appointment.email }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Ngày sinh:</span> {{ formatDate(appointment.dateOfBirth) }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Giới tính:</span> {{ appointment.gender }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Địa chỉ:</span> {{ appointment.address }}
+      </div>
+      <div class="detail-row">
+        <span class="label">Lý do:</span> {{ appointment.reason }}
+      </div>
+      
+      <div class="detail-row">
+        <span class="label">Trạng thái:</span>
+        <span :class="'status ' + appointment.status.toLowerCase()">{{ appointment.status }}</span>
+      </div>
+      
+      <div class="detail-row">
+        <span class="label text-primary">Bác sĩ:</span>
+        <template v-if="appointment.statusDetail?.doctorName">
+          {{ appointment.statusDetail.doctorName }}
+          <span v-if="appointment.statusDetail.doctorCode">({{ appointment.statusDetail.doctorCode }})</span>
+        </template>
+        <template v-else>
+          <span class="text-muted">Chưa gán</span>
+        </template>
+      </div>
+    </div>
 
     <p v-else-if="error" class="error">{{ error }}</p>
-    <button class="back-btn" @click="$router.push('/staff/appointments')">← Quay lại danh sách</button>
+    
+    <button class="back-btn" @click="$router.push('/staff/appointments')">
+      ← Quay lại danh sách
+    </button>
   </div>
 </template>
 
