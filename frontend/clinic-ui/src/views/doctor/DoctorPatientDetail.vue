@@ -23,14 +23,14 @@
 
               <dt class="col-5 text-muted">Giới tính</dt>
               <dd class="col-7 fw-semibold">{{ patient.gender || '—' }}</dd>
-  <dt class="col-5 text-muted">Mã bệnh nhân</dt>
-  <dd class="col-7 fw-semibold">{{ patient.patientCode || '—' }}</dd>
+              <dt class="col-5 text-muted">Mã bệnh nhân</dt>
+              <dd class="col-7 fw-semibold">{{ patient.patientCode || '—' }}</dd>
 
-  <dt class="col-5 text-muted">CCCD</dt>
-  <dd class="col-7 fw-semibold">{{ patient.citizenId || '—' }}</dd>
+              <dt class="col-5 text-muted">CCCD</dt>
+              <dd class="col-7 fw-semibold">{{ patient.citizenId || '—' }}</dd>
 
-  <dt class="col-5 text-muted">BHYT</dt>
-  <dd class="col-7 fw-semibold">{{ patient.insuranceCardNumber || '—' }}</dd>
+              <dt class="col-5 text-muted">BHYT</dt>
+              <dd class="col-7 fw-semibold">{{ patient.insuranceCardNumber || '—' }}</dd>
 
               <dt class="col-5 text-muted">Email</dt>
               <dd class="col-7">{{ patient.email || '—' }}</dd>
