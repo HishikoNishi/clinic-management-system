@@ -5,5 +5,6 @@ namespace ClinicManagement.Api.Dtos.MedicalRecords
         public string MedicineName { get; set; } = string.Empty;
         public string Dosage { get; set; } = string.Empty;
         public int Quantity { get; set; }
+        public Guid? MedicineId { get; internal set; }
     }
 }

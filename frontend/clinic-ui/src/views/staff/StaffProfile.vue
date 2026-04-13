@@ -1,3 +1,91 @@
+<template>
+  <div class="staff-page-container">
+    <div class="container" v-if="staff">
+      <div class="page-header-box d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="page-title mb-1">Hồ sơ nhân viên</h1>
+          <p class="text-muted mb-0">Quản lý thông tin tài khoản và trạng thái công tác</p>
+        </div>
+        <div class="header-actions">
+          <button v-if="!showEdit" class="btn-primary-modern" @click="showEdit = true">
+            Chỉnh sửa hồ sơ
+          </button>
+          <div v-else class="d-flex gap-2">
+            <button class="btn-update-modern" :disabled="saving" @click="saveProfile">
+              <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
+              Lưu thay đổi
+            </button>
+            <button class="btn-cancel-modern" @click="showEdit = false">Hủy bỏ</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="staff-info-card" :class="{ 'is-editing': showEdit }">
+        
+        <div class="staff-profile-section">
+          <div class="avatar-wrapper">
+            <img :src="staff.avatarUrl || '/default-avatar.png'" class="main-avatar" />
+          </div>
+          
+          <div v-if="showEdit" class="mt-2 text-center">
+            <button class="btn-upload-avatar" type="button" :disabled="uploadBusy" @click="pickFile">
+              <i v-if="!uploadBusy" class="bi bi-camera"></i>
+              <span v-else class="spinner-border spinner-border-sm"></span>
+              <span>Đổi ảnh</span>
+            </button>
+            <input ref="fileInput" type="file" accept="image/*" class="d-none" @change="handleFileChange" />
+          </div>
+
+          <div v-if="!showEdit" class="profile-summary mt-3 text-center">
+            <h2 class="staff-name-display">{{ staff.fullName }}</h2>
+            <span :class="['status-badge-lg', staff.isActive ? 'bg-success-soft' : 'bg-secondary-soft']">
+              {{ staff.isActive ? 'Hoạt động' : 'Ngưng hoạt động' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="staff-details-container">
+          <div v-if="toast" class="alert alert-success py-2 mb-3 border-0 small">{{ toast }}</div>
+          
+          <div class="staff-details-grid">
+            <div class="form-group">
+              <label>Họ và tên</label>
+              <input v-model="editForm.fullName" :disabled="!showEdit" :class="{ 'disabled-view': !showEdit }" />
+            </div>
+
+            <div class="form-group">
+              <label>Mã nhân viên</label>
+              <input v-model="editForm.code" :disabled="!showEdit" :class="{ 'disabled-view': !showEdit }" />
+            </div>
+
+            <div class="form-group">
+              <label class="label-disabled">Tài khoản (Username)</label>
+              <input :value="staff.username" disabled class="input-readonly-static" />
+            </div>
+
+            <div class="form-group">
+              <label class="label-disabled">Ngày tham gia</label>
+              <input :value="new Date(staff.createdAt).toLocaleDateString()" disabled class="input-readonly-static" />
+            </div>
+
+            <div class="form-group full-row">
+              <label>Trạng thái tài khoản</label>
+              <select v-model="editForm.isActive" :disabled="!showEdit" :class="{ 'disabled-view': !showEdit }">
+                <option :value="true">Hoạt động (Đang công tác)</option>
+                <option :value="false">Ngưng (Đã nghỉ việc)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="profile-footer-note mt-4">
+            <i class="bi bi-info-circle me-2"></i>Mọi thay đổi về Tài khoản và Ngày tạo vui lòng liên hệ bộ phận Kỹ thuật.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
@@ -18,11 +106,7 @@ const editForm = ref<any>({
   avatarUrl: ''
 })
 
-onMounted(async () => {
-  await loadProfile()
-})
-
-async function loadProfile() {
+const loadProfile = async () => {
   loading.value = true
   try {
     const res = await api.get('/Staffs/profile')
@@ -33,26 +117,23 @@ async function loadProfile() {
       isActive: staff.value.isActive,
       avatarUrl: staff.value.avatarUrl || ''
     }
-  } catch (err:any) {
-    error.value = err.response?.data?.message || 'Không thể tải hồ sơ'
+  } catch (err: any) {
+    console.error("Lỗi load profile:", err)
   } finally {
     loading.value = false
   }
 }
 
-async function saveProfile() {
+const saveProfile = async () => {
   try {
     saving.value = true
-    await api.put('/Staffs/profile', editForm.value, {
-      headers: { 'Content-Type': 'application/json' }
-    })
+    await api.put('/Staffs/profile', editForm.value)
     showEdit.value = false
     await loadProfile()
-    toast.value = 'Cập nhật thành công'
-    window.setTimeout(() => (toast.value = null), 2500)
-  } catch (err:any) {
-    error.value = err.response?.data?.message || 'Không thể cập nhật hồ sơ'
-    window.setTimeout(() => (error.value = null), 3500)
+    toast.value = 'Cập nhật thành công ✨'
+    setTimeout(() => (toast.value = null), 2500)
+  } catch (err: any) {
+    alert("Có lỗi xảy ra khi lưu thông tin")
   } finally {
     saving.value = false
   }
@@ -65,8 +146,10 @@ const handleFileChange = async (e: Event) => {
   if (!target.files || !target.files.length || !staff.value) return
   const file = target.files[0]
   if (!file) return
+  
   const formData = new FormData()
   formData.append('file', file)
+  
   try {
     uploadBusy.value = true
     const res = await api.post(`/Staffs/${staff.value.id}/avatar`, formData, {
@@ -74,83 +157,20 @@ const handleFileChange = async (e: Event) => {
     })
     const url = res.data?.url
     if (url) {
-      editForm.value.avatarUrl = url
       staff.value.avatarUrl = url
+      editForm.value.avatarUrl = url
       toast.value = 'Cập nhật ảnh thành công'
       setTimeout(() => (toast.value = null), 2000)
     }
-  } catch (err:any) {
-    error.value = err.response?.data?.message || 'Tải ảnh thất bại'
-    setTimeout(() => (error.value = null), 2500)
+  } catch (err: any) {
+    alert("Tải ảnh thất bại")
   } finally {
     uploadBusy.value = false
     target.value = ''
   }
 }
+
+onMounted(loadProfile)
 </script>
-
-<template>
-  <div class="profile-card page">
-    <div class="page-header">
-      <div>
-        <div class="page-eyebrow">Staff</div>
-        <h3 class="page-title">Thông tin nhân viên</h3>
-        <p class="page-subtitle">Xem và cập nhật hồ sơ cá nhân.</p>
-      </div>
-      <div>
-        <button v-if="staff && !loading" class="btn btn-primary" @click="showEdit = true">
-          <i class="bi bi-pencil-square me-1"></i>
-          Chỉnh sửa
-        </button>
-      </div>
-    </div>
-
-    <div v-if="loading">Đang tải...</div>
-    <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
-    <div v-else-if="staff">
-      <div v-if="toast" class="alert alert-success py-2 mb-3">{{ toast }}</div>
-
-      <div class="d-flex align-items-start gap-3">
-        <div class="text-center">
-          <img :src="staff.avatarUrl || '/default-avatar.png'" class="avatar" alt="Avatar" />
-          <div class="mt-2">
-            <button class="btn btn-outline-secondary btn-sm" type="button" :disabled="uploadBusy" @click="pickFile">
-              <span v-if="uploadBusy" class="spinner-border spinner-border-sm me-1"></span>
-              Đổi ảnh
-            </button>
-            <input ref="fileInput" type="file" accept="image/*" class="d-none" @change="handleFileChange" />
-          </div>
-        </div>
-        <div class="profile-info">
-          <p><strong>Mã:</strong> {{ staff.code }}</p>
-          <p><strong>Họ tên:</strong> {{ staff.fullName }}</p>
-          <p><strong>Tài khoản:</strong> {{ staff.username }}</p>
-          <p><strong>Trạng thái:</strong> {{ staff.isActive ? 'Hoạt động' : 'Ngưng' }}</p>
-          <p><strong>Ngày tạo:</strong> {{ new Date(staff.createdAt).toLocaleDateString() }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal chỉnh sửa -->
-    <div v-if="showEdit" class="modal-backdrop">
-      <div class="modal-box">
-        <h4>Cập nhật hồ sơ nhân viên</h4>
-        <input v-model="editForm.fullName" class="form-control mb-2" placeholder="Họ tên" />
-        <input v-model="editForm.code" class="form-control mb-2" placeholder="Mã nhân viên" />
-        <select v-model="editForm.isActive" class="form-select mb-2">
-          <option :value="true">Hoạt động</option>
-          <option :value="false">Ngưng</option>
-        </select>
-        <div class="modal-actions">
-          <button class="btn btn-primary" :disabled="saving" @click="saveProfile">
-            <span v-if="saving" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-            Lưu
-          </button>
-          <button class="btn btn-secondary" @click="showEdit = false">Hủy</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
+ 
 <style src="@/styles/layouts/staff-profile.css"></style>

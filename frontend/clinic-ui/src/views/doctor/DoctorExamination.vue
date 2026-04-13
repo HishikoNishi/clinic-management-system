@@ -309,20 +309,16 @@
   </div>
 </div>
 </template>
-
 <script setup lang="ts">
 import { onMounted, reactive, ref, computed } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 import { useAuthStore } from "@/stores/auth"
 import type { AxiosError } from "axios"
-
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-
 const appointmentId = route.params.id as string
-
 const appointment = reactive<any>({})
 const patient = reactive<any>({})
 const history = ref<any[]>([])
@@ -332,7 +328,7 @@ const currentMedicalRecordId = ref<string | null>(null)
 const saving = ref(false)
 const error = ref<string | null>(null)
 const dataFromRecord = ref<any | null>(null)
-
+const isPaid = ref(false)
 const showMedicineModal = ref(false)
 const medicineSearch = ref("")
 const medicines = ref<any[]>([])
@@ -561,26 +557,6 @@ const loadDetail = async () => {
     error.value = err?.response?.data?.message || "Không tải được thông tin khám"
   }
 }
-
-const loadClinicalTestsDetail = async (recordId: string) => {
-  try {
-    const { data } = await api.get(`/ClinicalTests/medical-record/${recordId}`)
-    clinicalTestsDetail.value = data || []
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-const viewHistoryDetail = async (recordId: string) => {
-  try {
-    const { data } = await api.get(`/medical-record/${recordId}`)
-    historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === recordId)?.createdAt }
-  } catch (err: any) {
-    console.error(err)
-    alert(err?.response?.data?.message || "Không tải được hồ sơ chi tiết")
-  }
-}
-
 const submit = async () => {
   if (!form.diagnosis.trim()) {
     alert("Vui lòng nhập chẩn đoán")
@@ -689,13 +665,28 @@ const submit = async () => {
     errorAxios?.response?.data?.message ||
     "Không tải được thông tin khám"
 } finally {
-    saving.value = false
-  }
+saving.value = false
 }
-
+}
+const loadClinicalTestsDetail = async (recordId: string) => {
+try {
+const { data } = await api.get(`/ClinicalTests/medical-record/${recordId}`)
+clinicalTestsDetail.value = data || []
+} catch (err) { console.error(err) }
+}
+const viewHistoryDetail = async (recordId: string) => {
+try {
+const { data } = await api.get(`/medical-record/${recordId}`)
+historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === recordId)?.createdAt }
+} catch (err: any) { alert("Không tải được hồ sơ chi tiết") }
+}
 const goBack = () => router.push("/doctor/appointments")
-
-
 </script>
-
 <style src="@/styles/layouts/doctor-exam.css"></style>
+
+
+
+
+
+
+

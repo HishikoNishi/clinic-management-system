@@ -281,7 +281,10 @@ namespace ClinicManagement.Api.Controllers
                     {
                         invoice.Appointment.Patient.FullName,
                         invoice.Appointment.Patient.Phone,
-                        invoice.Appointment.Patient.Email
+                        invoice.Appointment.Patient.Email,
+                        invoice.Appointment.Patient.PatientCode,       
+                        invoice.Appointment.Patient.CitizenId,       
+                        invoice.Appointment.Patient.InsuranceCardNumber
                     }
                 },
                 payments = invoice.Payments?.Select(p => new
@@ -307,7 +310,9 @@ namespace ClinicManagement.Api.Controllers
                     l.Id,
                     l.Description,
                     l.ItemType,
-                    l.Amount
+                    l.Amount,
+                    l.Dosage,   
+                    l.Duration
                 })
             };
         }

@@ -76,20 +76,6 @@ function openCreate() {
   showModal.value = true
 }
 
-function openEdit(doctor: Doctor) {
-  editingId.value = doctor.id
-  form.userId = doctor.userId
-  form.fullName = doctor.fullName || ''
-  form.code = doctor.code
-  form.departmentId = doctor.departmentId
-  form.specialtyId = doctor.specialtyId
-  form.licenseNumber = doctor.licenseNumber || ''
-  form.avatarUrl = doctor.avatarUrl || ''
-  showModal.value = true
-  if (form.departmentId) {
-    loadSpecialties(form.departmentId)
-  }
-}
 
 async function save() {
   try {
@@ -154,78 +140,82 @@ onMounted(async () => {
   await loadDoctors()
 })
 </script>
-
 <template>
   <div class="doctor-page">
-    <div class="container">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h2 class="mb-1">Quản lý bác sĩ</h2>
-          <p class="text-muted mb-0">Danh sách, tìm kiếm và chỉnh sửa bác sĩ.</p>
+          <h4 class="fw-bold mb-0">Quản lý bác sĩ</h4>
+          <small class="text-muted">Tổng cộng: {{ filteredDoctors.length }} bác sĩ</small>
         </div>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <input
-            v-model="searchTerm"
-            type="search"
-            class="form-control"
-            style="min-width: 260px"
-            placeholder="Tìm theo mã, chuyên khoa, khoa, giấy phép"
-          />
-          <button class="btn btn-primary" @click="openCreate">+ Thêm bác sĩ</button>
+        <div class="d-flex gap-2">
+          <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input
+              v-model="searchTerm"
+              type="text"
+              class="form-control form-control-sm search-input"
+              placeholder="Tìm kiếm nhanh..."
+            />
+          </div>
+          <button class="btn btn-sm btn-primary px-3 shadow-sm" @click="openCreate">
+            <i class="bi bi-plus-lg me-1"></i> Thêm bác sĩ
+          </button>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card border-0 shadow-sm overflow-hidden">
         <div class="table-responsive">
-          <table class="doctor-table table align-middle mb-0">
+          <table class="table table-hover align-middle mb-0 custom-table">
             <thead>
               <tr>
-                <th>Mã</th>
-                <th>Họ tên</th>
-                <th>Khoa</th>
-                <th>Chuyên khoa</th>
+                <th width="80">Mã</th>
+                <th>Họ và tên</th>
+                <th>Khoa / Chuyên khoa</th>
                 <th>Giấy phép</th>
-                <th>Trạng thái</th>
-                <th style="text-align:right">Hành động</th>
+                <th width="160">Trạng thái</th>
+                <th width="180" class="text-end">Hành động</th>
               </tr>
             </thead>
-
             <tbody>
               <tr v-if="loading">
-                <td colspan="6" class="text-center py-4">Đang tải...</td>
-              </tr>
-              <tr v-else-if="filteredDoctors.length === 0">
-                <td colspan="6" class="text-center py-4 text-muted">
-                  Không có bác sĩ nào phù hợp
+                <td colspan="6" class="text-center py-5">
+                  <div class="spinner-border spinner-border-sm text-primary"></div>
                 </td>
               </tr>
-              <tr v-else v-for="d in filteredDoctors" :key="d.id">
-                <td class="fw-semibold">{{ d.code }}</td>
-                <td>{{ d.fullName }}</td>
-                <td>{{ d.departmentName || '-' }}</td>
-                <td>{{ d.specialtyName || '-' }}</td>
-                <td>{{ d.licenseNumber || '-' }}</td>
+              <tr v-for="d in filteredDoctors" :key="d.id">
+                <td><span class="code-badge">{{ d.code }}</span></td>
                 <td>
-                <select
-                  v-model="d.status"
-                  @change="updateStatus(d.id, d.status)"
-                  class="form-select form-select-sm"
-                >
-                  <option value="Active">Hoạt động</option>
-                  <option value="Busy">Đang khám</option>
-                  <option value="Inactive">Không hoạt động</option>
-                </select>
-              </td>
+                  <div class="d-flex align-items-center">
+                    <span class="fw-bold text-dark">{{ d.fullName }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="dept-text">{{ d.departmentName || '-' }}</div>
+                  <div class="spec-text">{{ d.specialtyName || '-' }}</div>
+                </td>
+                <td class="text-muted small">{{ d.licenseNumber || '-' }}</td>
+                <td>
+                  <select
+                    v-model="d.status"
+                    @change="updateStatus(d.id, d.status)"
+                    :class="['status-select-sm', d.status?.toLowerCase()]"
+                  >
+                    <option value="Active">Hoạt động</option>
+                    <option value="Busy">Đang khám</option>
+                    <option value="Inactive">Không hoạt động</option>
+                  </select>
+                </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-info me-2" @click="$router.push(`/doctors/${d.id}`)">
-    Chi tiết
-  </button>
-                  <button class="btn btn-sm btn-outline-primary me-2" @click="openEdit(d)">
-                    Chỉnh sửa
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="remove(d.id)">
-                    Xóa
-                  </button>
+                  <div class="btn-group-action">
+                    <button class="btn-icon info" title="Chi tiết" @click="$router.push(`/doctors/${d.id}`)">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                 
+                    <button class="btn-icon delete" title="Xóa" @click="remove(d.id)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -235,46 +225,61 @@ onMounted(async () => {
     </div>
 
     <div v-if="showModal" class="modal-backdrop-custom">
-      <div class="modal-modern">
-        <h3>{{ editingId ? 'Chỉnh sửa bác sĩ' : 'Tạo bác sĩ mới' }}</h3>
+      <div class="modal-modern shadow-lg">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">{{ editingId ? 'Cập nhật bác sĩ' : 'Thêm bác sĩ mới' }}</h5>
+          <button class="btn-close" @click="showModal = false"></button>
+        </div>
 
-        <div class="vstack gap-3">
-          <div v-if="!editingId">
-            <label class="form-label">Người dùng</label>
-            <select class="form-select" v-model="form.userId">
-              <option disabled value="">Chọn người dùng</option>
-              <option v-for="u in users" :key="u.id" :value="u.id">
-                {{ u.username }}
-              </option>
+        <div class="vstack gap-2">
+          <div v-if="!editingId" class="form-group">
+            <label class="small fw-bold text-muted">Người dùng (Role: Doctor)</label>
+            <select class="form-select form-select-sm" v-model="form.userId">
+              <option value="">-- Chọn tài khoản --</option>
+              <option v-for="u in users" :key="u.id" :value="u.id">{{ u.username }}</option>
             </select>
           </div>
 
-          <input class="form-control" v-model="form.fullName" placeholder="Họ và tên" />
-          <input class="form-control" v-model="form.code" placeholder="Mã" />
+          <div class="form-group">
+            <label class="small fw-bold text-muted">Họ và tên</label>
+            <input class="form-control form-control-sm" v-model="form.fullName" placeholder="VD: Nguyễn Văn A" />
+          </div>
+
+          <div class="form-group">
+            <label class="small fw-bold text-muted">Mã bác sĩ</label>
+            <input class="form-control form-control-sm" v-model="form.code" placeholder="VD: DOC001" />
+          </div>
 
           <div class="row g-2">
             <div class="col-6">
-              <label class="form-label">Khoa</label>
-              <select class="form-select" v-model="form.departmentId" @change="loadSpecialties(form.departmentId)">
+              <label class="small fw-bold text-muted">Khoa</label>
+              <select class="form-select form-select-sm" v-model="form.departmentId" @change="loadSpecialties(form.departmentId)">
                 <option value="">Chọn khoa</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
               </select>
             </div>
             <div class="col-6">
-              <label class="form-label">Chuyên khoa</label>
-              <select class="form-select" v-model="form.specialtyId">
+              <label class="small fw-bold text-muted">Chuyên khoa</label>
+              <select class="form-select form-select-sm" v-model="form.specialtyId">
                 <option value="">Chọn chuyên khoa</option>
                 <option v-for="s in specialties" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
             </div>
           </div>
 
-          <input class="form-control" v-model="form.licenseNumber" placeholder="Số giấy phép" />
-          <input class="form-control" v-model="form.avatarUrl" placeholder="Avatar URL (tùy chọn)" />
+          <div class="form-group">
+            <label class="small fw-bold text-muted">Số giấy phép</label>
+            <input class="form-control form-control-sm" v-model="form.licenseNumber" />
+          </div>
 
-          <div class="d-flex justify-content-end gap-2">
-            <button class="btn btn-secondary" @click="showModal = false">Hủy</button>
-            <button class="btn btn-primary" @click="save">Lưu</button>
+          <div class="form-group">
+            <label class="small fw-bold text-muted">Đường dẫn ảnh (URL)</label>
+            <input class="form-control form-control-sm" v-model="form.avatarUrl" />
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-sm btn-light px-3" @click="showModal = false">Hủy</button>
+            <button class="btn btn-sm btn-primary px-4" @click="save">Lưu lại</button>
           </div>
         </div>
       </div>

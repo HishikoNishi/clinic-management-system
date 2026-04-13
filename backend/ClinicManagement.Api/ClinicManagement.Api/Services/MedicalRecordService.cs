@@ -99,6 +99,8 @@ public class MedicalRecordService
                 .Where(item => !string.IsNullOrWhiteSpace(item.MedicineName))
                 .ToList();
 
+            // ... (đoạn code phía trên giữ nguyên)
+
             if (validPrescriptionItems != null && validPrescriptionItems.Any())
             {
                 if (existingPrescription != null)
@@ -122,19 +124,22 @@ public class MedicalRecordService
 
                 foreach (var item in validPrescriptionItems)
                 {
-                    // Only search by MedicineName since PrescriptionItemDto does not have MedicineId
+                    // Tạo biến cục bộ để EF không bị nhầm lẫn kiểu dữ liệu
+                    var searchId = item.MedicineId as Guid?;
                     var searchName = item.MedicineName?.Trim();
 
                     var medicine = await _context.Medicines
                         .AsNoTracking()
-                        .FirstOrDefaultAsync(m => m.Name == searchName);
+                        .FirstOrDefaultAsync(m =>
+                            (searchId != null && m.Id == searchId) ||
+                            (m.Name == searchName));
 
                     details.Add(new PrescriptionDetail
                     {
                         Id = Guid.NewGuid(),
                         PrescriptionId = prescription.Id,
-                        // MedicineId is set from found medicine, or null if not found
-                        MedicineId = medicine?.Id,
+                        // Ép kiểu rõ ràng ở đây
+                        MedicineId = searchId ?? medicine?.Id,
                         MedicineName = item.MedicineName,
                         Dosage = item.Dosage ?? string.Empty,
                         Duration = item.Quantity > 0 ? item.Quantity : 1,

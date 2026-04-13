@@ -96,8 +96,12 @@ namespace ClinicManagement.Api.Services
                             ? $"Thuoc: {d.MedicineName}"
                             : $"Thuoc: {d.MedicineName} (chua cau hinh gia)",
                         ItemType = "Drug",
-                        Amount = amount
+                        Amount = amount,
+                        Duration = d.Duration > 0 ? d.Duration : 1,
+                        Dosage = d.Dosage
                     });
+
+
                 }
             }
 
@@ -120,34 +124,33 @@ namespace ClinicManagement.Api.Services
             var total = subtotal - insuranceDiscount;
             if (total < 0) total = 0;
 
-            // Upsert drug invoice by prescription
+            // Thay vì tìm theo prescriptionId, Nhàn hãy tìm theo appointmentId + loại Drug
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
-                .FirstOrDefaultAsync(i => i.PrescriptionId == prescriptionId && i.InvoiceType == InvoiceType.Drug);
+                .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId && i.InvoiceType == InvoiceType.Drug);
 
             if (invoice == null)
             {
+                // Tạo mới nếu chưa từng có hóa đơn thuốc cho cuộc hẹn này
                 invoice = new Invoice
                 {
                     Id = Guid.NewGuid(),
                     AppointmentId = appointmentId,
-                    PrescriptionId = prescriptionId,
+                    PrescriptionId = prescriptionId, // Gán ID đơn thuốc mới nhất
                     InvoiceType = InvoiceType.Drug,
-                    Amount = total,
-                    BalanceDue = total,
-                    TotalDeposit = 0,
-                    CreatedAt = DateTime.UtcNow,
-                    IsPaid = false,
-                    PaymentDate = null
+                    // ... các trường khác giữ nguyên
                 };
                 _context.Invoices.Add(invoice);
             }
             else
             {
-                if (invoice.IsPaid) return invoice; // không sửa hóa đơn đã thu
+                if (invoice.IsPaid) return invoice; // Đã thu tiền thì không cho sửa
+                                                    // Cập nhật quan trọng: Gán lại PrescriptionId mới nhất cho hóa đơn cũ
+                invoice.PrescriptionId = prescriptionId;
                 invoice.Amount = total;
                 invoice.BalanceDue = total;
 
+                // Làm sạch dòng cũ để nạp dòng mới
                 _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
                 invoice.InvoiceLines.Clear();
             }
