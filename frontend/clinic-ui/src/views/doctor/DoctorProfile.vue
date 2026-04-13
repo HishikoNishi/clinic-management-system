@@ -21,24 +21,23 @@
       </div>
 
       <div class="doctor-info-card" :class="{ 'is-editing': isEditing }">
-        
-       <div class="doctor-profile-section">
-  <div class="avatar-wrapper">
-    <img :src="doctor.avatarUrl || '/default-avatar.png'" class="main-avatar" />
-  </div>
-  
-  <div v-if="isEditing" class="mt-2">
-    <button class="btn-upload-avatar" type="button" :disabled="uploadBusy" @click="pickFile">
-      <i v-if="!uploadBusy" class="bi bi-camera"></i>
-      <span v-else class="spinner-border spinner-border-sm"></span>
-      <span>Đổi ảnh</span>
-    </button>
-    <input ref="fileInput" type="file" accept="image/*" class="d-none" @change="handleFileChange" />
-  </div>
+        <div class="doctor-profile-section">
+          <div class="avatar-wrapper">
+            <img :src="doctor.avatarUrl || '/default-avatar.png'" class="main-avatar" />
+          </div>
 
-  <div v-if="!isEditing" class="profile-summary mt-3">
-    </div>
-</div>
+          <div v-if="isEditing" class="mt-2">
+            <button class="btn-upload-avatar" type="button" :disabled="uploadBusy" @click="pickFile">
+              <i v-if="!uploadBusy" class="bi bi-camera"></i>
+              <span v-else class="spinner-border spinner-border-sm"></span>
+              <span>Đổi ảnh</span>
+            </button>
+            <input ref="fileInput" type="file" accept="image/*" class="d-none" @change="handleFileChange" />
+          </div>
+
+          <div v-if="!isEditing" class="profile-summary mt-3">
+          </div>
+        </div>
 
         <div class="doctor-details-container">
           <div class="doctor-details-grid">
@@ -52,20 +51,20 @@
               <input v-model="form.code" :disabled="!isEditing" :class="{ 'disabled-view': !isEditing }" />
             </div>
 
-          <div class="form-group">
-  <label class="label-disabled">Khoa</label>
-  <input :value="doctor.departmentName" disabled class="disabled-view input-readonly-static" />
-</div>
+            <div class="form-group">
+              <label class="label-disabled">Khoa</label>
+              <input :value="doctor.departmentName" disabled class="disabled-view input-readonly-static" />
+            </div>
 
             <div class="form-group">
               <label>Số giấy phép hành nghề</label>
               <input v-model="form.licenseNumber" :disabled="!isEditing" :class="{ 'disabled-view': !isEditing }" />
             </div>
 
-          <div class="form-group full-row">
-  <label class="label-disabled">Chuyên khoa</label>
-  <input :value="doctor.specialtyName" disabled class="disabled-view input-readonly-static" />
-</div>
+            <div class="form-group full-row">
+              <label class="label-disabled">Chuyên khoa</label>
+              <input :value="doctor.specialtyName" disabled class="disabled-view input-readonly-static" />
+            </div>
 
             <div class="form-group full-row">
               <label>Trạng thái hoạt động</label>
@@ -76,7 +75,7 @@
               </select>
             </div>
           </div>
-          
+
           <div class="profile-footer-note">
             <i class="bi bi-shield-check me-2"></i>Thông tin khoa và chuyên khoa chỉ được quản lý bởi quản trị viên (admin)
           </div>
@@ -119,7 +118,7 @@ const pickFile = () => fileInput.value?.click()
 const handleFileChange = async (e: Event) => {
   const target = e.target as HTMLInputElement
   if (!target.files || !target.files.length || !doctor.value) return
-  
+
   const file = target.files.item(0)
   if (!file) return
 
@@ -131,11 +130,11 @@ const handleFileChange = async (e: Event) => {
     const res = await api.post(`/Doctor/${doctor.value.id}/avatar`, formData, {
       headers: { "Content-Type": "multipart/form-data" }
     })
-    
+
     const url = res.data?.url
     if (url) {
-      doctor.value.avatarUrl = url 
-      form.value.avatarUrl = url  
+      doctor.value.avatarUrl = url
+      form.value.avatarUrl = url
       alert("Tải ảnh lên thành công! ✨")
     }
   } catch (err: any) {
@@ -157,12 +156,12 @@ const saveProfile = async () => {
     const doctorId = doctor.value.id || localStorage.getItem("doctorId")
     if (doctorId) {
       await api.put(`/doctor/${doctorId}/status`, {
-        Status: form.value.status 
+        Status: form.value.status
       })
     }
-    
+
     isEditing.value = false
-    await loadProfile() 
+    await loadProfile()
     alert("Cập nhật hồ sơ và trạng thái thành công ✅")
   } catch (err: any) {
     console.error("Lỗi lưu:", err)
