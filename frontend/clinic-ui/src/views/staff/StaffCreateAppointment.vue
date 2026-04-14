@@ -3,13 +3,13 @@
     <div class="staff-page-header">
       <div>
         <div class="staff-eyebrow">Staff</div>
-        <h2 class="staff-title">Äáº·t lá»‹ch táº¡i quáº§y</h2>
+        <h2 class="staff-title">Đặt lịch tại quầy</h2>
         <p class="staff-subtitle">
-          Táº¡o lá»‹ch nhanh cho khách đến trực tiếp, có thể chọn bác sĩ hoặc chỉ giữ chỗ theo khung giờ mong muốn.
+          Tạo lịch nhanh cho khách đến trực tiếp, có thể chọn bác sĩ hoặc chỉ giữ chỗ theo khung giờ mong muốn.
         </p>
       </div>
       <button type="button" class="btn btn-outline-primary" @click="router.push('/staff/appointments')">
-        <i class="bi bi-arrow-left me-2"></i>Vá» danh sÃ¡ch lá»‹ch
+        <i class="bi bi-arrow-left me-2"></i>Về danh sách lịch
       </button>
     </div>
 
@@ -18,18 +18,18 @@
         <div v-if="submitError" class="alert alert-danger mb-3">{{ submitError }}</div>
 
         <div v-if="bookingSuccess" class="alert alert-success mb-4">
-          <div class="fw-semibold mb-2">Äáº·t lá»‹ch thÃ nh cÃ´ng</div>
-          <div>MÃ£ lá»‹ch háº¹n: <span class="appointment-code">{{ bookingResponse.appointmentCode }}</span></div>
+          <div class="fw-semibold mb-2">Đặt lịch thành công</div>
+          <div>Mã lịch hẹn: <span class="appointment-code">{{ bookingResponse.appointmentCode }}</span></div>
           <div class="small mt-2">
-            {{ bookingResponse.fullName }} Â·
+            {{ bookingResponse.fullName }} ·
             {{ formatDateTime(bookingResponse.appointmentDate, bookingResponse.appointmentTime) }}
           </div>
           <div class="success-actions">
             <button type="button" class="btn btn-primary" @click="resetForm">
-              <i class="bi bi-plus-circle me-2"></i>Táº¡o lá»‹ch má»›i
+              <i class="bi bi-plus-circle me-2"></i>Tạo lịch mới
             </button>
             <button type="button" class="btn btn-outline-success" @click="router.push('/staff/appointments')">
-              <i class="bi bi-calendar-check me-2"></i>Xem trong danh sÃ¡ch lá»‹ch
+              <i class="bi bi-calendar-check me-2"></i>Xem trong danh sách lịch
             </button>
           </div>
         </div>
@@ -37,11 +37,11 @@
         <div class="lookup-box">
           <div class="lookup-head">
             <div>
-              <div class="lookup-title">Bá»‡nh nhÃ¢n cÅ©?</div>
-              <div class="lookup-note">Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i hoáº·c email Ä‘á»ƒ Ä‘iá»n nhanh thÃ´ng tin Ä‘Ã£ cÃ³.</div>
+              <div class="lookup-title">Bệnh nhân cũ?</div>
+              <div class="lookup-note">Nhập số điện thoại hoặc email để điền nhanh thông tin đã có.</div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary" @click="showLookup = !showLookup">
-              {{ showLookup ? 'áº¨n' : 'Má»Ÿ tra cá»©u' }}
+              {{ showLookup ? 'Ẩn' : 'Mở tra cứu' }}
             </button>
           </div>
 
@@ -50,7 +50,7 @@
               v-model="lookupPhone"
               type="tel"
               class="form-control"
-              placeholder="Sá»‘ Ä‘iá»‡n thoáº¡i"
+              placeholder="Số điện thoại"
               inputmode="numeric"
               maxlength="11"
               @input="lookupPhone = normalizePhoneInput(lookupPhone)"
@@ -58,26 +58,26 @@
             <input v-model="lookupEmail" type="email" class="form-control" placeholder="Email" />
             <button type="button" class="btn btn-outline-primary" :disabled="lookupLoading" @click="lookupPatient">
               <span v-if="lookupLoading" class="spinner-border spinner-border-sm me-1"></span>
-              Äiá»n thÃ´ng tin cÅ©
+              Điền thông tin cũ
             </button>
             <button v-if="isReturning" type="button" class="btn btn-outline-dark" @click="clearPrefill">
-              Cho phÃ©p sá»­a
+              Cho phép sửa
             </button>
           </div>
 
           <div v-if="lookupError" class="text-danger small mt-2">{{ lookupError }}</div>
-          <div v-if="isReturning" class="text-success small mt-2">ÄÃ£ Ä‘iá»n thÃ´ng tin tá»« há»“ sÆ¡ cÅ©.</div>
+          <div v-if="isReturning" class="text-success small mt-2">Đã điền thông tin từ hồ sơ cũ.</div>
         </div>
 
         <form class="booking-form" @submit.prevent="submitBooking">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Há» vÃ  tÃªn *</label>
+              <label class="form-label">Họ và tên *</label>
               <input ref="fullNameInput" v-model="form.fullName" type="text" class="form-control" :readonly="isReturning" />
               <div v-if="errors.fullName" class="form-error">{{ errors.fullName }}</div>
             </div>
             <div class="form-group">
-              <label class="form-label">NgÃ y sinh *</label>
+              <label class="form-label">Ngày sinh *</label>
               <input v-model="form.dateOfBirth" type="date" class="form-control" :readonly="isReturning" />
               <div v-if="errors.dateOfBirth" class="form-error">{{ errors.dateOfBirth }}</div>
             </div>
@@ -85,16 +85,16 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Giá»›i tÃ­nh *</label>
+              <label class="form-label">Giới tính *</label>
               <select v-model="form.gender" class="form-select" :disabled="isReturning">
-                <option value="">Chá»n giá»›i tÃ­nh</option>
+                <option value="">Chọn giới tính</option>
                 <option value="1">Nam</option>
-                <option value="2">Ná»¯</option>
+                <option value="2">Nữ</option>
               </select>
               <div v-if="errors.gender" class="form-error">{{ errors.gender }}</div>
             </div>
             <div class="form-group">
-              <label class="form-label">Äiá»‡n thoáº¡i *</label>
+              <label class="form-label">Điện thoại *</label>
               <input
                 v-model="form.phone"
                 type="tel"
@@ -111,11 +111,11 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Email</label>
-              <input v-model="form.email" type="email" class="form-control" placeholder="CÃ³ thá»ƒ Ä‘á»ƒ trá»‘ng" />
+              <input v-model="form.email" type="email" class="form-control" placeholder="Có thể để trống" />
               <div v-if="errors.email" class="form-error">{{ errors.email }}</div>
             </div>
             <div class="form-group">
-              <label class="form-label">Äá»‹a chá»‰ *</label>
+              <label class="form-label">Địa chỉ *</label>
               <input v-model="form.address" type="text" class="form-control" :readonly="isReturning" />
               <div v-if="errors.address" class="form-error">{{ errors.address }}</div>
             </div>
@@ -123,25 +123,25 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Sá»‘ CCCD</label>
-              <input v-model="form.citizenId" type="text" class="form-control" placeholder="Nháº­p 12 sá»‘ CCCD" maxlength="12" />
+              <label class="form-label">Số CCCD</label>
+              <input v-model="form.citizenId" type="text" class="form-control" placeholder="Nhập 12 số CCCD" maxlength="12" />
             </div>
             <div class="form-group">
-              <label class="form-label">MÃ£ sá»‘ BHYT</label>
-              <input v-model="form.insuranceCardNumber" type="text" class="form-control" placeholder="VÃ­ dá»¥: GD479..." />
+              <label class="form-label">Mã số BHYT</label>
+              <input v-model="form.insuranceCardNumber" type="text" class="form-control" placeholder="Ví dụ: GD479..." />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">NgÃ y khÃ¡m *</label>
+              <label class="form-label">Ngày khám *</label>
               <input v-model="form.appointmentDate" type="date" class="form-control" :min="todayStr" />
               <div v-if="errors.appointmentDate" class="form-error">{{ errors.appointmentDate }}</div>
             </div>
             <div class="form-group">
-              <label class="form-label">Khoa mong muá»‘n (tÃ¹y chá»n)</label>
+              <label class="form-label">Khoa mong muốn (tùy chọn)</label>
               <select v-model="selectedDepartmentId" class="form-select">
-                <option value="">Táº¥t cáº£ khoa</option>
+                <option value="">Tất cả khoa</option>
                 <option v-for="department in departments" :key="department.id" :value="department.id">
                   {{ department.name }}
                 </option>
@@ -173,12 +173,12 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">LÃ½ do khÃ¡m *</label>
+            <label class="form-label">Lý do khám *</label>
             <textarea
               v-model="form.reason"
               rows="4"
               class="form-control"
-              placeholder="MÃ´ táº£ triá»‡u chá»©ng hoáº·c nhu cáº§u khÃ¡m cá»§a bá»‡nh nhÃ¢n"
+              placeholder="Mô tả triệu chứng hoặc nhu cầu khám của bệnh nhân"
             ></textarea>
             <div v-if="errors.reason" class="form-error">{{ errors.reason }}</div>
           </div>
@@ -186,23 +186,23 @@
           <button type="submit" class="btn btn-primary submit-btn" :disabled="submitting">
             <span v-if="submitting" class="spinner-border spinner-border-sm me-2"></span>
             <i v-else class="bi bi-calendar-plus me-2"></i>
-            {{ submitting ? 'Äang táº¡o lá»‹ch...' : 'Táº¡o lá»‹ch khÃ¡m' }}
+            {{ submitting ? 'Đang tạo lịch...' : 'Tạo lịch khám' }}
           </button>
         </form>
       </section>
 
       <aside class="booking-card side-card">
-        <div class="tip-badge">Quy trÃ¬nh gá»£i Ã½</div>
+        <div class="tip-badge">Quy trình gợi ý</div>
         <ol class="tip-list">
-          <li>Tra cá»©u nhanh há»“ sÆ¡ cÅ© náº¿u bá»‡nh nhÃ¢n Ä‘Ã£ tá»«ng khÃ¡m.</li>
+          <li>Tra cứu nhanh hồ sơ cũ nếu bệnh nhân đã từng khám.</li>
           <li>Chọn ngày, khung giờ; bác sĩ là tùy chọn nếu bệnh nhân có yêu cầu cụ thể.</li>
           <li>Tạo lịch xong thì sang danh sách để check-in, chọn phòng và đưa vào hàng chờ.</li>
         </ol>
 
         <div class="helper-card">
-          <div class="helper-title">LÆ°u Ã½</div>
+          <div class="helper-title">Lưu ý</div>
           <ul>
-            <li>KhÃ´ng cáº§n OTP vÃ¬ bá»‡nh nhÃ¢n Ä‘Ã£ cÃ³ máº·t táº¡i quáº§y.</li>
+            <li>Không cần OTP vì bệnh nhân đã có mặt tại quầy.</li>
             <li>Nếu chọn bác sĩ, slot chỉ hiện khi bác sĩ đó đã được cấu hình lịch làm việc.</li>
             <li>Nếu không chọn bác sĩ, hệ thống dùng khung giờ hành chính để giữ chỗ trước.</li>
             <li>Hệ thống vẫn chặn trùng giờ của bệnh nhân và các slot đã được đặt với bác sĩ.</li>
@@ -312,53 +312,53 @@ const validateForm = () => {
   let ok = true
 
   if (!form.fullName.trim()) {
-    errors.fullName = 'Há» vÃ  tÃªn lÃ  báº¯t buá»™c'
+    errors.fullName = 'Họ và tên là bắt buộc'
     ok = false
   }
 
   if (!form.dateOfBirth) {
-    errors.dateOfBirth = 'NgÃ y sinh lÃ  báº¯t buá»™c'
+    errors.dateOfBirth = 'Ngày sinh là bắt buộc'
     ok = false
   }
 
   if (!form.gender) {
-    errors.gender = 'Giá»›i tÃ­nh lÃ  báº¯t buá»™c'
+    errors.gender = 'Giới tính là bắt buộc'
     ok = false
   }
 
   if (!form.phone.trim()) {
-    errors.phone = 'Sá»‘ Ä‘iá»‡n thoáº¡i lÃ  báº¯t buá»™c'
+    errors.phone = 'Số điện thoại là bắt buộc'
     ok = false
   } else if (!/^[0-9]{9,11}$/.test(form.phone.trim())) {
-    errors.phone = 'Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 9-11 chá»¯ sá»‘'
+    errors.phone = 'Số điện thoại phải có 9-11 chữ số'
     ok = false
   }
 
   if (form.email.trim() && !/\S+@\S+\.\S+/.test(form.email.trim())) {
-    errors.email = 'Email khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng'
+    errors.email = 'Email không đúng định dạng'
     ok = false
   }
 
   if (!form.address.trim()) {
-    errors.address = 'Äá»‹a chá»‰ lÃ  báº¯t buá»™c'
+    errors.address = 'Địa chỉ là bắt buộc'
     ok = false
   }
 
   if (!form.appointmentDate) {
-    errors.appointmentDate = 'NgÃ y khÃ¡m lÃ  báº¯t buá»™c'
+    errors.appointmentDate = 'Ngày khám là bắt buộc'
     ok = false
   } else if (form.appointmentDate < todayStr) {
-    errors.appointmentDate = 'Chá»‰ Ä‘Æ°á»£c Ä‘áº·t tá»« hÃ´m nay trá»Ÿ Ä‘i'
+    errors.appointmentDate = 'Chỉ được đặt từ hôm nay trở đi'
     ok = false
   }
 
   if (!form.appointmentTime.trim()) {
-    errors.appointmentTime = 'Slot khÃ¡m lÃ  báº¯t buá»™c'
+    errors.appointmentTime = 'Slot khám là bắt buộc'
     ok = false
   }
 
   if (!form.reason.trim()) {
-    errors.reason = 'LÃ½ do khÃ¡m lÃ  báº¯t buá»™c'
+    errors.reason = 'Lý do khám là bắt buộc'
     ok = false
   }
 
@@ -411,7 +411,7 @@ const loadAvailableSlots = async () => {
 const lookupPatient = async () => {
   lookupError.value = ''
   if (!lookupPhone.value.trim() && !lookupEmail.value.trim()) {
-    lookupError.value = 'Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i hoáº·c email Ä‘á»ƒ tra cá»©u'
+    lookupError.value = 'Nhập số điện thoại hoặc email để tra cứu'
     return
   }
 
@@ -434,7 +434,7 @@ const lookupPatient = async () => {
     form.insuranceCardNumber = data.insuranceCardNumber || ''
     isReturning.value = true
   } catch (error: any) {
-    lookupError.value = getErrorMessage(error, 'KhÃ´ng tÃ¬m tháº¥y há»“ sÆ¡ bá»‡nh nhÃ¢n')
+    lookupError.value = getErrorMessage(error, 'Không tìm thấy hồ sơ bệnh nhân')
     isReturning.value = false
   } finally {
     lookupLoading.value = false
@@ -492,7 +492,7 @@ const submitBooking = async () => {
     submitting.value = true
     const departmentName = departments.value.find((item: any) => item.id === selectedDepartmentId.value)?.name
     const reasonWithDepartment = departmentName
-      ? `Khoa yÃªu cáº§u: ${departmentName}${form.reason ? ' | ' + form.reason : ''}`
+      ? `Khoa yêu cầu: ${departmentName}${form.reason ? ' | ' + form.reason : ''}`
       : form.reason
 
     const response = await api.post('/staff/StaffAppointments/walk-in', {
@@ -513,7 +513,7 @@ const submitBooking = async () => {
     bookingResponse.value = response.data
     bookingSuccess.value = true
   } catch (error: any) {
-    submitError.value = getErrorMessage(error, 'KhÃ´ng táº¡o Ä‘Æ°á»£c lá»‹ch khÃ¡m táº¡i quáº§y')
+    submitError.value = getErrorMessage(error, 'Không tạo được lịch khám tại quầy')
   } finally {
     submitting.value = false
   }
@@ -539,6 +539,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Giữ nguyên toàn bộ CSS của bạn */
 .staff-booking-page {
   max-width: 1240px;
   margin: 0 auto;
@@ -732,4 +733,3 @@ onMounted(async () => {
   }
 }
 </style>
-
