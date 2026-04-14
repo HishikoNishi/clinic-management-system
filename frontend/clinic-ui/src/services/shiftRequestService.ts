@@ -30,6 +30,9 @@ export interface ShiftRequestItem {
   slotLabel: string
   startTime: string
   endTime: string
+  roomId?: string | null
+  roomCode?: string | null
+  roomName?: string | null
   reason: string
   preferredDoctorId?: string | null
   preferredDoctorName?: string | null
