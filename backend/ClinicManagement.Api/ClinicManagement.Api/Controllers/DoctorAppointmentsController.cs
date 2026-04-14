@@ -259,6 +259,18 @@ namespace ClinicManagement.Api.Controllers
             if (appointment == null) return NotFound("Appointment not found or not assigned to this doctor");
 
             appointment.Status = AppointmentStatus.Completed;
+
+            var queue = await _context.QueueEntries
+                .FirstOrDefaultAsync(q =>
+                    q.AppointmentId == appointment.Id &&
+                    (q.Status == QueueStatus.Waiting || q.Status == QueueStatus.InProgress));
+
+            if (queue != null)
+            {
+                queue.Status = QueueStatus.Done;
+                queue.CalledAt ??= DateTime.Now;
+            }
+
             await _context.SaveChangesAsync();
             return Ok(new { message = "Appointment marked as completed" });
         }

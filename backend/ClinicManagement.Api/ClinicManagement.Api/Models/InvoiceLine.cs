@@ -13,7 +13,8 @@ namespace ClinicManagement.Api.Models
         public string ItemType { get; set; } = "Consultation";
 
         public decimal Amount { get; set; }
-        public string Dosage { get; internal set; }
-        public int Duration { get; internal set; }
+        // Optional fields (mainly for Drug lines). Keep non-null to avoid DB NOT NULL issues.
+        public string Dosage { get; set; } = string.Empty;
+        public int Duration { get; set; } = 0;
     }
 }

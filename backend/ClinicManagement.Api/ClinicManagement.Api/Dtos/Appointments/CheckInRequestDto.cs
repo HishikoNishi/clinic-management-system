@@ -6,6 +6,7 @@ namespace ClinicManagement.Api.Dtos.Appointments
     {
         public Guid AppointmentId { get; set; }
         public Guid? DoctorId { get; set; }
+        public Guid? RoomId { get; set; }
         public decimal DepositAmount { get; set; }
         public PaymentMethod Method { get; set; } = PaymentMethod.cash;
         public string? CitizenId { get; set; }

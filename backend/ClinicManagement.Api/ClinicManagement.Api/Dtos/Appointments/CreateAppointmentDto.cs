@@ -28,6 +28,8 @@ namespace ClinicManagement.Api.DTOs.Appointments
         [Required]
         public TimeSpan AppointmentTime { get; set; }
 
+        public Guid? DoctorId { get; set; }
+
         public string? Reason { get; set; }
     }
 }

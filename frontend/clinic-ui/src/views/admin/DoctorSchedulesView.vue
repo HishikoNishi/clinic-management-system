@@ -361,99 +361,71 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="container-fluid px-4 py-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div class="container-fluid px-4 py-4 bg-light min-vh-100">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <button class="btn btn-link px-0 text-decoration-none" @click="router.push('/doctors')">
-          <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách bác sĩ
+        <button class="btn btn-link p-0 text-decoration-none text-muted mb-1" @click="router.push('/doctors')">
+          <i class="bi bi-chevron-left me-1"></i>Danh sách bác sĩ
         </button>
-        <h3 class="mb-1">Lịch làm cố định theo tuần</h3>
-        <div class="text-muted" v-if="doctor">
-          {{ doctor.fullName }} · {{ doctor.departmentName || 'Chưa có khoa' }}
+        <h3 class="fw-bold m-0 text-dark">Quản lý lịch bác sĩ</h3>
+        <div v-if="doctor" class="badge bg-white text-primary border shadow-sm mt-2 px-3 py-2 rounded-pill">
+          <i class="bi bi-person-badge me-2"></i>{{ doctor.fullName }} | {{ doctor.departmentName || 'Chưa có khoa' }}
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <div v-if="success" class="alert alert-success py-2 px-3 m-0 shadow-sm border-0 animate__animated animate__fadeIn">
+          <i class="bi bi-check-circle-fill me-2"></i>{{ success }}
         </div>
       </div>
     </div>
 
-    <div v-if="error" class="alert alert-danger">{{ error }}</div>
-    <div v-if="success" class="alert alert-success">{{ success }}</div>
+    <div v-if="error" class="alert alert-danger shadow-sm border-0 mb-4 animate__animated animate__shakeX">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+    </div>
 
     <div class="row g-4">
       <div class="col-xl-7">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="card-header bg-white py-3 px-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div>
-                <h5 class="mb-1">Mẫu lịch cố định</h5>
-                <div class="text-muted small">Áp dụng cho mỗi {{ weekdayLabel.toLowerCase() }} trong tuần.</div>
+                <h5 class="fw-bold m-0 text-primary">Mẫu lịch cố định hàng tuần</h5>
+                <p class="text-muted small m-0">Thiết lập các khung giờ khám mặc định</p>
               </div>
-
-              <div class="d-flex gap-2 flex-wrap align-items-end">
-                <div>
-                  <label class="form-label mb-1">Thứ trong tuần</label>
-                  <select v-model="selectedWeekday" class="form-select">
-                    <option v-for="item in weekdays" :key="item.value" :value="item.value">
-                      {{ item.label }}
-                    </option>
-                  </select>
-                </div>
-                <button class="btn btn-primary" :disabled="savingTemplate || loadingTemplate" @click="saveWeeklyTemplate">
-                  <span v-if="savingTemplate" class="spinner-border spinner-border-sm me-2"></span>
+              <div class="d-flex gap-2 align-items-center">
+                <select v-model="selectedWeekday" class="form-select border-2 shadow-none rounded-3" style="min-width: 140px;">
+                  <option v-for="item in weekdays" :key="item.value" :value="item.value">{{ item.label }}</option>
+                </select>
+                <button class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm" :disabled="savingTemplate || loadingTemplate" @click="saveWeeklyTemplate">
+                  <span v-if="savingTemplate" class="spinner-border spinner-border-sm me-1"></span>
                   Lưu lịch tuần
                 </button>
               </div>
             </div>
-
-            <div class="alert alert-info">
-              Lịch này là lịch cố định hàng tuần. Khi bác sĩ xin đổi ca cho một ngày cụ thể, hệ thống sẽ tạo ngoại lệ cho ngày đó thay vì sửa cả tuần.
-            </div>
-
-            <div v-if="loadingTemplate" class="text-center py-4">
-              <div class="spinner-border text-primary"></div>
-            </div>
-
+          </div>
+          <div class="card-body p-4">
+            <div v-if="loadingTemplate" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
             <div v-else class="row g-3">
               <div v-for="group in slotGroups" :key="group.code" class="col-lg-4">
-                <div class="card h-100 border">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <div>
-                        <h6 class="mb-1">{{ group.label }}</h6>
-                        <div class="text-muted small">{{ group.slots.length }} slots</div>
+                <div class="card h-100 border shadow-none rounded-3 bg-white">
+                  <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 border-0">
+                    <span class="fw-bold text-dark small">{{ group.label }}</span>
+                    <button class="btn btn-link btn-sm p-0 text-decoration-none small" @click="setShiftSelection(group.code, !isShiftFullySelected(group.code))">
+                      {{ isShiftFullySelected(group.code) ? 'Bỏ' : 'Tất cả' }}
+                    </button>
+                  </div>
+                  <div class="card-body p-2 scroll-area">
+                    <div v-for="slot in group.slots" :key="buildSlotKey(slot)" 
+                      class="p-2 rounded-3 border-2 mb-2 transition-all"
+                      :class="templateSlotKeys.includes(buildSlotKey(slot)) ? 'border-primary bg-primary-subtle shadow-sm' : 'border-light bg-white'">
+                      <div class="form-check m-0">
+                        <input v-model="templateSlotKeys" class="form-check-input shadow-none" type="checkbox" :value="buildSlotKey(slot)" />
+                        <label class="form-check-label small fw-bold text-dark">{{ slot.slotLabel }}</label>
                       </div>
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        @click="setShiftSelection(group.code, !isShiftFullySelected(group.code))"
-                      >
-                        {{ isShiftFullySelected(group.code) ? 'Bỏ chọn' : 'Chọn ca' }}
-                      </button>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                      <div
-                        v-for="slot in group.slots"
-                        :key="buildSlotKey(slot)"
-                        class="border rounded-3 px-3 py-2"
-                      >
-                        <label class="d-flex align-items-center gap-2 mb-2">
-                          <input
-                            v-model="templateSlotKeys"
-                            class="form-check-input mt-0"
-                            type="checkbox"
-                            :value="buildSlotKey(slot)"
-                          />
-                          <span class="fw-medium">{{ slot.slotLabel }}</span>
-                        </label>
-                        <select
-                          v-if="templateSlotKeys.includes(buildSlotKey(slot))"
-                          v-model="slotRoomMap[buildSlotKey(slot)]"
-                          class="form-select form-select-sm"
-                        >
-                          <option value="">Chon phong</option>
-                          <option v-for="room in roomOptions" :key="room.id" :value="room.id">
-                            {{ room.name }}
-                          </option>
-                        </select>
-                      </div>
+                      <select v-if="templateSlotKeys.includes(buildSlotKey(slot))" v-model="slotRoomMap[buildSlotKey(slot)]" class="form-select form-select-sm border-0 mt-2 shadow-none bg-white rounded-2">
+                        <option value="">Chọn phòng...</option>
+                        <option v-for="room in roomOptions" :key="room.id" :value="room.id">{{ room.name }}</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -464,75 +436,55 @@ onMounted(async () => {
       </div>
 
       <div class="col-xl-5">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
-              <div>
-                <h5 class="mb-1">Lịch thực tế theo ngày</h5>
-                <div class="text-muted small">Xem lịch hiện hành của một ngày và đổi ca nếu cần.</div>
-              </div>
-              <div>
-                <label class="form-label mb-1">Ngày cần xem</label>
-                <input v-model="previewDate" type="date" class="form-control" />
-              </div>
+        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+          <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="fw-bold m-0 text-dark">Lịch thực tế</h5>
+              <p class="text-muted small m-0">Theo ngày cụ thể</p>
             </div>
-
-            <div v-if="loadingPreview" class="text-center py-4">
-              <div class="spinner-border text-primary"></div>
-            </div>
-
-            <div v-else class="row g-3">
-              <div class="col-lg-6">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="fw-semibold">Lịch làm trong ngày</div>
-                  <div class="text-muted small">{{ baseDaySlots.length }} slot</div>
+            <input v-model="previewDate" type="date" class="form-control border-2 shadow-none rounded-3 w-auto" />
+          </div>
+          <div class="card-body p-4">
+            <div v-if="loadingPreview" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+            <div v-else>
+              <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="fw-bold text-secondary small text-uppercase ls-1">Lịch trong ngày</span>
+                  <span class="badge bg-primary rounded-pill shadow-sm">{{ baseDaySlots.length }} slot</span>
                 </div>
-
-                <div v-if="baseDaySlots.length === 0" class="text-muted small">
-                  Không có lịch làm trong ngày này.
-                </div>
-
-                <div v-else class="d-grid gap-2">
-                  <button
-                    v-for="slot in baseDaySlots"
-                    :key="slot.id + slot.startTime"
-                    type="button"
-                    class="btn btn-outline-primary text-start"
-                    @click="openPreviewSlot(slot)"
-                  >
-                    <div class="fw-semibold">{{ slot.slotLabel }}</div>
-                    <div class="small text-muted">{{ slot.startTime }} - {{ slot.endTime }}</div>
-                    <div class="small text-muted" v-if="slot.roomName">Phong: {{ slot.roomName }}</div>
+                <div v-if="baseDaySlots.length === 0" class="empty-state">Trống lịch</div>
+                <div class="d-grid gap-2">
+                  <button v-for="slot in baseDaySlots" :key="slot.id + slot.startTime" class="btn btn-schedule btn-schedule-primary" @click="openPreviewSlot(slot)">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-bold">{{ slot.slotLabel }}</div>
+                        <div class="small opacity-75"><i class="bi bi-geo-alt-fill me-1"></i>{{ slot.roomName || 'N/A' }}</div>
+                      </div>
+                      <i class="bi bi-arrow-right-short fs-4"></i>
+                    </div>
                   </button>
                 </div>
               </div>
 
-              <div class="col-lg-6">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="fw-semibold">Lịch được chuyển ca tới</div>
-                  <div class="text-muted small">{{ incomingShiftSlots.length }} slot</div>
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="fw-bold text-warning-emphasis small text-uppercase ls-1">Được chuyển ca tới</span>
+                  <span class="badge bg-warning text-dark rounded-pill shadow-sm">{{ incomingShiftSlots.length }} slot</span>
                 </div>
-
-                <div v-if="incomingShiftSlots.length === 0" class="text-muted small">
-                  Không có ca nào được chuyển tới trong ngày này.
-                </div>
-
-                <div v-else class="d-grid gap-2">
-                  <button
-                    v-for="item in incomingShiftSlots"
-                    :key="item.id"
-                    type="button"
-                    class="btn btn-outline-warning text-start"
+                <div v-if="incomingShiftSlots.length === 0" class="empty-state">Không có ca chuyển tới</div>
+                <div class="d-grid gap-2">
+                  <button v-for="item in incomingShiftSlots" :key="item.id" 
+                    class="btn btn-schedule btn-schedule-warning" 
                     :disabled="!findPreviewSlotForShift(item)"
-                    @click="() => {
-                      const slot = findPreviewSlotForShift(item)
-                      if (slot) openPreviewSlot(slot)
-                    }"
-                  >
-                    <div class="fw-semibold">{{ item.slotLabel }}</div>
-                    <div class="small text-muted">{{ item.startTime }} - {{ item.endTime }}</div>
-                    <div class="small text-muted">Từ: {{ item.doctorName }}</div>
-                    <div class="small text-muted" v-if="item.roomName">Phong: {{ item.roomName }}</div>
+                    @click="() => { const slot = findPreviewSlotForShift(item); if (slot) openPreviewSlot(slot) }">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-bold">{{ item.slotLabel }}</div>
+                        <div class="small fw-medium"><i class="bi bi-person-fill me-1"></i>Từ: {{ item.doctorName }}</div>
+                        <div class="small opacity-75" v-if="item.roomName"><i class="bi bi-geo-alt-fill me-1"></i>{{ item.roomName }}</div>
+                      </div>
+                      <i class="bi bi-box-arrow-in-down-right fs-4"></i>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -542,93 +494,74 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="modalOpen" class="slot-modal-backdrop" @click.self="closeModal">
-      <div class="slot-modal">
-        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+    <div v-if="modalOpen" class="modal-custom-backdrop" @click.self="closeModal">
+      <div class="modal-custom-content animate__animated animate__zoomIn">
+        <div class="modal-custom-header">
           <div>
-            <h4 class="mb-1">Đổi ca làm việc</h4>
-            <div class="text-muted small" v-if="activeSlot">
-              {{ doctor?.fullName }} · {{ previewDate }} · {{ activeSlot.slotLabel }}
-            </div>
-            <div class="text-muted small" v-if="slotImpact?.roomName">
-              Phong: {{ slotImpact.roomName }}
-            </div>
+            <h4 class="fw-bold m-0 text-primary">Đổi ca làm việc</h4>
+            <p class="text-muted small m-0" v-if="activeSlot">
+              {{ doctor?.fullName }} • {{ previewDate }} • {{ activeSlot.slotLabel }}
+            </p>
           </div>
-          <button type="button" class="btn-close" @click="closeModal"></button>
+          <button class="btn-close shadow-none" @click="closeModal"></button>
         </div>
 
-        <div v-if="modalError" class="alert alert-danger">{{ modalError }}</div>
+        <div class="modal-custom-body">
+          <div v-if="modalError" class="alert alert-danger border-0 shadow-sm mb-4">{{ modalError }}</div>
+          <div v-if="modalLoading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+          
+          <div v-else>
+            <div class="impact-card mb-4" v-if="slotImpact">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="impact-dot" :class="slotImpact.appointmentCount > 0 ? 'bg-danger' : 'bg-success'"></div>
+                <h6 class="fw-bold m-0">Ảnh hưởng lịch hẹn ({{ slotImpact.appointmentCount }})</h6>
+              </div>
+              
+              <div v-if="slotImpact.appointments.length" class="table-responsive rounded-3 border">
+                <table class="table table-sm table-hover mb-0 small">
+                  <thead class="bg-light">
+                    <tr><th>Mã</th><th>Bệnh nhân</th><th>Trạng thái</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="item in slotImpact.appointments" :key="item.appointmentId">
+                      <td class="fw-bold">{{ item.appointmentCode }}</td>
+                      <td>{{ item.patientName }}</td>
+                      <td><span class="badge bg-light text-dark border">{{ item.status }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-else class="text-center py-3 text-muted bg-light rounded-3 small">Slot hiện chưa có lịch hẹn nào.</div>
+            </div>
 
-        <div v-if="modalLoading" class="text-center py-4">
-          <div class="spinner-border text-primary"></div>
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">Bác sĩ thay thế rảnh giờ này:</h6>
+              <div v-if="!availableDoctors.length" class="empty-state py-4">Không tìm thấy bác sĩ rảnh</div>
+              <div class="doctor-list scroll-area">
+                <label v-for="cand in availableDoctors" :key="cand.doctorId" 
+                  class="doctor-item transition-all" 
+                  :class="selectedReplacementDoctorId === cand.doctorId ? 'selected' : ''">
+                  <input type="radio" v-model="selectedReplacementDoctorId" :value="cand.doctorId" class="d-none" />
+                  <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                      <div class="fw-bold text-dark">{{ cand.doctorName }}</div>
+                      <div class="text-muted x-small">{{ cand.specialtyName }}</div>
+                    </div>
+                    <i v-if="selectedReplacementDoctorId === cand.doctorId" class="bi bi-check-circle-fill text-primary"></i>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div v-else>
-          <div class="border rounded-3 p-3 mb-3" v-if="slotImpact">
-<div class="fw-semibold mb-2">Ảnh hưởng hiện tại</div>
-              <div class="small text-muted mb-2">
-                {{ slotImpact.appointmentCount > 0 ? `Slot này đang có ${slotImpact.appointmentCount} lịch hẹn.` : 'Slot này đang trống, chưa có bệnh nhân.' }}
-            </div>
-
-            <div v-if="slotImpact.appointments.length" class="table-responsive">
-              <table class="table table-sm align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>Mã lịch</th>
-                    <th>Bệnh nhân</th>
-                    <th>Điện thoại</th>
-                    <th>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in slotImpact.appointments" :key="item.appointmentId">
-                    <td>{{ item.appointmentCode }}</td>
-                    <td>{{ item.patientName }}</td>
-                    <td>{{ item.phone || '-' }}</td>
-                    <td>{{ item.status }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="border rounded-3 p-3 mb-3">
-            <div class="fw-semibold mb-2">Bác sĩ thay thế đang không có ca khám nào.</div>
-            <div v-if="availableDoctors.length === 0" class="text-muted small">
-              Không có bác sĩ nào rảnh cùng giờ trong khoa này.
-            </div>
-            <div v-else class="d-grid gap-2">
-              <label
-                v-for="candidate in availableDoctors"
-                :key="candidate.doctorId"
-                class="border rounded-3 px-3 py-2 d-flex gap-2 align-items-start"
-              >
-                <input
-                  v-model="selectedReplacementDoctorId"
-                  class="form-check-input mt-1"
-                  type="radio"
-                  :value="candidate.doctorId"
-                />
-                <div>
-                  <div class="fw-semibold">{{ candidate.doctorName }} ({{ candidate.doctorCode }})</div>
-                  <div class="small text-muted">{{ candidate.departmentName }} · {{ candidate.specialtyName }}</div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-light" @click="closeModal">Đóng</button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              :disabled="modalSubmitting || availableDoctors.length === 0"
-              @click="submitReassign"
-            >
-              <span v-if="modalSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-              Chuyển slot sang bác sĩ khác
-            </button>
-          </div>
+        <div class="modal-custom-footer">
+          <button class="btn btn-light px-4 fw-bold rounded-3" @click="closeModal">Đóng</button>
+          <button class="btn btn-primary px-4 fw-bold rounded-3" 
+            :disabled="modalSubmitting || !availableDoctors.length" @click="submitReassign">
+            <span v-if="modalSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            Xác nhận chuyển ca
+          </button>
         </div>
       </div>
     </div>
@@ -636,24 +569,93 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.slot-modal-backdrop {
+/* Tổng thể */
+.ls-1 { letter-spacing: 0.5px; }
+.transition-all { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.scroll-area { max-height: 380px; overflow-y: auto; padding-right: 4px; }
+.x-small { font-size: 0.75rem; }
+
+/* Empty state */
+.empty-state {
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  border: 2px dashed #e2e8f0;
+}
+
+.btn-schedule {
+  border-radius: 14px;
+  padding: 14px 18px;
+  text-align: left;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+.btn-schedule-primary {
+  background: #f0f7ff;
+  border-color: #e0efff;
+  color: #0056b3;
+}
+.btn-schedule-primary:hover {
+  background: #0056b3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.2);
+}
+.btn-schedule-warning {
+  background: #fff9eb;
+  border-color: #ffecb3;
+  color: #856404;
+}
+.btn-schedule-warning:hover:not(:disabled) {
+  background: #ffc107;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+/* Modal Custom */
+.modal-custom-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  z-index: 1050;
 }
+.modal-custom-content {
+  background: white;
+  width: min(700px, 95vw);
+  max-height: 90vh;
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+.modal-custom-header { padding: 24px 32px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+.modal-custom-body { padding: 24px 32px; overflow-y: auto; }
+.modal-custom-footer { padding: 20px 32px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px; }
 
-.slot-modal {
-  width: min(860px, 100%);
-  max-height: calc(100vh - 48px);
-  overflow: auto;
-  background: #fff;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+/* Doctor Selector */
+.doctor-item {
+  display: flex;
+  padding: 14px 20px;
+  border: 2px solid #f1f5f9;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
+.doctor-item:hover { border-color: #cbd5e1; background: #f8fafc; }
+.doctor-item.selected { border-color: #0d6efd; background: #f0f7ff; }
+
+/* Impact Card */
+.impact-card { background: #f8fafc; padding: 16px; border-radius: 16px; }
+.impact-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.scroll-area::-webkit-scrollbar { width: 4px; }
+.scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>

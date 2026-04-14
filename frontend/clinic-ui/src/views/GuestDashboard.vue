@@ -265,25 +265,42 @@
                   <span v-if="bookingErrors.appointmentDate" class="form-error">{{ bookingErrors.appointmentDate }}</span>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Thời gian khám *</label>
-                  <input
-                    v-model="bookingForm.appointmentTime"
-                    type="text"
-                    class="form-input"
-                    required
-                    placeholder="HH:MM (24h, ví dụ 09:00 hoặc 21:30)"
-                    inputmode="numeric"
-                  />
-                  <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
+                  <label class="form-label">Khoa muốn khám (tùy chọn)</label>
+                  <select v-model="selectedDepartmentId" class="form-select">
+                    <option value="">Chọn khoa</option>
+                    <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+                  </select>
                 </div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Khoa muốn khám (tùy chọn)</label>
-                <select v-model="selectedDepartmentId" class="form-select">
-                  <option value="">Không rõ / để phòng khám sắp xếp</option>
-                  <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
-                </select>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Bác sĩ (tùy chọn)</label>
+                  <select v-model="bookingForm.doctorId" class="form-select">
+                    <option value="">Không chọn trước</option>
+                    <option v-for="doctor in filteredDoctors" :key="doctor.id" :value="doctor.id">
+                      {{ doctor.fullName }} - {{ doctor.departmentName }}
+                    </option>
+                  </select>
+                  <span v-if="bookingErrors.doctorId" class="form-error">{{ bookingErrors.doctorId }}</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">{{ bookingForm.doctorId ? 'Thời gian khám *' : 'Khung giờ mong muốn *' }}</label>
+                  <select v-model="bookingForm.appointmentTime" class="form-select" :disabled="!bookingForm.appointmentDate || slotLoading" required>
+                    <option value="">
+                      {{ slotLoading ? 'Đang tải slot...' : (bookingForm.doctorId ? 'Chọn slot khám' : 'Chọn khung giờ mong muốn') }}
+                    </option>
+                    <option
+                      v-for="slot in availableSlots"
+                      :key="slot.id || `${slot.shiftCode}-${slot.startTime}`"
+                      :value="String(slot.startTime).slice(0, 5)"
+                      :disabled="slot.isBooked"
+                    >
+                      {{ slot.slotLabel }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
+                    </option>
+                  </select>
+                  <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
+                </div>
               </div>
 
               <div class="form-group">
@@ -360,6 +377,62 @@
                   <div class="result-item"><label>Điện thoại</label><p class="result-value">{{ searchResult.phone }}</p></div>
                   <div class="result-item"><label>Email</label><p class="result-value">{{ searchResult.email }}</p></div>
                   <div class="result-item"><label>Lý do</label><p class="result-value">{{ searchResult.reason }}</p></div>
+                </div>
+                <div class="mt-3 border rounded-3 p-3 bg-light">
+                  <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                    <div>
+                      <h4 class="h6 mb-1">Theo dõi hàng chờ</h4>
+                      <p class="text-muted small mb-0">Số thứ tự sẽ xuất hiện sau khi nhân viên check-in tại quầy.</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" @click="loadPatientQueueStatus(searchResult.appointmentCode)">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                  </div>
+
+                  <div v-if="queueStatusLoading" class="text-muted small">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Đang tải trạng thái hàng chờ...
+                  </div>
+
+                  <div v-else-if="queueStatusError" class="alert alert-warning py-2 mb-0">
+                    {{ queueStatusError }}
+                  </div>
+
+                  <template v-else-if="patientQueueStatus">
+                    <div v-if="patientQueueStatus.ownQueue" class="row g-3">
+                      <div class="col-md-6">
+                        <div class="border rounded-3 p-3 h-100">
+                          <div class="text-muted small text-uppercase">Số thứ tự của bạn</div>
+                          <div class="display-6 fw-bold mb-1">#{{ patientQueueStatus.ownQueue.queueNumber }}</div>
+                          <div class="small">Phòng: {{ patientQueueStatus.ownQueue.roomName }}</div>
+                          <div class="small text-muted">Trạng thái: {{ patientQueueStatus.ownQueue.status }}</div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="border rounded-3 p-3 h-100">
+                          <div class="text-muted small text-uppercase">Đang được gọi</div>
+                          <div class="display-6 fw-bold mb-1">
+                            {{ patientQueueStatus.currentCalling ? `#${patientQueueStatus.currentCalling.queueNumber}` : '—' }}
+                          </div>
+                          <div class="small" v-if="patientQueueStatus.currentCalling">
+                            {{ patientQueueStatus.currentCalling.fullName }}
+                          </div>
+                          <div class="small text-muted">
+                            {{ patientQueueStatus.currentCalling?.roomName || patientQueueStatus.ownQueue.roomName }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="alert alert-info py-2 mb-0">
+                          Còn <strong>{{ patientQueueStatus.waitingAhead }}</strong> người ở trước bạn.
+                          <span v-if="patientQueueStatus.message"> {{ patientQueueStatus.message }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-else class="alert alert-secondary py-2 mb-0">
+                      {{ patientQueueStatus.message || 'Lịch khám này chưa được check-in vào hàng chờ.' }}
+                    </div>
+                  </template>
                 </div>
             <div class="result-actions">
               <button @click="cancelAppointment" class="btn btn-danger" :disabled="cancelLoading">
@@ -457,8 +530,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick, computed, watch } from 'vue'
 import api from '@/services/api'
+import { doctorScheduleService } from '@/services/doctorScheduleService'
+import { queueService, type PatientQueueStatus } from '@/services/queueService'
+import { buildBusinessHourSlots } from '@/utils/appointmentSlots'
+import { toLocalDateInputValue } from '@/utils/date'
 import '@/styles/layouts/guest-dashboard.css'
 import DoctorShowcase from '@/components/landing/DoctorShowcase.vue'
 import FacilityHighlights from '@/components/landing/FacilityHighlights.vue'
@@ -485,6 +562,7 @@ const bookingForm = reactive({
   CitizenId: '', // Thêm mới
   insuranceNumber: '', // Thêm mới
   appointmentDate: '',
+  doctorId: '',
   appointmentTime: '',
   reason: ''
 })
@@ -497,6 +575,7 @@ const bookingErrors = reactive<Record<string, string>>({
   email: '',
   address: '',
   appointmentDate: '',
+  doctorId: '',
   appointmentTime: '',
   reason: ''
 })
@@ -534,10 +613,24 @@ const searchResults = ref<any[]>([])
 const cancelLoading = ref(false)
 const cancelError = ref('')
 const recentAppointments = ref<any[]>([])
+const patientQueueStatus = ref<PatientQueueStatus | null>(null)
+const queueStatusLoading = ref(false)
+const queueStatusError = ref('')
+let queueStatusTimer: ReturnType<typeof setInterval> | null = null
 
 /* Departments (optional selection) */
 const departments = ref<any[]>([])
 const selectedDepartmentId = ref('')
+const doctors = ref<any[]>([])
+const availableSlots = ref<any[]>([])
+const slotLoading = ref(false)
+
+const filteredDoctors = computed(() =>
+  doctors.value.filter((doctor) =>
+    doctor.status === 'Active' &&
+    (!selectedDepartmentId.value || doctor.departmentId === selectedDepartmentId.value)
+  )
+)
 
 const normalizePhoneInput = (value: string) => value.replace(/\D/g, '').slice(0, 11)
 
@@ -581,7 +674,7 @@ const addRecent = (item: any) => {
 const validateBookingForm = () => {
   Object.keys(bookingErrors).forEach((k) => (bookingErrors[k] = ''))
   let ok = true
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = toLocalDateInputValue()
   if (!bookingForm.fullName.trim()) { bookingErrors.fullName = 'Họ và tên là bắt buộc'; ok = false }
   if (!bookingForm.dateOfBirth) { bookingErrors.dateOfBirth = 'Ngày sinh là bắt buộc'; ok = false }
   if (!bookingForm.gender) { bookingErrors.gender = 'Giới tính là bắt buộc'; ok = false }
@@ -593,30 +686,6 @@ const validateBookingForm = () => {
   if (!bookingForm.appointmentDate) { bookingErrors.appointmentDate = 'Ngày khám là bắt buộc'; ok = false }
   else if (bookingForm.appointmentDate < todayStr) { bookingErrors.appointmentDate = 'Chỉ được đặt từ hôm nay trở đi'; ok = false }
   if (!bookingForm.appointmentTime) { bookingErrors.appointmentTime = 'Thời gian khám là bắt buộc'; ok = false }
-  else {
-    const parts = bookingForm.appointmentTime.split(':')
-    if (parts.length !== 2) {
-      bookingErrors.appointmentTime = 'Thời gian phải có định dạng HH:MM'
-      ok = false
-    } else {
-
-    const [h, m] = parts.map(Number)
-
-    if (h === undefined || m === undefined) {
-      bookingErrors.appointmentTime = 'Thời gian không hợp lệ'
-      ok = false
-    } else {
-      const minutes = h * 60 + m
-      const start = 7 * 60
-      const end = 22 * 60
-
-      if (minutes < start || minutes > end) {
-        bookingErrors.appointmentTime = 'Chỉ nhận đặt trong giờ làm việc (07:00-22:00)'
-        ok = false
-      }
-    }
-    }
-  }
   if (!bookingForm.reason.trim()) { bookingErrors.reason = 'Lý do khám là bắt buộc'; ok = false }
   return ok
 }
@@ -645,6 +714,56 @@ const applyPrefill = (data: any) => {
 const clearPrefill = () => {
   isReturning.value = false
   lookupError.value = ''
+}
+
+const loadDoctors = async () => {
+  try {
+    const res = await api.get('/Doctor')
+    doctors.value = Array.isArray(res.data) ? res.data : []
+  } catch (err) {
+    console.warn('Không tải được danh sách bác sĩ', err)
+    doctors.value = []
+  }
+}
+
+const loadAvailableSlots = async () => {
+  availableSlots.value = []
+
+  if (!bookingForm.appointmentDate) {
+    bookingForm.appointmentTime = ''
+    return
+  }
+
+  if (!bookingForm.doctorId) {
+    const slots = buildBusinessHourSlots(bookingForm.appointmentDate)
+    availableSlots.value = slots
+
+    const selectedSlot = slots.find((slot) => slot.startTime?.startsWith(bookingForm.appointmentTime))
+    if (!selectedSlot) {
+      bookingForm.appointmentTime = ''
+    }
+    return
+  }
+
+  try {
+    slotLoading.value = true
+     const slots = await doctorScheduleService.getAvailableSlots(
+       bookingForm.doctorId,
+       bookingForm.appointmentDate
+     )
+     availableSlots.value = slots
+
+    const selectedSlot = slots.find((slot) => slot.startTime?.startsWith(bookingForm.appointmentTime))
+    if (!selectedSlot || selectedSlot.isBooked) {
+      bookingForm.appointmentTime = ''
+    }
+  } catch (err) {
+    console.warn('Không tải được slot trống', err)
+    bookingForm.appointmentTime = ''
+    availableSlots.value = []
+  } finally {
+    slotLoading.value = false
+  }
 }
 
 const lookupPatient = async () => {
@@ -742,6 +861,7 @@ const submitBooking = async () => {
       citizenId: bookingForm.CitizenId,
       insuranceCardNumber: bookingForm.insuranceNumber,
       appointmentDate: bookingForm.appointmentDate,
+      doctorId: bookingForm.doctorId || null,
       appointmentTime: bookingForm.appointmentTime + ':00',
       reason: reasonWithDept
     })
@@ -773,6 +893,7 @@ const resetBookingForm = () => {
   otpError.value = ''
   countdown.value = 0
   selectedDepartmentId.value = ''
+  availableSlots.value = []
 }
 
 /* Search */
@@ -826,6 +947,9 @@ const resetSearch = () => {
   searchResult.value = null
   searchResults.value = []
   searchError.value = ''
+  patientQueueStatus.value = null
+  queueStatusError.value = ''
+  clearQueueStatusPolling()
   searchForm.appointmentCode = ''
   searchForm.phone = ''
   searchForm.email = ''
@@ -834,6 +958,34 @@ const resetSearch = () => {
 const selectSearchResult = (item: any) => {
   searchResult.value = item
   addRecent(item)
+}
+
+const clearQueueStatusPolling = () => {
+  if (queueStatusTimer) {
+    clearInterval(queueStatusTimer)
+    queueStatusTimer = null
+  }
+}
+
+const loadPatientQueueStatus = async (appointmentCode?: string) => {
+  const code = appointmentCode || searchResult.value?.appointmentCode
+  if (!code) {
+    patientQueueStatus.value = null
+    queueStatusError.value = ''
+    clearQueueStatusPolling()
+    return
+  }
+
+  try {
+    queueStatusLoading.value = true
+    queueStatusError.value = ''
+    patientQueueStatus.value = await queueService.getPatientStatus(code)
+  } catch (error: any) {
+    patientQueueStatus.value = null
+    queueStatusError.value = error?.response?.data?.message || 'Không tải được trạng thái hàng chờ'
+  } finally {
+    queueStatusLoading.value = false
+  }
 }
 
 const getStatusClass = (status: string) => {
@@ -856,8 +1008,43 @@ const loadDepartments = async () => {
   }
 }
 
+watch(selectedDepartmentId, () => {
+  if (bookingForm.doctorId && !filteredDoctors.value.some((doctor) => doctor.id === bookingForm.doctorId)) {
+    bookingForm.doctorId = ''
+    bookingForm.appointmentTime = ''
+    availableSlots.value = []
+  }
+})
+
+watch([() => bookingForm.doctorId, () => bookingForm.appointmentDate], () => {
+  loadAvailableSlots()
+})
+
+watch(
+  () => searchResult.value?.appointmentCode,
+  async (appointmentCode) => {
+    clearQueueStatusPolling()
+
+    if (!appointmentCode) {
+      patientQueueStatus.value = null
+      queueStatusError.value = ''
+      return
+    }
+
+    await loadPatientQueueStatus(appointmentCode)
+    queueStatusTimer = setInterval(() => {
+      loadPatientQueueStatus(appointmentCode)
+    }, 10000)
+  }
+)
+
 onMounted(() => {
   loadDepartments()
+  loadDoctors()
   loadRecent()
+})
+
+onBeforeUnmount(() => {
+  clearQueueStatusPolling()
 })
 </script>

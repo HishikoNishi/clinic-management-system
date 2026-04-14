@@ -158,6 +158,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useAuthStore } from '@/stores/auth'
+import { toLocalDateInputValue } from '@/utils/date'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -174,7 +175,7 @@ const error = ref<string | null>(null)
 const statuses = ['All', 'Pending', 'Confirmed', 'Assigned', 'CheckedIn', 'Completed', 'Cancelled', 'NoShow']
 const currentStatus = ref('All')
 
-const todayPrefix = () => new Date().toISOString().slice(0, 10)
+const todayPrefix = () => toLocalDateInputValue()
 
 const appointmentsTodayCount = computed(() => {
   const t = todayPrefix()

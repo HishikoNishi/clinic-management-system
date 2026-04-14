@@ -1,19 +1,32 @@
 ﻿<script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { shiftRequestService } from '@/services/shiftRequestService'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
+const pendingShiftRequests = ref(0)
+let pendingTimer: ReturnType<typeof setInterval> | undefined
 
 const navItems = computed(() => ([
   { label: 'Lịch khám', icon: 'calendar-heart', path: '/doctor/appointments' },
-  { label: 'Khám bệnh', icon: 'stethoscope', path: '/doctor/appointments' },
+  { label: 'Khám bệnh', icon: 'heart-pulse', path: '/doctor/appointments' },
   { label: 'Bệnh nhân', icon: 'people', path: '/doctor/patients' },
+  { label: 'Yêu cầu ca làm', icon: 'arrow-left-right', path: '/doctor/shift-requests', badgeCount: pendingShiftRequests.value },
+  { label: 'Lịch làm', icon: 'calendar3', path: '/doctor/my-schedule' },
   { label: 'Hồ sơ cá nhân', icon: 'person-circle', path: '/doctor/profile' }
 ]))
+
+const loadPendingShiftRequests = async () => {
+  try {
+    pendingShiftRequests.value = await shiftRequestService.getMyPendingCount()
+  } catch {
+    // ignore to keep layout responsive
+  }
+}
 
 const go = (path: string) => {
   router.push(path)
@@ -27,6 +40,15 @@ const logout = () => {
   authStore.logout()
   router.push('/login')
 }
+
+onMounted(async () => {
+  await loadPendingShiftRequests()
+  pendingTimer = setInterval(loadPendingShiftRequests, 30000)
+})
+
+onUnmounted(() => {
+  if (pendingTimer) clearInterval(pendingTimer)
+})
 </script>
 
 <template>
@@ -53,7 +75,8 @@ const logout = () => {
             @click="go(item.path)"
           >
             <i :class="`bi bi-${item.icon}`"></i>
-            <span>{{ item.label }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+            <span v-if="item.badgeCount" class="nav-badge">{{ item.badgeCount }}</span>
           </button>
         </nav>
 

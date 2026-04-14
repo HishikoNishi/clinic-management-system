@@ -39,6 +39,33 @@ namespace ClinicManagement.Api.Data
             var specRang = Guid.Parse("eeee1111-5555-5555-5555-555555555555");
             var specTmh = Guid.Parse("ffff1111-6666-6666-6666-666666666666");
 
+            var roomSeeds = new[]
+            {
+                new { Code = "RM-NOI-01", Name = "Phong Noi 01", DepartmentId = depNoi },
+                new { Code = "RM-NOI-02", Name = "Phong Noi 02", DepartmentId = depNoi },
+                new { Code = "RM-NGOAI-01", Name = "Phong Ngoai 01", DepartmentId = depNgoai },
+                new { Code = "RM-SAN-01", Name = "Phong San 01", DepartmentId = depSan },
+                new { Code = "RM-NHI-01", Name = "Phong Nhi 01", DepartmentId = depNhi },
+                new { Code = "RM-RANG-01", Name = "Phong Rang Ham Mat 01", DepartmentId = depRang },
+                new { Code = "RM-TMH-01", Name = "Phong TMH 01", DepartmentId = depTmh },
+                new { Code = "RM-KHAM-01", Name = "Phong Kham Tong Quat 01", DepartmentId = depKham },
+            };
+
+            foreach (var roomSeed in roomSeeds)
+            {
+                if (!await context.Rooms.AnyAsync(r => r.Code == roomSeed.Code))
+                {
+                    context.Rooms.Add(new Room
+                    {
+                        Id = Guid.NewGuid(),
+                        Code = roomSeed.Code,
+                        Name = roomSeed.Name,
+                        DepartmentId = roomSeed.DepartmentId,
+                        IsActive = true
+                    });
+                }
+            }
+
             var passwordHasher = new PasswordHasher<User>();
 
             // Doctors
@@ -70,6 +97,62 @@ namespace ClinicManagement.Api.Data
                         LicenseNumber = docSeed.License,
                         Status = DoctorStatus.Active
                     });
+                }
+            }
+
+            var roomDoctorAssignments = new[]
+            {
+                new { RoomCode = "RM-NOI-01", DoctorCode = "DOC001" },
+                new { RoomCode = "RM-NGOAI-01", DoctorCode = "DOC002" },
+                new { RoomCode = "RM-SAN-01", DoctorCode = "DOC003" },
+                new { RoomCode = "RM-NHI-01", DoctorCode = "DOC004" },
+                new { RoomCode = "RM-RANG-01", DoctorCode = "DOC005" },
+                new { RoomCode = "RM-TMH-01", DoctorCode = "DOC006" },
+            };
+
+            foreach (var assignment in roomDoctorAssignments)
+            {
+                var doctor = context.Doctors.Local.FirstOrDefault(d => d.Code == assignment.DoctorCode)
+                    ?? await context.Doctors.FirstOrDefaultAsync(d => d.Code == assignment.DoctorCode);
+
+                var room = context.Rooms.Local.FirstOrDefault(r => r.Code == assignment.RoomCode)
+                    ?? await context.Rooms.FirstOrDefaultAsync(r => r.Code == assignment.RoomCode);
+
+                if (doctor != null && room != null)
+                {
+                    var hasWeeklySchedule = await context.DoctorWeeklySchedules
+                        .AnyAsync(s => s.DoctorId == doctor.Id);
+
+                    if (!hasWeeklySchedule)
+                    {
+                        var weekdaySeeds = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+                        var slotSeeds = new[]
+                        {
+                            new { ShiftCode = "morning", SlotLabel = "09:00 - 09:30", Start = new TimeSpan(9, 0, 0), End = new TimeSpan(9, 30, 0) },
+                            new { ShiftCode = "morning", SlotLabel = "09:30 - 10:00", Start = new TimeSpan(9, 30, 0), End = new TimeSpan(10, 0, 0) },
+                            new { ShiftCode = "afternoon", SlotLabel = "14:00 - 14:30", Start = new TimeSpan(14, 0, 0), End = new TimeSpan(14, 30, 0) },
+                            new { ShiftCode = "afternoon", SlotLabel = "14:30 - 15:00", Start = new TimeSpan(14, 30, 0), End = new TimeSpan(15, 0, 0) }
+                        };
+
+                        foreach (var day in weekdaySeeds)
+                        {
+                            foreach (var slotSeed in slotSeeds)
+                            {
+                                context.DoctorWeeklySchedules.Add(new DoctorWeeklySchedule
+                                {
+                                    Id = Guid.NewGuid(),
+                                    DoctorId = doctor.Id,
+                                    RoomId = room.Id,
+                                    DayOfWeek = day,
+                                    ShiftCode = slotSeed.ShiftCode,
+                                    SlotLabel = slotSeed.SlotLabel,
+                                    StartTime = slotSeed.Start,
+                                    EndTime = slotSeed.End,
+                                    IsActive = true
+                                });
+                            }
+                        }
+                    }
                 }
             }
 

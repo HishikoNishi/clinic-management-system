@@ -343,8 +343,10 @@ const loadMedicines = async () => {
 const filteredMedicines = computed(() => {
   const s = medicineSearch.value.toLowerCase().trim();
   
+  // Nếu không gõ gì, hiện 20 thuốc đầu tiên cho nhẹ trang
   if (!s) return medicines.value.slice(0, 20);
 
+  // Lọc theo tên và liều mặc định.
   return medicines.value.filter(m => {
     const name = (m.name || "").toLowerCase();
     const dosage = (m.defaultDosage || "").toLowerCase();
@@ -361,20 +363,25 @@ const addMedicineFromModal = (m: any) => {
   const medicineName = m.name;
   const dosage = m.defaultDosage || "";
   
+  // 1. Tìm xem thuốc này đã có trong đơn chưa (so sánh tên thuốc)
   const existingItem = form.prescriptionItems.find(
     (item: any) => item.medicineName === medicineName
   );
 
   if (existingItem) {
+    // 2. Nếu đã có, tăng số lượng lên 1
     existingItem.quantity = (Number(existingItem.quantity) || 0) + 1;
   } else {
+    // 3. Nếu chưa có, kiểm tra dòng đầu tiên có đang trống không
     const firstItem = form.prescriptionItems[0] as any;
     
     if (form.prescriptionItems.length === 1 && (!firstItem.medicineName || firstItem.medicineName.trim() === "")) {
+      // Điền vào dòng trống duy nhất
       firstItem.medicineName = medicineName;
       firstItem.dosage = dosage;
       firstItem.quantity = 1;
     } else {
+      // Thêm dòng mới hoàn toàn
       form.prescriptionItems.push({ 
         medicineName: medicineName, 
         dosage: dosage, 
@@ -445,12 +452,7 @@ const removeRow = (idx: number) => {
 
 const addClinicalTest = (name: string) => {
   if (!form.clinicalTests) form.clinicalTests = [""]
-  // Nếu dòng cuối cùng đang trống, điền vào đó luôn
-  if(form.clinicalTests.length === 1 && !form.clinicalTests[0]) {
-    form.clinicalTests[0] = name
-  } else {
-    form.clinicalTests.push(name)
-  }
+  form.clinicalTests.push(name)
 }
 
 const removeClinicalTest = (idx: number) => {
@@ -510,12 +512,14 @@ const loadDetail = async () => {
   dateOfBirth: data.appointment?.dateOfBirth,
   patientCode: data.appointment?.patientCode, 
   citizenId: data.appointment?.citizenId,
+  // Thử tất cả các trường hợp tên biến có thể trả về từ API
   insuranceCardNumber: data.appointment?.insuranceCardNumber,
   InsuranceCardNumber: data.appointment?.insuranceCardNumber 
   
 })
     history.value = data.medicalHistory || []
 
+    // Prefill from current medical record if exists
     if (data.chiefComplaint) form.chiefComplaint = data.chiefComplaint
     else if (data.appointment?.reason) form.chiefComplaint = data.appointment.reason
     if (data.detailedSymptoms) form.detailedSymptoms = data.detailedSymptoms
@@ -540,6 +544,8 @@ const loadDetail = async () => {
     }
     if (Array.isArray(data.clinicalTests) && data.clinicalTests.length) {
       form.requestClinicalTest = true
+      form.clinicalTestType = "Other"
+      form.clinicalTestName = ""
       form.clinicalTests = data.clinicalTests.map((t: any) => t.testName || "")
     }
 
@@ -551,14 +557,13 @@ const loadDetail = async () => {
     error.value = err?.response?.data?.message || "Không tải được thông tin khám"
   }
 }
-
 const submit = async () => {
   if (!form.diagnosis.trim()) {
     alert("Vui lòng nhập chẩn đoán")
     return
   }
 
-  // Check vitals
+  // Giới hạn đơn giản cho sinh hiệu (chặn giá trị phi thực tế)
   const hr = form.vitals.heartRate ? Number(form.vitals.heartRate) : null
   const temp = form.vitals.temperature ? Number(form.vitals.temperature) : null
   const spo2 = form.vitals.spo2 ? Number(form.vitals.spo2) : null
@@ -585,15 +590,15 @@ const submit = async () => {
     return
   }
 
-  const clinicalTestNames = form.requestClinicalTest
-    ? form.clinicalTests
-        .filter(t => t && t.trim() !== "")
-        .map(t => t.trim())
-    : []
-
-  if (form.requestClinicalTest && clinicalTestNames.length === 0) {
+  if (form.requestClinicalTest) {
+    const anyName =
+      form.clinicalTests.some(t => t && t.trim()) ||
+      (form.clinicalTestType !== "Other" && form.clinicalTestType) ||
+      (form.clinicalTestType === "Other" && form.clinicalTestName.trim())
+    if (!anyName) {
       alert("Vui lòng nhập ít nhất một xét nghiệm")
       return
+    }
   }
 
   const prescriptionItems = form.prescriptionItems
@@ -608,6 +613,19 @@ const submit = async () => {
   error.value = null
   try {
     const combinedNotes = form.notes.trim()
+
+    const clinicalTestNames = form.requestClinicalTest
+      ? (form.clinicalTests
+          .filter(t => t && t.trim())
+          .map(t => t.trim())
+          .concat(
+            form.clinicalTestType === "Other" && form.clinicalTestName.trim()
+              ? [`${testTypeLabel(form.clinicalTestType)}: ${form.clinicalTestName.trim()}`]
+              : form.clinicalTestType !== "Other"
+              ? [testTypeLabel(form.clinicalTestType)]
+              : []
+          ))
+      : []
 
     await api.post("/medical-record/examination", {
       appointmentId,
@@ -626,7 +644,7 @@ const submit = async () => {
       temperature: form.vitals.temperature ? Number(form.vitals.temperature) : null,
       spo2: form.vitals.spo2 ? Number(form.vitals.spo2) : null,
       requestClinicalTest: form.requestClinicalTest,
-      clinicalTestNames, // Gửi danh sách đã lọc sạch
+      clinicalTestNames,
       prescriptionItems,
       insuranceCoverPercent: dataFromRecord.value?.insuranceCoverPercent ?? 0,
       surcharge: dataFromRecord.value?.surcharge ?? 0,
@@ -634,6 +652,12 @@ const submit = async () => {
     })
     alert("Đã lưu hồ sơ khám")
     await loadDetail()
+    // reset flag để tránh cảm giác lưu xong vẫn bật ghi chú xét nghiệm cũ
+    if (!form.requestClinicalTest) {
+      form.clinicalTestType = "Blood"
+      form.clinicalTestName = ""
+      form.clinicalTests = [""]
+    }
   } catch (err: unknown) {
   const errorAxios = err as AxiosError<any>
   console.error(err)
@@ -659,3 +683,10 @@ historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === rec
 const goBack = () => router.push("/doctor/appointments")
 </script>
 <style src="@/styles/layouts/doctor-exam.css"></style>
+
+
+
+
+
+
+

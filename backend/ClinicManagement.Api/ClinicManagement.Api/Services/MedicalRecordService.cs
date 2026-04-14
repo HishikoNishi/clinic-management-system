@@ -24,6 +24,7 @@ public class MedicalRecordService
         if (appointment != null)
         {
             appointment.Status = AppointmentStatus.Completed;
+            await CompleteQueueForAppointmentAsync(appointment.Id);
         }
         await _context.SaveChangesAsync();
         return record;
@@ -184,6 +185,7 @@ public class MedicalRecordService
             }
 
             appointment.Status = AppointmentStatus.Completed;
+            await CompleteQueueForAppointmentAsync(appointment.Id);
 
             await _context.SaveChangesAsync();
 
@@ -287,6 +289,44 @@ public class MedicalRecordService
             var (systolic, diastolic) = parsedBp.Value;
             if (systolic < 70 || systolic > 250 || diastolic < 40 || diastolic > 150 || systolic <= diastolic)
                 throw new InvalidOperationException("Huyết áp vượt giới hạn hợp lệ");
+        }
+    }
+
+    private async Task CompleteQueueForAppointmentAsync(Guid appointmentId)
+    {
+        var queue = await _context.QueueEntries
+            .Include(q => q.Appointment)
+            .FirstOrDefaultAsync(q =>
+                q.AppointmentId == appointmentId &&
+                (q.Status == QueueStatus.Waiting || q.Status == QueueStatus.InProgress));
+
+        if (queue == null)
+        {
+            return;
+        }
+
+        queue.Status = QueueStatus.Done;
+        queue.CalledAt ??= DateTime.Now;
+
+        var doctorId = queue.Appointment?.DoctorId;
+        if (!doctorId.HasValue)
+        {
+            return;
+        }
+
+        var hasAnotherInProgress = await _context.QueueEntries.AnyAsync(q =>
+            q.Id != queue.Id &&
+            q.Status == QueueStatus.InProgress &&
+            q.Appointment != null &&
+            q.Appointment.DoctorId == doctorId.Value);
+
+        if (!hasAnotherInProgress)
+        {
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == doctorId.Value);
+            if (doctor != null && doctor.Status == DoctorStatus.Busy)
+            {
+                doctor.Status = DoctorStatus.Active;
+            }
         }
     }
 }
