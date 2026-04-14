@@ -5,6 +5,7 @@ export interface DoctorScheduleSlotPayload {
   slotLabel: string
   startTime: string
   endTime: string
+  roomId: string
   isActive: boolean
 }
 
@@ -26,6 +27,9 @@ export interface DoctorScheduleSlot {
   slotLabel: string
   startTime: string
   endTime: string
+  roomId?: string | null
+  roomCode?: string | null
+  roomName?: string | null
   isBooked: boolean
 }
 
@@ -45,6 +49,9 @@ export interface DoctorScheduleSlotImpact {
   slotLabel: string
   startTime: string
   endTime: string
+  roomId?: string | null
+  roomCode?: string | null
+  roomName?: string | null
   appointmentCount: number
   hasAppointments: boolean
   appointments: DoctorScheduleImpactAppointment[]

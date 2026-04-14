@@ -39,6 +39,7 @@ namespace ClinicManagement.Api.Controllers
         {
             var schedules = await _context.DoctorWeeklySchedules
                 .AsNoTracking()
+                .Include(s => s.Room)
                 .Where(s => s.DoctorId == doctorId && s.DayOfWeek == dayOfWeek && s.IsActive)
                 .OrderBy(s => s.StartTime)
                 .Select(s => new DoctorScheduleSlotDto
@@ -48,6 +49,9 @@ namespace ClinicManagement.Api.Controllers
                     SlotLabel = s.SlotLabel,
                     StartTime = s.StartTime.ToString(@"hh\:mm"),
                     EndTime = s.EndTime.ToString(@"hh\:mm"),
+                    RoomId = s.RoomId,
+                    RoomCode = s.Room != null ? s.Room.Code : null,
+                    RoomName = s.Room != null ? s.Room.Name : null,
                     IsBooked = false
                 })
                 .ToListAsync();
@@ -59,7 +63,11 @@ namespace ClinicManagement.Api.Controllers
         [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> SaveWeeklyTemplate(Guid doctorId, [FromBody] SaveDoctorWeeklyScheduleDto dto)
         {
-            if (!await _context.Doctors.AnyAsync(d => d.Id == doctorId))
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctor == null)
             {
                 return NotFound(new { message = "Doctor not found." });
             }
@@ -69,6 +77,33 @@ namespace ClinicManagement.Api.Controllers
                 .Select(g => g.First())
                 .OrderBy(s => s.StartTime)
                 .ToList();
+
+            var businessStart = new TimeSpan(7, 0, 0);
+            var businessEnd = new TimeSpan(22, 0, 0);
+
+            var roomError = await ValidateRoomsAsync(doctor.DepartmentId, normalizedSlots.Select(s => s.RoomId));
+            if (roomError != null)
+            {
+                return BadRequest(new { message = roomError });
+            }
+
+            foreach (var slot in normalizedSlots)
+            {
+                if (string.IsNullOrWhiteSpace(slot.ShiftCode) || string.IsNullOrWhiteSpace(slot.SlotLabel))
+                {
+                    return BadRequest(new { message = "ShiftCode and SlotLabel are required." });
+                }
+
+                if (slot.StartTime >= slot.EndTime)
+                {
+                    return BadRequest(new { message = "Invalid slot time range." });
+                }
+
+                if (slot.StartTime < businessStart || slot.EndTime > businessEnd)
+                {
+                    return BadRequest(new { message = "Slots must be within 07:00 - 22:00." });
+                }
+            }
 
             var existing = await _context.DoctorWeeklySchedules
                 .Where(s => s.DoctorId == doctorId && s.DayOfWeek == dto.DayOfWeek)
@@ -134,6 +169,7 @@ namespace ClinicManagement.Api.Controllers
                 _context.DoctorWeeklySchedules.Add(new DoctorWeeklySchedule
                 {
                     DoctorId = doctorId,
+                    RoomId = slot.RoomId,
                     DayOfWeek = dto.DayOfWeek,
                     ShiftCode = slot.ShiftCode.Trim(),
                     SlotLabel = slot.SlotLabel.Trim(),
@@ -154,12 +190,115 @@ namespace ClinicManagement.Api.Controllers
 
         [HttpPut("doctors/{doctorId:guid}/day")]
         [Authorize(Roles = "Admin,Staff")]
-        public Task<IActionResult> SaveDay(Guid doctorId, [FromBody] SaveDoctorScheduleDayDto dto)
+        public async Task<IActionResult> SaveDay(Guid doctorId, [FromBody] SaveDoctorScheduleDayDto dto)
         {
-            return SaveWeeklyTemplate(doctorId, new SaveDoctorWeeklyScheduleDto
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+            if (doctor == null)
             {
-                DayOfWeek = dto.WorkDate.Date.DayOfWeek,
-                Slots = dto.Slots
+                return NotFound(new { message = "Doctor not found." });
+            }
+
+            var workDate = dto.WorkDate.Date;
+            var businessStart = new TimeSpan(7, 0, 0);
+            var businessEnd = new TimeSpan(22, 0, 0);
+
+            var normalizedSlots = dto.Slots
+                .GroupBy(s => s.StartTime)
+                .Select(g => g.First())
+                .OrderBy(s => s.StartTime)
+                .ToList();
+
+            var roomError = await ValidateRoomsAsync(doctor.DepartmentId, normalizedSlots.Select(s => s.RoomId));
+            if (roomError != null)
+            {
+                return BadRequest(new { message = roomError });
+            }
+
+            foreach (var slot in normalizedSlots)
+            {
+                if (string.IsNullOrWhiteSpace(slot.ShiftCode) || string.IsNullOrWhiteSpace(slot.SlotLabel))
+                {
+                    return BadRequest(new { message = "ShiftCode and SlotLabel are required." });
+                }
+
+                if (slot.StartTime >= slot.EndTime)
+                {
+                    return BadRequest(new { message = "Invalid slot time range." });
+                }
+
+                if (slot.StartTime < businessStart || slot.EndTime > businessEnd)
+                {
+                    return BadRequest(new { message = "Slots must be within 07:00 - 22:00." });
+                }
+            }
+
+            // Prevent removing booked slots on that day; use reassignment flow first.
+            var bookedTimes = await _context.Appointments
+                .AsNoTracking()
+                .Where(a =>
+                    a.DoctorId == doctorId &&
+                    a.AppointmentDate == workDate &&
+                    a.Status != AppointmentStatus.Cancelled &&
+                    a.Status != AppointmentStatus.NoShow)
+                .Select(a => a.AppointmentTime)
+                .Distinct()
+                .ToListAsync();
+
+            if (bookedTimes.Count > 0)
+            {
+                var incomingTimes = normalizedSlots.Select(s => s.StartTime).ToHashSet();
+                var wouldRemoveBooked = bookedTimes.Any(t => !incomingTimes.Contains(t));
+                if (wouldRemoveBooked)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Day schedule change would remove booked slots. Use reassignment flow for impacted appointments first."
+                    });
+                }
+            }
+
+            var overrideDay = await _context.DoctorScheduleOverrideDays
+                .FirstOrDefaultAsync(o => o.DoctorId == doctorId && o.WorkDate == workDate);
+
+            if (overrideDay == null)
+            {
+                _context.DoctorScheduleOverrideDays.Add(new DoctorScheduleOverrideDay
+                {
+                    DoctorId = doctorId,
+                    WorkDate = workDate
+                });
+            }
+
+            var existingOverrideSlots = await _context.DoctorSchedules
+                .Where(s => s.DoctorId == doctorId && s.WorkDate == workDate)
+                .ToListAsync();
+
+            _context.DoctorSchedules.RemoveRange(existingOverrideSlots);
+
+            foreach (var slot in normalizedSlots)
+            {
+                _context.DoctorSchedules.Add(new DoctorSchedule
+                {
+                    DoctorId = doctorId,
+                    RoomId = slot.RoomId,
+                    WorkDate = workDate,
+                    ShiftCode = slot.ShiftCode.Trim(),
+                    SlotLabel = slot.SlotLabel.Trim(),
+                    StartTime = slot.StartTime,
+                    EndTime = slot.EndTime,
+                    IsActive = true
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Doctor day schedule saved successfully.",
+                slotsSaved = normalizedSlots.Count
             });
         }
 
@@ -216,6 +355,9 @@ namespace ClinicManagement.Api.Controllers
                 SlotLabel = schedule.SlotLabel,
                 StartTime = schedule.StartTime.ToString(@"hh\:mm"),
                 EndTime = schedule.EndTime.ToString(@"hh\:mm"),
+                RoomId = schedule.RoomId,
+                RoomCode = schedule.Room?.Code,
+                RoomName = schedule.Room?.Name,
                 AppointmentCount = appointments.Count,
                 Appointments = appointments
             });
@@ -374,16 +516,7 @@ namespace ClinicManagement.Api.Controllers
                 return BadRequest(new { message = "Replacement doctor already has a schedule at this time." });
             }
 
-            _context.DoctorSchedules.Add(new DoctorSchedule
-            {
-                DoctorId = dto.ToDoctorId,
-                WorkDate = workDate,
-                ShiftCode = sourceSlot.ShiftCode,
-                SlotLabel = sourceSlot.SlotLabel,
-                StartTime = sourceSlot.StartTime,
-                EndTime = sourceSlot.EndTime,
-                IsActive = true
-            });
+            sourceOverrideSlot.DoctorId = dto.ToDoctorId;
 
             foreach (var appointment in impactedAppointments)
             {
@@ -393,8 +526,6 @@ namespace ClinicManagement.Api.Controllers
                     appointment.Status = AppointmentStatus.Confirmed;
                 }
             }
-
-            _context.DoctorSchedules.Remove(sourceOverrideSlot);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -489,8 +620,42 @@ namespace ClinicManagement.Api.Controllers
                 SlotLabel = schedule.SlotLabel,
                 StartTime = schedule.StartTime.ToString(@"hh\:mm"),
                 EndTime = schedule.EndTime.ToString(@"hh\:mm"),
+                RoomId = schedule.RoomId,
+                RoomCode = schedule.Room?.Code,
+                RoomName = schedule.Room?.Name,
                 IsBooked = false
             };
+        }
+
+        private async Task<string?> ValidateRoomsAsync(Guid doctorDepartmentId, IEnumerable<Guid> roomIds)
+        {
+            var roomIdList = roomIds.ToList();
+            if (roomIdList.Count == 0 || roomIdList.Any(id => id == Guid.Empty))
+            {
+                return "Room is required for each schedule slot.";
+            }
+
+            var requiredRoomIds = roomIdList
+                .Distinct()
+                .ToList();
+
+            var rooms = await _context.Rooms
+                .AsNoTracking()
+                .Where(r => requiredRoomIds.Contains(r.Id) && r.IsActive)
+                .Select(r => new { r.Id, r.DepartmentId })
+                .ToListAsync();
+
+            if (rooms.Count != requiredRoomIds.Count)
+            {
+                return "One or more selected rooms are invalid or inactive.";
+            }
+
+            if (rooms.Any(r => r.DepartmentId != doctorDepartmentId))
+            {
+                return "Schedule room must belong to the same department as the doctor.";
+            }
+
+            return null;
         }
     }
 }

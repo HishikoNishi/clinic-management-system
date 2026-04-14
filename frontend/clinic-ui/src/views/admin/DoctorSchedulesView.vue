@@ -2,7 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
+import { queueService, type RoomOption } from '@/services/queueService'
 import { toLocalDateInputValue } from '@/utils/date'
+import { shiftRequestService, type ShiftRequestItem } from '@/services/shiftRequestService'
 import {
   doctorScheduleService,
   type AvailableDoctorSlot,
@@ -25,11 +27,14 @@ const doctorId = String(route.params.id)
 
 const today = toLocalDateInputValue()
 const doctor = ref<any>(null)
+const roomOptions = ref<RoomOption[]>([])
 
 const selectedWeekday = ref<number>(new Date().getDay())
 const previewDate = ref(today)
 const templateSlotKeys = ref<string[]>([])
+const slotRoomMap = ref<Record<string, string>>({})
 const previewSlots = ref<DoctorScheduleSlot[]>([])
+const incomingShiftSlots = ref<ShiftRequestItem[]>([])
 
 const loadingTemplate = ref(false)
 const loadingPreview = ref(false)
@@ -50,6 +55,7 @@ const makeTime = (hour: number, minute: number) =>
   `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`
 
 const normalizeTimeKey = (value: string) => String(value || '').slice(0, 5)
+const normalizeDateKey = (value: string) => String(value || '').slice(0, 10)
 
 const buildSlots = (
   shiftCode: string,
@@ -122,6 +128,11 @@ const loadDoctor = async () => {
   doctor.value = response.data
 }
 
+const loadRooms = async () => {
+  const departmentId = doctor.value?.departmentId || doctor.value?.DepartmentId
+  roomOptions.value = await queueService.getRooms(departmentId)
+}
+
 const loadWeeklyTemplate = async () => {
   error.value = ''
   try {
@@ -130,6 +141,11 @@ const loadWeeklyTemplate = async () => {
     templateSlotKeys.value = slots.map((slot) =>
       buildSlotKey({ shiftCode: slot.shiftCode, startTime: slot.startTime })
     )
+    slotRoomMap.value = slots.reduce<Record<string, string>>((acc, slot) => {
+      const key = buildSlotKey({ shiftCode: slot.shiftCode, startTime: slot.startTime })
+      acc[key] = slot.roomId || ''
+      return acc
+    }, {})
   } catch (err: any) {
     console.error(err)
     error.value = err?.response?.data?.message || 'Không tải được lịch tuần cố định'
@@ -143,14 +159,51 @@ const loadPreviewSchedule = async () => {
   error.value = ''
   try {
     loadingPreview.value = true
-    previewSlots.value = await doctorScheduleService.getDoctorDay(doctorId, previewDate.value)
+    const [slots, approvedRequests] = await Promise.all([
+      doctorScheduleService.getDoctorDay(doctorId, previewDate.value),
+      shiftRequestService.getAdminRequests('Approved', 200)
+    ])
+
+    previewSlots.value = slots
+    incomingShiftSlots.value = (approvedRequests ?? [])
+      .filter((request) =>
+        request.replacementDoctorId === doctorId &&
+        normalizeDateKey(request.workDate) === previewDate.value
+      )
+      .sort((a, b) => normalizeTimeKey(a.startTime).localeCompare(normalizeTimeKey(b.startTime)))
   } catch (err: any) {
     console.error(err)
     error.value = err?.response?.data?.message || 'Không tải được lịch theo ngày'
     previewSlots.value = []
+    incomingShiftSlots.value = []
   } finally {
     loadingPreview.value = false
   }
+}
+
+const incomingSlotKeySet = computed(() => {
+  return new Set(incomingShiftSlots.value.map((item) => `${item.shiftCode}|${normalizeTimeKey(item.startTime)}`))
+})
+
+const baseDaySlots = computed(() => {
+  return previewSlots.value.filter((slot) => !incomingSlotKeySet.value.has(`${slot.shiftCode}|${normalizeTimeKey(slot.startTime)}`))
+})
+
+const openPreviewSlot = (slot: DoctorScheduleSlot) => {
+  openSlotModal({
+    shiftCode: slot.shiftCode,
+    shiftLabel: slot.shiftCode,
+    slotLabel: slot.slotLabel,
+    startTime: `${normalizeTimeKey(slot.startTime)}:00`,
+    endTime: `${normalizeTimeKey(slot.endTime)}:00`
+  })
+}
+
+const findPreviewSlotForShift = (item: ShiftRequestItem) => {
+  return previewSlots.value.find((slot) =>
+    slot.shiftCode === item.shiftCode &&
+    normalizeTimeKey(slot.startTime) === normalizeTimeKey(item.startTime)
+  )
 }
 
 const setShiftSelection = (shiftCode: string, checked: boolean) => {
@@ -182,13 +235,25 @@ const saveWeeklyTemplate = async () => {
 
   try {
     savingTemplate.value = true
+    const selectedKeys = new Set(templateSlotKeys.value)
+    const missingRoom = allSlots.value.find((slot) => {
+      const key = buildSlotKey(slot)
+      return selectedKeys.has(key) && !slotRoomMap.value[key]
+    })
+
+    if (missingRoom) {
+      error.value = `Vui long chon phong cho slot ${missingRoom.slotLabel}.`
+      return
+    }
+
     const payload: DoctorScheduleSlotPayload[] = allSlots.value
-      .filter((slot) => templateSlotKeys.value.includes(buildSlotKey(slot)))
+      .filter((slot) => selectedKeys.has(buildSlotKey(slot)))
       .map((slot) => ({
         shiftCode: slot.shiftCode,
         slotLabel: slot.slotLabel,
         startTime: slot.startTime,
         endTime: slot.endTime,
+        roomId: slotRoomMap.value[buildSlotKey(slot)] || '',
         isActive: true
       }))
 
@@ -290,6 +355,7 @@ watch(previewDate, async () => {
 
 onMounted(async () => {
   await loadDoctor()
+  await loadRooms()
   await Promise.all([loadWeeklyTemplate(), loadPreviewSchedule()])
 })
 </script>
@@ -363,19 +429,31 @@ onMounted(async () => {
                     </div>
 
                     <div class="d-grid gap-2">
-                      <label
+                      <div
                         v-for="slot in group.slots"
                         :key="buildSlotKey(slot)"
-                        class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2"
+                        class="border rounded-3 px-3 py-2"
                       >
-                        <input
-                          v-model="templateSlotKeys"
-                          class="form-check-input mt-0"
-                          type="checkbox"
-                          :value="buildSlotKey(slot)"
-                        />
-                        <span class="fw-medium">{{ slot.slotLabel }}</span>
-                      </label>
+                        <label class="d-flex align-items-center gap-2 mb-2">
+                          <input
+                            v-model="templateSlotKeys"
+                            class="form-check-input mt-0"
+                            type="checkbox"
+                            :value="buildSlotKey(slot)"
+                          />
+                          <span class="fw-medium">{{ slot.slotLabel }}</span>
+                        </label>
+                        <select
+                          v-if="templateSlotKeys.includes(buildSlotKey(slot))"
+                          v-model="slotRoomMap[buildSlotKey(slot)]"
+                          class="form-select form-select-sm"
+                        >
+                          <option value="">Chon phong</option>
+                          <option v-for="room in roomOptions" :key="room.id" :value="room.id">
+                            {{ room.name }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -403,27 +481,61 @@ onMounted(async () => {
               <div class="spinner-border text-primary"></div>
             </div>
 
-            <div v-else-if="previewSlots.length === 0" class="text-muted small">
-              Không có lịch cho ngày nay.
-            </div>
+            <div v-else class="row g-3">
+              <div class="col-lg-6">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="fw-semibold">Lịch làm trong ngày</div>
+                  <div class="text-muted small">{{ baseDaySlots.length }} slot</div>
+                </div>
 
-            <div v-else class="d-grid gap-2">
-              <button
-                v-for="slot in previewSlots"
-                :key="slot.id + slot.startTime"
-                type="button"
-                class="btn btn-outline-primary text-start"
-                @click="openSlotModal({
-                  shiftCode: slot.shiftCode,
-                  shiftLabel: slot.shiftCode,
-                  slotLabel: slot.slotLabel,
-                  startTime: `${slot.startTime}:00`,
-                  endTime: `${slot.endTime}:00`
-                })"
-              >
-                <div class="fw-semibold">{{ slot.slotLabel }}</div>
-                <div class="small text-muted">{{ slot.startTime }} - {{ slot.endTime }}</div>
-              </button>
+                <div v-if="baseDaySlots.length === 0" class="text-muted small">
+                  Không có lịch làm trong ngày này.
+                </div>
+
+                <div v-else class="d-grid gap-2">
+                  <button
+                    v-for="slot in baseDaySlots"
+                    :key="slot.id + slot.startTime"
+                    type="button"
+                    class="btn btn-outline-primary text-start"
+                    @click="openPreviewSlot(slot)"
+                  >
+                    <div class="fw-semibold">{{ slot.slotLabel }}</div>
+                    <div class="small text-muted">{{ slot.startTime }} - {{ slot.endTime }}</div>
+                    <div class="small text-muted" v-if="slot.roomName">Phong: {{ slot.roomName }}</div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="fw-semibold">Lịch được chuyển ca tới</div>
+                  <div class="text-muted small">{{ incomingShiftSlots.length }} slot</div>
+                </div>
+
+                <div v-if="incomingShiftSlots.length === 0" class="text-muted small">
+                  Không có ca nào được chuyển tới trong ngày này.
+                </div>
+
+                <div v-else class="d-grid gap-2">
+                  <button
+                    v-for="item in incomingShiftSlots"
+                    :key="item.id"
+                    type="button"
+                    class="btn btn-outline-warning text-start"
+                    :disabled="!findPreviewSlotForShift(item)"
+                    @click="() => {
+                      const slot = findPreviewSlotForShift(item)
+                      if (slot) openPreviewSlot(slot)
+                    }"
+                  >
+                    <div class="fw-semibold">{{ item.slotLabel }}</div>
+                    <div class="small text-muted">{{ item.startTime }} - {{ item.endTime }}</div>
+                    <div class="small text-muted">Từ: {{ item.doctorName }}</div>
+                    <div class="small text-muted" v-if="item.roomName">Phong: {{ item.roomName }}</div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -437,6 +549,9 @@ onMounted(async () => {
             <h4 class="mb-1">Đổi ca làm việc</h4>
             <div class="text-muted small" v-if="activeSlot">
               {{ doctor?.fullName }} · {{ previewDate }} · {{ activeSlot.slotLabel }}
+            </div>
+            <div class="text-muted small" v-if="slotImpact?.roomName">
+              Phong: {{ slotImpact.roomName }}
             </div>
           </div>
           <button type="button" class="btn-close" @click="closeModal"></button>

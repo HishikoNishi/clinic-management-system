@@ -119,7 +119,7 @@
             <select v-model="form.startTime" class="form-select" :disabled="loadingSlots || !slotOptions.length">
               <option value="">Chọn slot</option>
               <option v-for="slot in slotOptions" :key="slot.id" :value="slot.startTime">
-                {{ slot.slotLabel }} ({{ slot.startTime }} - {{ slot.endTime }})
+                {{ slot.slotLabel }} ({{ slot.startTime }} - {{ slot.endTime }}){{ slot.roomName ? ` - ${slot.roomName}` : '' }}
               </option>
             </select>
             <div class="form-text" v-if="loadingSlots">Đang tải slot của bác sĩ...</div>

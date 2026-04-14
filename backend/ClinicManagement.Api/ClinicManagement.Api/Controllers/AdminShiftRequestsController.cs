@@ -56,6 +56,16 @@ namespace ClinicManagement.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("pending-count")]
+        public async Task<IActionResult> GetPendingCount()
+        {
+            var count = await _context.DoctorShiftRequests
+                .AsNoTracking()
+                .CountAsync(r => r.Status == DoctorShiftRequestStatus.Pending);
+
+            return Ok(new { count });
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetDetail(Guid id)
         {
@@ -173,16 +183,7 @@ namespace ClinicManagement.Api.Controllers
                 return BadRequest(new { message = "Replacement doctor already has a schedule at this time." });
             }
 
-            _context.DoctorSchedules.Add(new DoctorSchedule
-            {
-                DoctorId = replacementDoctor.Id,
-                WorkDate = request.WorkDate.Date,
-                ShiftCode = sourceSlot.ShiftCode,
-                SlotLabel = sourceSlot.SlotLabel,
-                StartTime = sourceSlot.StartTime,
-                EndTime = sourceSlot.EndTime,
-                IsActive = true
-            });
+            sourceOverrideSlot.DoctorId = replacementDoctor.Id;
 
             foreach (var appointment in impactedAppointments)
             {
@@ -192,8 +193,6 @@ namespace ClinicManagement.Api.Controllers
                     appointment.Status = AppointmentStatus.Confirmed;
                 }
             }
-
-            _context.DoctorSchedules.Remove(sourceOverrideSlot);
 
             request.Status = DoctorShiftRequestStatus.Approved;
             request.ReplacementDoctorId = replacementDoctor.Id;
@@ -298,6 +297,8 @@ namespace ClinicManagement.Api.Controllers
             bool includeAppointments,
             bool includeAvailableDoctors)
         {
+            var sourceSlot = await _scheduleService.GetEffectiveSlotAsync(request.DoctorId, request.WorkDate, request.StartTime);
+
             var dto = new DoctorShiftRequestDto
             {
                 Id = request.Id,
@@ -310,6 +311,9 @@ namespace ClinicManagement.Api.Controllers
                 SlotLabel = request.SlotLabel,
                 StartTime = request.StartTime.ToString(@"hh\:mm"),
                 EndTime = request.EndTime.ToString(@"hh\:mm"),
+                RoomId = sourceSlot?.RoomId,
+                RoomCode = sourceSlot?.Room?.Code,
+                RoomName = sourceSlot?.Room?.Name,
                 Reason = request.Reason,
                 PreferredDoctorId = request.PreferredDoctorId,
                 PreferredDoctorName = request.PreferredDoctor?.FullName,

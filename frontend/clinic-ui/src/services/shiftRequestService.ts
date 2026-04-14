@@ -74,6 +74,11 @@ export const shiftRequestService = {
     return response.data ?? []
   },
 
+  async getMyPendingCount(): Promise<number> {
+    const response = await api.get('/doctor/shift-requests/pending-count')
+    return response.data?.count ?? 0
+  },
+
   async createRequest(payload: {
     requestType: ShiftRequestType
     workDate: string
@@ -106,6 +111,11 @@ export const shiftRequestService = {
       }
     })
     return response.data ?? []
+  },
+
+  async getAdminPendingCount(): Promise<number> {
+    const response = await api.get('/admin/shift-requests/pending-count')
+    return response.data?.count ?? 0
   },
 
   async getAdminRequestDetail(id: string): Promise<ShiftRequestItem> {

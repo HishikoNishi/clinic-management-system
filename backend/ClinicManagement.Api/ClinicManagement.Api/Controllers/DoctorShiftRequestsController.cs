@@ -57,6 +57,22 @@ namespace ClinicManagement.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("pending-count")]
+        public async Task<IActionResult> GetMyPendingCount()
+        {
+            var doctor = await GetCurrentDoctorAsync();
+            if (doctor == null)
+            {
+                return Unauthorized(new { message = "Doctor not found." });
+            }
+
+            var count = await _context.DoctorShiftRequests
+                .AsNoTracking()
+                .CountAsync(r => r.DoctorId == doctor.Id && r.Status == DoctorShiftRequestStatus.Pending);
+
+            return Ok(new { count });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDoctorShiftRequestDto dto)
         {
@@ -215,6 +231,8 @@ namespace ClinicManagement.Api.Controllers
             bool includeAppointments,
             bool includeAvailableDoctors)
         {
+            var sourceSlot = await _scheduleService.GetEffectiveSlotAsync(request.DoctorId, request.WorkDate, request.StartTime);
+
             var dto = new DoctorShiftRequestDto
             {
                 Id = request.Id,
@@ -227,6 +245,9 @@ namespace ClinicManagement.Api.Controllers
                 SlotLabel = request.SlotLabel,
                 StartTime = request.StartTime.ToString(@"hh\:mm"),
                 EndTime = request.EndTime.ToString(@"hh\:mm"),
+                RoomId = sourceSlot?.RoomId,
+                RoomCode = sourceSlot?.Room?.Code,
+                RoomName = sourceSlot?.Room?.Name,
                 Reason = request.Reason,
                 PreferredDoctorId = request.PreferredDoctorId,
                 PreferredDoctorName = request.PreferredDoctor?.FullName,

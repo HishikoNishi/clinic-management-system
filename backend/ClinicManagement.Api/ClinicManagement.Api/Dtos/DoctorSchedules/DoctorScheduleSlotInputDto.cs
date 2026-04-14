@@ -15,5 +15,8 @@ namespace ClinicManagement.Api.Dtos.DoctorSchedules
 
         [Required]
         public TimeSpan EndTime { get; set; }
+
+        [Required]
+        public Guid RoomId { get; set; }
     }
 }

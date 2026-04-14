@@ -20,6 +20,7 @@ namespace ClinicManagement.Api.Services
 
             var overrideSlots = await _context.DoctorSchedules
                 .AsNoTracking()
+                .Include(s => s.Room)
                 .Where(s => s.DoctorId == doctorId && s.WorkDate == date && s.IsActive)
                 .OrderBy(s => s.StartTime)
                 .ToListAsync();
@@ -35,12 +36,15 @@ namespace ClinicManagement.Api.Services
 
             return await _context.DoctorWeeklySchedules
                 .AsNoTracking()
+                .Include(s => s.Room)
                 .Where(s => s.DoctorId == doctorId && s.DayOfWeek == date.DayOfWeek && s.IsActive)
                 .OrderBy(s => s.StartTime)
                 .Select(s => new DoctorSchedule
                 {
                     Id = s.Id,
                     DoctorId = s.DoctorId,
+                    RoomId = s.RoomId,
+                    Room = s.Room,
                     WorkDate = date,
                     ShiftCode = s.ShiftCode,
                     SlotLabel = s.SlotLabel,
@@ -62,6 +66,66 @@ namespace ClinicManagement.Api.Services
         {
             var slot = await GetEffectiveSlotAsync(doctorId, workDate, startTime);
             return slot != null;
+        }
+
+        public async Task<DoctorSchedule?> GetEffectiveSlotByRoomAsync(Guid roomId, DateTime workDate, TimeSpan startTime)
+        {
+            var date = workDate.Date;
+
+            var overrideSlot = await _context.DoctorSchedules
+                .AsNoTracking()
+                .Include(s => s.Room)
+                .FirstOrDefaultAsync(s =>
+                    s.RoomId == roomId &&
+                    s.WorkDate == date &&
+                    s.StartTime == startTime &&
+                    s.IsActive);
+
+            if (overrideSlot != null)
+            {
+                return overrideSlot;
+            }
+
+            var doctorsWithOverrideDay = await _context.DoctorScheduleOverrideDays
+                .AsNoTracking()
+                .Where(o => o.WorkDate == date)
+                .Select(o => o.DoctorId)
+                .ToListAsync();
+
+            return await _context.DoctorWeeklySchedules
+                .AsNoTracking()
+                .Include(s => s.Room)
+                .Where(s =>
+                    s.RoomId == roomId &&
+                    s.DayOfWeek == date.DayOfWeek &&
+                    s.StartTime == startTime &&
+                    s.IsActive &&
+                    !doctorsWithOverrideDay.Contains(s.DoctorId))
+                .Select(s => new DoctorSchedule
+                {
+                    Id = s.Id,
+                    DoctorId = s.DoctorId,
+                    RoomId = s.RoomId,
+                    Room = s.Room,
+                    WorkDate = date,
+                    ShiftCode = s.ShiftCode,
+                    SlotLabel = s.SlotLabel,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsActive = s.IsActive,
+                    CreatedAt = s.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Guid>> GetDoctorRoomIdsForDateAsync(Guid doctorId, DateTime workDate)
+        {
+            var schedules = await GetEffectiveSchedulesAsync(doctorId, workDate);
+            return schedules
+                .Where(s => s.RoomId.HasValue)
+                .Select(s => s.RoomId!.Value)
+                .Distinct()
+                .ToList();
         }
 
         public async Task<List<DoctorSchedule>> EnsureOverrideFromEffectiveAsync(Guid doctorId, DateTime workDate)
@@ -104,6 +168,7 @@ namespace ClinicManagement.Api.Services
                 var item = new DoctorSchedule
                 {
                     DoctorId = doctorId,
+                    RoomId = slot.RoomId,
                     WorkDate = date,
                     ShiftCode = slot.ShiftCode,
                     SlotLabel = slot.SlotLabel,

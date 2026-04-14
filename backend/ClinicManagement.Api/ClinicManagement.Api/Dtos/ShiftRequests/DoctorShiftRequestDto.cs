@@ -14,6 +14,9 @@ namespace ClinicManagement.Api.Dtos.ShiftRequests
         public string SlotLabel { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
+        public Guid? RoomId { get; set; }
+        public string? RoomCode { get; set; }
+        public string? RoomName { get; set; }
         public string Reason { get; set; } = string.Empty;
         public Guid? PreferredDoctorId { get; set; }
         public string? PreferredDoctorName { get; set; }

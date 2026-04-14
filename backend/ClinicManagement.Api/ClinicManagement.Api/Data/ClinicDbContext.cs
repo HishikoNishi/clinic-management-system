@@ -35,6 +35,8 @@ namespace ClinicManagement.Api.Data
         public DbSet<DoctorScheduleOverrideDay> DoctorScheduleOverrideDays { get; set; } = null!;
         public DbSet<DoctorShiftRequest> DoctorShiftRequests { get; set; } = null!;
         public DbSet<AppNotification> Notifications { get; set; } = null!;
+        public DbSet<Room> Rooms { get; set; } = null!;
+        public DbSet<QueueEntry> QueueEntries { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -148,10 +150,19 @@ namespace ClinicManagement.Api.Data
                 entity.HasIndex(s => new { s.DoctorId, s.WorkDate, s.StartTime })
                       .IsUnique();
 
+                entity.HasIndex(s => new { s.RoomId, s.WorkDate, s.StartTime })
+                      .IsUnique()
+                      .HasFilter("[RoomId] IS NOT NULL");
+
                 entity.HasOne(s => s.Doctor)
                       .WithMany(d => d.Schedules)
                       .HasForeignKey(s => s.DoctorId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.Room)
+                      .WithMany()
+                      .HasForeignKey(s => s.RoomId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<DoctorWeeklySchedule>(entity =>
@@ -172,10 +183,19 @@ namespace ClinicManagement.Api.Data
                 entity.HasIndex(s => new { s.DoctorId, s.DayOfWeek, s.StartTime })
                       .IsUnique();
 
+                entity.HasIndex(s => new { s.RoomId, s.DayOfWeek, s.StartTime })
+                      .IsUnique()
+                      .HasFilter("[RoomId] IS NOT NULL");
+
                 entity.HasOne(s => s.Doctor)
                       .WithMany(d => d.WeeklySchedules)
                       .HasForeignKey(s => s.DoctorId)
                       .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.Room)
+                      .WithMany()
+                      .HasForeignKey(s => s.RoomId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<DoctorScheduleOverrideDay>(entity =>
@@ -272,6 +292,54 @@ namespace ClinicManagement.Api.Data
                       .WithMany(u => u.Notifications)
                       .HasForeignKey(n => n.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Room>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Code)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(r => r.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.HasIndex(r => r.Code)
+                      .IsUnique();
+
+                entity.HasOne(r => r.Department)
+                      .WithMany()
+                      .HasForeignKey(r => r.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<QueueEntry>(entity =>
+            {
+                entity.ToTable("Queues");
+
+                entity.HasKey(q => q.Id);
+
+                entity.Property(q => q.Status)
+                      .HasConversion<string>()
+                      .IsRequired();
+
+                entity.Property(q => q.QueuedAt)
+                      .IsRequired();
+
+                entity.HasIndex(q => new { q.RoomId, q.QueuedAt });
+                entity.HasIndex(q => q.AppointmentId);
+
+                entity.HasOne(q => q.Appointment)
+                      .WithMany(a => a.QueueEntries)
+                      .HasForeignKey(q => q.AppointmentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(q => q.Room)
+                      .WithMany(r => r.QueueEntries)
+                      .HasForeignKey(q => q.RoomId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             /* ================================

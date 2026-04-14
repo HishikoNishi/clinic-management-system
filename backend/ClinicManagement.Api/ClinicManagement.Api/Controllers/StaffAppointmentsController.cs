@@ -37,7 +37,8 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("walk-in")]
         public async Task<IActionResult> CreateWalkInAppointment([FromBody] CreateAppointmentDto dto)
         {
-            var today = DateTime.UtcNow.Date;
+            // Use local date consistently (avoid allowing "yesterday" bookings around midnight due to UTC).
+            var today = DateTime.Today;
             var businessStart = new TimeSpan(7, 0, 0);
             var businessEnd = new TimeSpan(22, 0, 0);
 
@@ -57,20 +58,21 @@ namespace ClinicManagement.Api.Controllers
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
                 return BadRequest(new { message = "Chi nhan dat lich trong khung gio 07:00-22:00" });
 
-            if (dto.DoctorId == Guid.Empty)
-                return BadRequest(new { message = "Vui long chon bac si" });
+            Doctor? doctor = null;
+            if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
+            {
+                doctor = await _context.Doctors
+                    .AsNoTracking()
+                    .Include(d => d.Department)
+                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
-            var doctor = await _context.Doctors
-                .AsNoTracking()
-                .Include(d => d.Department)
-                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
+                if (doctor == null)
+                    return BadRequest(new { message = "Bac si khong kha dung" });
 
-            if (doctor == null)
-                return BadRequest(new { message = "Bac si khong kha dung" });
-
-            var slotError = await ValidateDoctorSlotAsync(dto.DoctorId, dto.AppointmentDate.Date, dto.AppointmentTime);
-            if (slotError != null)
-                return BadRequest(new { message = slotError });
+                var slotError = await ValidateDoctorSlotAsync(dto.DoctorId.Value, dto.AppointmentDate.Date, dto.AppointmentTime);
+                if (slotError != null)
+                    return BadRequest(new { message = slotError });
+            }
 
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(p => p.Phone == dto.Phone && p.FullName == dto.FullName);
@@ -146,12 +148,12 @@ namespace ClinicManagement.Api.Controllers
                 Id = Guid.NewGuid(),
                 PatientId = patient.Id,
                 StaffId = staffId,
-                DoctorId = doctor.Id,
+                DoctorId = doctor?.Id,
                 AppointmentCode = code,
                 AppointmentDate = dto.AppointmentDate.Date,
                 AppointmentTime = dto.AppointmentTime,
                 Reason = dto.Reason,
-                Status = AppointmentStatus.Confirmed
+                Status = doctor != null ? AppointmentStatus.Confirmed : AppointmentStatus.Pending
             };
 
             _context.Appointments.Add(appointment);
@@ -234,7 +236,7 @@ namespace ClinicManagement.Api.Controllers
             var doctor = await _context.Doctors
                 .AsNoTracking()
                 .Include(d => d.Department)
-                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
+                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status != DoctorStatus.Inactive);
 
             if (doctor == null)
                 return BadRequest("Doctor is not available");
@@ -297,7 +299,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 var doctor = await _context.Doctors
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status == DoctorStatus.Active);
+                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
                 if (doctor == null)
                     return BadRequest("Doctor is not available");
@@ -313,9 +315,21 @@ namespace ClinicManagement.Api.Controllers
 
                 appointment.DoctorId = doctor.Id;
             }
+            else if (appointment.DoctorId == null && dto.RoomId.HasValue && dto.RoomId.Value != Guid.Empty)
+            {
+                var roomSlot = await _doctorScheduleService.GetEffectiveSlotByRoomAsync(
+                    dto.RoomId.Value,
+                    appointment.AppointmentDate,
+                    appointment.AppointmentTime);
+
+                if (roomSlot == null)
+                    return BadRequest("Selected room does not have a scheduled doctor on duty at this slot");
+
+                appointment.DoctorId = roomSlot.DoctorId;
+            }
             else if (appointment.DoctorId == null)
             {
-                return BadRequest("Please assign a doctor before check-in");
+                return BadRequest("Please select a room with doctor on duty before check-in");
             }
 
             appointment.Status = AppointmentStatus.CheckedIn;
@@ -359,8 +373,27 @@ namespace ClinicManagement.Api.Controllers
             }
 
             Payment? depositPayment = null;
+            var existingDeposit = await _context.Payments
+                .Where(p => p.AppointmentId == appointment.Id && p.IsDeposit)
+                .SumAsync(p => p.Amount);
+
             if (dto.IsInpatient && dto.DepositAmount > 0)
             {
+                var remainingDeposit = dto.DepositAmount - existingDeposit;
+
+                if (remainingDeposit <= 0)
+                {
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Checked in successfully",
+                        appointment.Status,
+                        totalDeposit = existingDeposit,
+                        depositPaymentId = (Guid?)null
+                    });
+                }
+
                 var invoice = await _context.Invoices
                     .FirstOrDefaultAsync(i => i.AppointmentId == appointment.Id);
 
@@ -368,8 +401,8 @@ namespace ClinicManagement.Api.Controllers
                 {
                     AppointmentId = appointment.Id,
                     InvoiceId = invoice?.Id,
-                    Amount = dto.DepositAmount,
-                    DepositAmount = dto.DepositAmount,
+                    Amount = remainingDeposit,
+                    DepositAmount = remainingDeposit,
                     IsDeposit = true,
                     Method = dto.Method,
                     PaymentDate = DateTime.UtcNow

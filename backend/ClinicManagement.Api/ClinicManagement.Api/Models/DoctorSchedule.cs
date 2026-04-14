@@ -14,6 +14,11 @@ namespace ClinicManagement.Api.Models
         [JsonIgnore]
         public Doctor Doctor { get; set; } = null!;
 
+        public Guid? RoomId { get; set; }
+
+        [JsonIgnore]
+        public Room? Room { get; set; }
+
         [Required]
         public DateTime WorkDate { get; set; }
 

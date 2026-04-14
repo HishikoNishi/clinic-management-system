@@ -35,7 +35,8 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateAppointmentDto dto)
         {
-            var today = DateTime.UtcNow.Date;
+            // Use local date consistently (avoid allowing "yesterday" bookings around midnight due to UTC).
+            var today = DateTime.Today;
             var businessStart = new TimeSpan(7, 0, 0);
             var businessEnd = new TimeSpan(22, 0, 0);
 
@@ -58,20 +59,21 @@ namespace ClinicManagement.Api.Controllers
             if (string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest("Email bat buoc");
 
-            if (dto.DoctorId == Guid.Empty)
-                return BadRequest("Vui long chon bac si");
+            Doctor? doctor = null;
+            if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
+            {
+                doctor = await _context.Doctors
+                    .AsNoTracking()
+                    .Include(d => d.Department)
+                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
-            var doctor = await _context.Doctors
-                .AsNoTracking()
-                .Include(d => d.Department)
-                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
+                if (doctor == null)
+                    return BadRequest("Bac si khong kha dung");
 
-            if (doctor == null)
-                return BadRequest("Bac si khong kha dung");
-
-            var slotError = await ValidateDoctorSlotAsync(dto.DoctorId, dto.AppointmentDate.Date, dto.AppointmentTime);
-            if (slotError != null)
-                return BadRequest(slotError);
+                var slotError = await ValidateDoctorSlotAsync(dto.DoctorId.Value, dto.AppointmentDate.Date, dto.AppointmentTime);
+                if (slotError != null)
+                    return BadRequest(slotError);
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.CitizenId) &&
                 (!dto.CitizenId.All(char.IsDigit) || dto.CitizenId.Length != 12))
@@ -174,12 +176,12 @@ namespace ClinicManagement.Api.Controllers
             {
                 Id = Guid.NewGuid(),
                 PatientId = patient.Id,
-                DoctorId = doctor.Id,
+                DoctorId = doctor?.Id,
                 AppointmentCode = code,
                 AppointmentDate = dto.AppointmentDate.Date,
                 AppointmentTime = dto.AppointmentTime,
                 Reason = dto.Reason,
-                Status = AppointmentStatus.Confirmed
+                Status = doctor != null ? AppointmentStatus.Confirmed : AppointmentStatus.Pending
             };
 
             _context.Appointments.Add(appointment);

@@ -9,6 +9,9 @@ namespace ClinicManagement.Api.Dtos.DoctorSchedules
         public string SlotLabel { get; set; } = string.Empty;
         public string StartTime { get; set; } = string.Empty;
         public string EndTime { get; set; } = string.Empty;
+        public Guid? RoomId { get; set; }
+        public string? RoomCode { get; set; }
+        public string? RoomName { get; set; }
         public int AppointmentCount { get; set; }
         public bool HasAppointments => AppointmentCount > 0;
         public List<DoctorScheduleImpactAppointmentDto> Appointments { get; set; } = new();
