@@ -1,4 +1,4 @@
-﻿using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
@@ -8,9 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Security.Claims;
-using System.Linq;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -22,43 +20,78 @@ namespace ClinicManagement.Api.Controllers
         private readonly ClinicDbContext _context;
         private readonly FakeInsuranceService _fakeInsuranceService;
         private readonly IConfiguration _configuration;
+        private readonly DoctorScheduleService _doctorScheduleService;
 
-        public StaffAppointmentsController(ClinicDbContext context, FakeInsuranceService fakeInsuranceService, IConfiguration configuration)
+        public StaffAppointmentsController(
+            ClinicDbContext context,
+            FakeInsuranceService fakeInsuranceService,
+            IConfiguration configuration,
+            DoctorScheduleService doctorScheduleService)
         {
             _context = context;
             _fakeInsuranceService = fakeInsuranceService;
             _configuration = configuration;
+            _doctorScheduleService = doctorScheduleService;
         }
 
         [HttpPost("walk-in")]
         public async Task<IActionResult> CreateWalkInAppointment([FromBody] CreateAppointmentDto dto)
         {
-            var today = DateTime.UtcNow.Date;
+            // Use local date consistently (avoid allowing "yesterday" bookings around midnight due to UTC).
+            var today = DateTime.Today;
             var businessStart = new TimeSpan(7, 0, 0);
             var businessEnd = new TimeSpan(22, 0, 0);
 
+            dto.CitizenId = dto.CitizenId?.Trim();
+            dto.Phone = dto.Phone?.Trim();
+            dto.FullName = dto.FullName?.Trim();
+            dto.Email = dto.Email?.Trim();
+            dto.InsuranceCardNumber = dto.InsuranceCardNumber?.Trim();
+
             if (dto.AppointmentDate.Date < today)
-                return BadRequest(new { message = "Chỉ được đặt lịch từ hôm nay trở đi" });
+                return BadRequest(new { message = "Chi duoc dat lich tu hom nay tro di" });
+
+            var localNow = DateTime.Now;
+            if (dto.AppointmentDate.Date == localNow.Date && dto.AppointmentTime <= localNow.TimeOfDay)
+                return BadRequest(new { message = "Chi duoc dat lich o gio tuong lai" });
 
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
-                return BadRequest(new { message = "Chỉ nhận đặt lịch trong khung giờ làm việc (07:00-22:00)" });
+                return BadRequest(new { message = "Chi nhan dat lich trong khung gio 07:00-22:00" });
+
+            Doctor? doctor = null;
+            if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
+            {
+                doctor = await _context.Doctors
+                    .AsNoTracking()
+                    .Include(d => d.Department)
+                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
+
+                if (doctor == null)
+                    return BadRequest(new { message = "Bac si khong kha dung" });
+
+                var slotError = await ValidateDoctorSlotAsync(dto.DoctorId.Value, dto.AppointmentDate.Date, dto.AppointmentTime);
+                if (slotError != null)
+                    return BadRequest(new { message = slotError });
+            }
 
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(p => p.Phone == dto.Phone && p.FullName == dto.FullName);
 
             if (patient == null)
             {
-                // Tự động sinh PatientCode cho bệnh nhân mới
-                string pCode;
-                do { pCode = CodeGenerator.GeneratePatientCode(); }
-                while (await _context.Patients.AnyAsync(p => p.PatientCode == pCode));
+                string patientCode;
+                do
+                {
+                    patientCode = CodeGenerator.GeneratePatientCode();
+                }
+                while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
 
                 patient = new Patient
                 {
                     Id = Guid.NewGuid(),
-                    PatientCode = pCode,
-                    FullName = dto.FullName,
-                    Phone = dto.Phone,
+                    PatientCode = patientCode,
+                    FullName = dto.FullName!,
+                    Phone = dto.Phone!,
                     Email = dto.Email,
                     Address = dto.Address,
                     DateOfBirth = dto.DateOfBirth,
@@ -77,9 +110,11 @@ namespace ClinicManagement.Api.Controllers
                 patient.Email = string.IsNullOrWhiteSpace(dto.Email) ? patient.Email : dto.Email;
                 patient.UpdatedAt = DateTime.UtcNow;
 
-                // Cập nhật thêm CCCD/BHYT nếu lúc trước chưa có
-                if (string.IsNullOrWhiteSpace(patient.CitizenId)) patient.CitizenId = dto.CitizenId;
-                if (string.IsNullOrWhiteSpace(patient.InsuranceCardNumber)) patient.InsuranceCardNumber = dto.InsuranceCardNumber;
+                if (string.IsNullOrWhiteSpace(patient.CitizenId))
+                    patient.CitizenId = dto.CitizenId;
+
+                if (string.IsNullOrWhiteSpace(patient.InsuranceCardNumber))
+                    patient.InsuranceCardNumber = dto.InsuranceCardNumber;
             }
 
             var existed = await _context.Appointments.AnyAsync(a =>
@@ -89,7 +124,7 @@ namespace ClinicManagement.Api.Controllers
                 a.Status != AppointmentStatus.Cancelled);
 
             if (existed)
-                return BadRequest(new { message = "Bệnh nhân đã có lịch ở khung giờ này" });
+                return BadRequest(new { message = "Benh nhan da co lich o khung gio nay" });
 
             string code;
             do
@@ -113,35 +148,18 @@ namespace ClinicManagement.Api.Controllers
                 Id = Guid.NewGuid(),
                 PatientId = patient.Id,
                 StaffId = staffId,
+                DoctorId = doctor?.Id,
                 AppointmentCode = code,
                 AppointmentDate = dto.AppointmentDate.Date,
                 AppointmentTime = dto.AppointmentTime,
                 Reason = dto.Reason,
-                Status = AppointmentStatus.Pending
+                Status = doctor != null ? AppointmentStatus.Confirmed : AppointmentStatus.Pending
             };
 
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            return Ok(new AppointmentDetailDto
-            {
-                Id = appointment.Id,
-                AppointmentCode = appointment.AppointmentCode,
-                FullName = patient.FullName,
-                Phone = patient.Phone,
-                Email = patient.Email,
-                DateOfBirth = patient.DateOfBirth,
-                Gender = patient.Gender.ToString(),
-                Address = patient.Address,
-                Reason = appointment.Reason,
-                Status = appointment.Status.ToString(),
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
-                CreatedAt = appointment.CreatedAt,
-                PatientCode = patient.PatientCode,
-                CitizenId = patient.CitizenId,
-                InsuranceCardNumber = patient.InsuranceCardNumber
-            });
+            return Ok(ToDetailDto(appointment, patient, doctor));
         }
 
         [HttpGet]
@@ -151,36 +169,11 @@ namespace ClinicManagement.Api.Controllers
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.Department)
-                .Select(a => new AppointmentDetailDto
-                {
-                    Id = a.Id,
-                    AppointmentCode = a.AppointmentCode,
-                    FullName = a.Patient != null ? a.Patient.FullName : null,
-                    Phone = a.Patient != null ? a.Patient.Phone : null,
-                    Email = a.Patient != null ? a.Patient.Email : null,
-                    DateOfBirth = a.Patient != null ? a.Patient.DateOfBirth : DateTime.MinValue,
-                    Gender = a.Patient != null ? a.Patient.Gender.ToString() : null,
-                    Address = a.Patient != null ? a.Patient.Address : null,
-                    Reason = a.Reason,
-                    Status = a.Status.ToString(),
-                    AppointmentDate = a.AppointmentDate,
-                    AppointmentTime = a.AppointmentTime,
-                    PatientCode = a.Patient != null ? a.Patient.PatientCode : null,
-                    CitizenId = a.Patient != null ? a.Patient.CitizenId : "",
-                    InsuranceCardNumber = a.Patient != null ? a.Patient.InsuranceCardNumber : "",
-                    CreatedAt = a.CreatedAt,
-                    StatusDetail = new AppointmentStatusDto
-                    {
-                        Value = a.Status.ToString(),
-                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Id : null,
-                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.FullName : null,
-                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Code : null,
-                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Department.Name : null
-                    }
-                })
                 .ToListAsync();
 
-            return Ok(appointments);
+            return Ok(appointments
+                .Where(a => a.Patient != null)
+                .Select(a => ToDetailDto(a, a.Patient!, a.Doctor)));
         }
 
         [HttpGet("filter")]
@@ -189,37 +182,13 @@ namespace ClinicManagement.Api.Controllers
             var appointments = await _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
-                    .ThenInclude(d => d.User)
+                    .ThenInclude(d => d.Department)
                 .Where(a => a.Status == status)
-                .Select(a => new AppointmentDetailDto
-                {
-                    Id = a.Id,
-                    AppointmentCode = a.AppointmentCode,
-                    FullName = a.Patient != null ? a.Patient.FullName : null,
-                    Phone = a.Patient != null ? a.Patient.Phone : null,
-                    Email = a.Patient != null ? a.Patient.Email : null,
-                    DateOfBirth = a.Patient != null ? a.Patient.DateOfBirth : DateTime.MinValue,
-                    Gender = a.Patient != null ? a.Patient.Gender.ToString() : null,
-                    Address = a.Patient != null ? a.Patient.Address : null,
-                    Reason = a.Reason,
-                    AppointmentDate = a.AppointmentDate,
-                    AppointmentTime = a.AppointmentTime,
-                    PatientCode = a.Patient != null ? a.Patient.PatientCode : null,
-                    CitizenId = a.Patient != null ? a.Patient.CitizenId : "",
-                    InsuranceCardNumber = a.Patient != null ? a.Patient.InsuranceCardNumber : "",
-                    CreatedAt = a.CreatedAt,
-                    StatusDetail = new AppointmentStatusDto
-                    {
-                        Value = a.Status.ToString(),
-                        DoctorId = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Id : null,
-                        DoctorName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.FullName : null,
-                        DoctorCode = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Code : null,
-                        DoctorDepartmentName = (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.Completed || a.Status == AppointmentStatus.CheckedIn) && a.Doctor != null ? a.Doctor.Department.Name : null
-                    }
-                })
                 .ToListAsync();
 
-            return Ok(appointments);
+            return Ok(appointments
+                .Where(a => a.Patient != null)
+                .Select(a => ToDetailDto(a, a.Patient!, a.Doctor)));
         }
 
         [HttpGet("specialties-by-department/{departmentId}")]
@@ -229,6 +198,7 @@ namespace ClinicManagement.Api.Controllers
                 .Where(s => s.DepartmentId == departmentId)
                 .Select(s => new { s.Id, s.Name })
                 .ToListAsync();
+
             return Ok(specialties);
         }
 
@@ -260,24 +230,39 @@ namespace ClinicManagement.Api.Controllers
             var appointment = await _context.Appointments
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
-            if (appointment == null) return NotFound("Appointment not found");
+            if (appointment == null)
+                return NotFound("Appointment not found");
 
-            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
-            if (doctor == null) return BadRequest("Doctor is not available");
+            var doctor = await _context.Doctors
+                .AsNoTracking()
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status != DoctorStatus.Inactive);
 
-            var isBusy = await _context.Appointments.AnyAsync(a =>
-                a.DoctorId == dto.DoctorId &&
-                a.AppointmentDate == appointment.AppointmentDate &&
-                a.AppointmentTime == appointment.AppointmentTime &&
-                (a.Status == AppointmentStatus.Confirmed || a.Status == AppointmentStatus.CheckedIn));
+            if (doctor == null)
+                return BadRequest("Doctor is not available");
 
-            if (isBusy) return BadRequest(new { message = "Doctor is already booked/checked-in at this time slot" });
+            var slotError = await ValidateDoctorSlotAsync(
+                dto.DoctorId,
+                appointment.AppointmentDate,
+                appointment.AppointmentTime,
+                appointment.Id);
+
+            if (slotError != null)
+                return BadRequest(new { message = slotError });
 
             appointment.DoctorId = doctor.Id;
-            appointment.Status = AppointmentStatus.Confirmed;
+            if (appointment.Status != AppointmentStatus.CheckedIn)
+            {
+                appointment.Status = AppointmentStatus.Confirmed;
+            }
+
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Assigned doctor successfully", doctorCode = doctor.Code });
+            return Ok(new
+            {
+                message = "Assigned doctor successfully",
+                doctorCode = doctor.Code
+            });
         }
 
         [HttpPost("checkin")]
@@ -286,31 +271,22 @@ namespace ClinicManagement.Api.Controllers
             var depositCap = _configuration.GetValue<decimal?>("Billing:DepositCap") ?? 200000m;
 
             var appointment = await _context.Appointments
-                    .Include(a => a.Patient) 
+                .Include(a => a.Patient)
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
-            if (appointment == null) return NotFound("Appointment not found");
 
-            if (string.IsNullOrWhiteSpace(appointment.Patient.PatientCode))
+            if (appointment == null)
+                return NotFound("Appointment not found");
+
+            if (appointment.Patient != null && string.IsNullOrWhiteSpace(appointment.Patient.PatientCode))
             {
-                var random = new Random();
-                const string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                string chars = new string(Enumerable.Range(0, 2)
-                    .Select(_ => letters[random.Next(letters.Length)])
-                    .ToArray());
-                string digits = random.Next(1000, 9999).ToString();
-                string code = chars + digits;
-
-                // đảm bảo không trùng
-                while (_context.Patients.Any(p => p.PatientCode == code))
+                string patientCode;
+                do
                 {
-                    chars = new string(Enumerable.Range(0, 2)
-                        .Select(_ => letters[random.Next(letters.Length)])
-                        .ToArray());
-                    digits = random.Next(1000, 9999).ToString();
-                    code = chars + digits;
+                    patientCode = CodeGenerator.GeneratePatientCode();
                 }
+                while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
 
-                appointment.Patient.PatientCode = code;
+                appointment.Patient.PatientCode = patientCode;
             }
 
             if (appointment.Status == AppointmentStatus.Cancelled || appointment.Status == AppointmentStatus.Completed)
@@ -319,22 +295,47 @@ namespace ClinicManagement.Api.Controllers
             if (dto.DepositAmount > depositCap)
                 return BadRequest($"Deposit cannot exceed {depositCap:N0} VND");
 
-            // Optional assign doctor during check-in
             if (dto.DoctorId.HasValue)
             {
-                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status == DoctorStatus.Active);
-                if (doctor == null) return BadRequest("Doctor is not available");
+                var doctor = await _context.Doctors
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
+
+                if (doctor == null)
+                    return BadRequest("Doctor is not available");
+
+                var slotError = await ValidateDoctorSlotAsync(
+                    dto.DoctorId.Value,
+                    appointment.AppointmentDate,
+                    appointment.AppointmentTime,
+                    appointment.Id);
+
+                if (slotError != null)
+                    return BadRequest(slotError);
+
                 appointment.DoctorId = doctor.Id;
+            }
+            else if (appointment.DoctorId == null && dto.RoomId.HasValue && dto.RoomId.Value != Guid.Empty)
+            {
+                var roomSlot = await _doctorScheduleService.GetEffectiveSlotByRoomAsync(
+                    dto.RoomId.Value,
+                    appointment.AppointmentDate,
+                    appointment.AppointmentTime);
+
+                if (roomSlot == null)
+                    return BadRequest("Selected room does not have a scheduled doctor on duty at this slot");
+
+                appointment.DoctorId = roomSlot.DoctorId;
             }
             else if (appointment.DoctorId == null)
             {
-                return BadRequest("Please assign a doctor before check-in");
+                return BadRequest("Please select a room with doctor on duty before check-in");
             }
+
             appointment.Status = AppointmentStatus.CheckedIn;
             appointment.CheckedInAt = DateTime.UtcNow;
             appointment.CheckInChannel = "Staff";
 
-            // Lưu bảo hiểm vào hồ sơ khám (tạo mới nếu chưa có) để tính phí trước khi thu tạm ứng
             if (!string.IsNullOrWhiteSpace(dto.InsuranceCode) || (dto.InsuranceCoverPercent ?? 0) > 0)
             {
                 var plan = !string.IsNullOrWhiteSpace(dto.InsuranceCode)
@@ -342,9 +343,7 @@ namespace ClinicManagement.Api.Controllers
                     : null;
 
                 if (!string.IsNullOrWhiteSpace(dto.InsuranceCode) && plan == null)
-                {
-                    return BadRequest("Mã bảo hiểm không hợp lệ hoặc đã hết hạn");
-                }
+                    return BadRequest("Ma bao hiem khong hop le hoac da het han");
 
                 var cover = dto.InsuranceCoverPercent ?? plan?.CoveragePercent ?? 0m;
                 cover = FinanceHelper.Clamp01(cover);
@@ -374,18 +373,36 @@ namespace ClinicManagement.Api.Controllers
             }
 
             Payment? depositPayment = null;
-            // create deposit only for inpatient
+            var existingDeposit = await _context.Payments
+                .Where(p => p.AppointmentId == appointment.Id && p.IsDeposit)
+                .SumAsync(p => p.Amount);
+
             if (dto.IsInpatient && dto.DepositAmount > 0)
             {
-                // nếu đã có invoice cho appointment thì gắn luôn
-                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.AppointmentId == appointment.Id);
+                var remainingDeposit = dto.DepositAmount - existingDeposit;
+
+                if (remainingDeposit <= 0)
+                {
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Checked in successfully",
+                        appointment.Status,
+                        totalDeposit = existingDeposit,
+                        depositPaymentId = (Guid?)null
+                    });
+                }
+
+                var invoice = await _context.Invoices
+                    .FirstOrDefaultAsync(i => i.AppointmentId == appointment.Id);
 
                 depositPayment = new Payment
                 {
                     AppointmentId = appointment.Id,
                     InvoiceId = invoice?.Id,
-                    Amount = dto.DepositAmount,
-                    DepositAmount = dto.DepositAmount,
+                    Amount = remainingDeposit,
+                    DepositAmount = remainingDeposit,
                     IsDeposit = true,
                     Method = dto.Method,
                     PaymentDate = DateTime.UtcNow
@@ -408,43 +425,79 @@ namespace ClinicManagement.Api.Controllers
                 depositPaymentId = depositPayment?.Id
             });
         }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<AppointmentDetailDto>> GetAppointmentDetail(Guid id)
         {
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
-                .Include(a => a.Doctor).ThenInclude(d => d.User)
-                .Include(a => a.Doctor).ThenInclude(d => d.Department)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Department)
                 .FirstOrDefaultAsync(a => a.Id == id);
 
-            if (appointment == null) return NotFound();
+            if (appointment == null || appointment.Patient == null)
+                return NotFound();
 
-            return Ok(new AppointmentDetailDto
+            return Ok(ToDetailDto(appointment, appointment.Patient, appointment.Doctor));
+        }
+
+        private async Task<string?> ValidateDoctorSlotAsync(
+            Guid doctorId,
+            DateTime appointmentDate,
+            TimeSpan appointmentTime,
+            Guid? currentAppointmentId = null)
+        {
+            var hasSchedule = await _doctorScheduleService.HasEffectiveSlotAsync(doctorId, appointmentDate, appointmentTime);
+
+            if (!hasSchedule)
+                return "Doctor does not have a working slot at this time";
+
+            var isBusy = await _context.Appointments.AnyAsync(a =>
+                a.Id != currentAppointmentId &&
+                a.DoctorId == doctorId &&
+                a.AppointmentDate == appointmentDate &&
+                a.AppointmentTime == appointmentTime &&
+                a.Status != AppointmentStatus.Cancelled &&
+                a.Status != AppointmentStatus.NoShow);
+
+            if (isBusy)
+                return "Doctor is already booked at this slot";
+
+            return null;
+        }
+
+        private static AppointmentDetailDto ToDetailDto(Appointment appointment, Patient patient, Doctor? doctor = null)
+        {
+            var selectedDoctor = doctor ?? appointment.Doctor;
+
+            return new AppointmentDetailDto
             {
                 Id = appointment.Id,
                 AppointmentCode = appointment.AppointmentCode,
-                FullName = appointment.Patient?.FullName ?? string.Empty,
-                Phone = appointment.Patient?.Phone ?? string.Empty,
-                Email = appointment.Patient?.Email,
-                DateOfBirth = appointment.Patient?.DateOfBirth ?? DateTime.MinValue,
-                Gender = appointment.Patient?.Gender.ToString() ?? string.Empty,
-                Address = appointment.Patient?.Address,
+                FullName = patient.FullName,
+                Phone = patient.Phone,
+                Email = patient.Email,
+                DateOfBirth = patient.DateOfBirth,
+                Gender = patient.Gender.ToString(),
+                Address = patient.Address,
                 Reason = appointment.Reason,
                 Status = appointment.Status.ToString(),
                 AppointmentDate = appointment.AppointmentDate,
                 AppointmentTime = appointment.AppointmentTime,
                 CreatedAt = appointment.CreatedAt,
-                PatientCode = appointment.Patient?.PatientCode,
-                CitizenId = appointment.Patient?.CitizenId,
-                InsuranceCardNumber = appointment.Patient?.InsuranceCardNumber,
+                PatientCode = patient.PatientCode,
+                CitizenId = patient.CitizenId,
+                InsuranceCardNumber = patient.InsuranceCardNumber,
+                Note = patient.Note ?? string.Empty,
                 StatusDetail = new AppointmentStatusDto
                 {
                     Value = appointment.Status.ToString(),
-                    DoctorName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn) ? appointment.Doctor?.FullName : null,
-                    DoctorCode = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn) ? appointment.Doctor?.Code : null,
-                    DoctorDepartmentName = (appointment.Status == AppointmentStatus.Confirmed || appointment.Status == AppointmentStatus.Completed || appointment.Status == AppointmentStatus.CheckedIn) ? appointment.Doctor?.Department?.Name : null
+                    DoctorId = selectedDoctor?.Id,
+                    DoctorName = selectedDoctor?.FullName,
+                    DoctorCode = selectedDoctor?.Code,
+                    DoctorDepartmentName = selectedDoctor?.Department?.Name ?? string.Empty
                 }
-            });
+            };
         }
     }
 }

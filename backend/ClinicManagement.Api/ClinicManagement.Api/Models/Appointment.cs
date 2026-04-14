@@ -64,6 +64,8 @@ namespace ClinicManagement.Api.Models
         public ICollection<Payment> Payments { get; set; } = new List<Payment>();
         [JsonIgnore]
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+        [JsonIgnore]
+        public ICollection<QueueEntry> QueueEntries { get; set; } = new List<QueueEntry>();
 
         public DateTime GetAppointmentDateTime()
         {

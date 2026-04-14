@@ -89,6 +89,20 @@
   transition: all 0.2s ease;
   text-align: left;
 }
+.nav-label {
+  flex: 1;
+}
+.nav-badge {
+  min-width: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 107, 107, 0.92);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(255, 107, 107, 0.25);
+}
 
 .nav-link-btn:hover {
   background: rgba(255, 255, 255, 0.06);

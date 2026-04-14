@@ -63,7 +63,44 @@
           <button class="btn btn-outline-secondary" @click="$router.push('/admin/users/create')">Thêm người dùng</button>
           <button class="btn btn-outline-secondary" @click="$router.push('/appointment')">Lịch khám</button>
         </div>
-      </div>
+      </div>      <section class="mt-4">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold mb-1">Yêu cầu đổi ca mới</h5>
+              <div class="text-muted small">Danh sách pending từ bác sĩ.</div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" @click="$router.push('/admin/shift-requests')">
+              Xem tất cả
+            </button>
+          </div>
+
+          <div v-if="!pendingShiftRequests.length" class="text-muted small">
+            Không có yêu cầu pending.
+          </div>
+
+          <div v-else class="list-group list-group-flush">
+            <button
+              v-for="item in pendingShiftRequests"
+              :key="item.id"
+              type="button"
+              class="list-group-item list-group-item-action px-0"
+              @click="$router.push('/admin/shift-requests')"
+            >
+              <div class="d-flex justify-content-between align-items-center gap-2">
+                <strong>{{ item.doctorName }}</strong>
+                <span class="badge bg-warning-subtle text-warning">Pending</span>
+              </div>
+              <div class="small">
+                {{ item.requestType === 'EmergencyLeave' ? 'Nghỉ đột xuất' : 'Xin chuyển ca' }}
+                - {{ new Date(item.workDate).toLocaleDateString('vi-VN') }}
+              </div>
+              <div class="small text-muted">{{ item.slotLabel }} ({{ item.startTime }} - {{ item.endTime }})</div>
+            </button>
+          </div>
+        </div>
+      </section>
+
 
       <!-- ===================== REVENUE (NEW) ===================== -->
       <section class="mt-4" v-if="stats">
@@ -125,6 +162,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import { shiftRequestService, type ShiftRequestItem } from '@/services/shiftRequestService'
 import LineChart from '@/components/charts/LineChart.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import '@/styles/layouts/dashboard.css'
@@ -243,6 +281,7 @@ const loadStats = async () => {
   }
 }
 const revenueData = ref<any>(null)
+const pendingShiftRequests = ref<ShiftRequestItem[]>([])
 
 const filters = ref({
   year: null as number | null,
@@ -269,6 +308,14 @@ const loadDepartments = async () => {
     const res = await api.get('/departments')
     departments.value = res.data
   } catch {}
+}
+
+const loadPendingShiftRequests = async () => {
+  try {
+    pendingShiftRequests.value = await shiftRequestService.getAdminRequests('Pending', 5)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 const lineChartData = computed(() => {
@@ -305,8 +352,12 @@ onMounted(() => {
     loadStats()
     loadRevenue()
     loadDepartments()
+    loadPendingShiftRequests()
   } else {
     error.value = 'Chỉ tài khoản Admin mới xem được thống kê tổng quan.'
   }
 })
 </script>
+
+
+

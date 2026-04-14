@@ -75,6 +75,7 @@ builder.Services.AddScoped<OtpService>();
 builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
+builder.Services.AddScoped<DoctorScheduleService>();
 builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AppointmentService>();
@@ -157,6 +158,31 @@ IF COL_LENGTH('dbo.MedicalRecords', 'HeartRate') IS NULL ALTER TABLE dbo.Medical
 IF COL_LENGTH('dbo.MedicalRecords', 'BloodPressure') IS NULL ALTER TABLE dbo.MedicalRecords ADD BloodPressure NVARCHAR(20) NULL;
 IF COL_LENGTH('dbo.MedicalRecords', 'Temperature') IS NULL ALTER TABLE dbo.MedicalRecords ADD Temperature DECIMAL(4,1) NULL;
 IF COL_LENGTH('dbo.MedicalRecords', 'Spo2') IS NULL ALTER TABLE dbo.MedicalRecords ADD Spo2 INT NULL;
+");
+    }
+    catch { }
+
+    // Bổ sung cột cho InvoiceLines (dùng cho hóa đơn thuốc)
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('dbo.InvoiceLines', 'Dosage') IS NULL
+BEGIN
+    ALTER TABLE dbo.InvoiceLines ADD Dosage NVARCHAR(MAX) NOT NULL CONSTRAINT DF_InvoiceLines_Dosage DEFAULT ('');
+END
+ELSE
+BEGIN
+    UPDATE dbo.InvoiceLines SET Dosage = '' WHERE Dosage IS NULL;
+END
+
+IF COL_LENGTH('dbo.InvoiceLines', 'Duration') IS NULL
+BEGIN
+    ALTER TABLE dbo.InvoiceLines ADD Duration INT NOT NULL CONSTRAINT DF_InvoiceLines_Duration DEFAULT (0);
+END
+ELSE
+BEGIN
+    UPDATE dbo.InvoiceLines SET Duration = 0 WHERE Duration IS NULL;
+END
 ");
     }
     catch { }

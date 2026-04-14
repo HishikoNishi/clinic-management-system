@@ -30,6 +30,13 @@ namespace ClinicManagement.Api.Data
         public DbSet<Department> Departments { get; set; } = null!;
         public DbSet<Specialty> Specialties { get; set; } = null!;
         public DbSet<Medicine> Medicines { get; set; } = null!;
+        public DbSet<DoctorSchedule> DoctorSchedules { get; set; } = null!;
+        public DbSet<DoctorWeeklySchedule> DoctorWeeklySchedules { get; set; } = null!;
+        public DbSet<DoctorScheduleOverrideDay> DoctorScheduleOverrideDays { get; set; } = null!;
+        public DbSet<DoctorShiftRequest> DoctorShiftRequests { get; set; } = null!;
+        public DbSet<AppNotification> Notifications { get; set; } = null!;
+        public DbSet<Room> Rooms { get; set; } = null!;
+        public DbSet<QueueEntry> QueueEntries { get; set; } = null!;
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -116,6 +123,222 @@ namespace ClinicManagement.Api.Data
                 entity.HasOne(d => d.Specialty)
                       .WithMany()
                       .HasForeignKey(d => d.SpecialtyId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DoctorSchedule>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+
+                entity.Property(s => s.WorkDate)
+                      .IsRequired();
+
+                entity.Property(s => s.ShiftCode)
+                      .IsRequired()
+                      .HasMaxLength(32);
+
+                entity.Property(s => s.SlotLabel)
+                      .IsRequired()
+                      .HasMaxLength(64);
+
+                entity.Property(s => s.StartTime)
+                      .IsRequired();
+
+                entity.Property(s => s.EndTime)
+                      .IsRequired();
+
+                entity.HasIndex(s => new { s.DoctorId, s.WorkDate, s.StartTime })
+                      .IsUnique();
+
+                entity.HasIndex(s => new { s.RoomId, s.WorkDate, s.StartTime })
+                      .IsUnique()
+                      .HasFilter("[RoomId] IS NOT NULL");
+
+                entity.HasOne(s => s.Doctor)
+                      .WithMany(d => d.Schedules)
+                      .HasForeignKey(s => s.DoctorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.Room)
+                      .WithMany()
+                      .HasForeignKey(s => s.RoomId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DoctorWeeklySchedule>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+
+                entity.Property(s => s.DayOfWeek)
+                      .IsRequired();
+
+                entity.Property(s => s.ShiftCode)
+                      .IsRequired()
+                      .HasMaxLength(32);
+
+                entity.Property(s => s.SlotLabel)
+                      .IsRequired()
+                      .HasMaxLength(64);
+
+                entity.HasIndex(s => new { s.DoctorId, s.DayOfWeek, s.StartTime })
+                      .IsUnique();
+
+                entity.HasIndex(s => new { s.RoomId, s.DayOfWeek, s.StartTime })
+                      .IsUnique()
+                      .HasFilter("[RoomId] IS NOT NULL");
+
+                entity.HasOne(s => s.Doctor)
+                      .WithMany(d => d.WeeklySchedules)
+                      .HasForeignKey(s => s.DoctorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.Room)
+                      .WithMany()
+                      .HasForeignKey(s => s.RoomId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DoctorScheduleOverrideDay>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+
+                entity.Property(o => o.WorkDate)
+                      .IsRequired();
+
+                entity.HasIndex(o => new { o.DoctorId, o.WorkDate })
+                      .IsUnique();
+
+                entity.HasOne(o => o.Doctor)
+                      .WithMany(d => d.ScheduleOverrideDays)
+                      .HasForeignKey(o => o.DoctorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<DoctorShiftRequest>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.RequestType)
+                      .HasConversion<string>()
+                      .IsRequired();
+
+                entity.Property(r => r.Status)
+                      .HasConversion<string>()
+                      .IsRequired();
+
+                entity.Property(r => r.WorkDate)
+                      .IsRequired();
+
+                entity.Property(r => r.ShiftCode)
+                      .IsRequired()
+                      .HasMaxLength(32);
+
+                entity.Property(r => r.SlotLabel)
+                      .IsRequired()
+                      .HasMaxLength(64);
+
+                entity.Property(r => r.Reason)
+                      .IsRequired()
+                      .HasMaxLength(1000);
+
+                entity.Property(r => r.AdminNote)
+                      .HasMaxLength(1000);
+
+                entity.HasIndex(r => new { r.DoctorId, r.WorkDate, r.StartTime, r.Status });
+
+                entity.HasOne(r => r.Doctor)
+                      .WithMany(d => d.ShiftRequests)
+                      .HasForeignKey(r => r.DoctorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.PreferredDoctor)
+                      .WithMany(d => d.PreferredShiftRequests)
+                      .HasForeignKey(r => r.PreferredDoctorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.ReplacementDoctor)
+                      .WithMany(d => d.ReplacementShiftRequests)
+                      .HasForeignKey(r => r.ReplacementDoctorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.ReviewedByUser)
+                      .WithMany(u => u.ReviewedShiftRequests)
+                      .HasForeignKey(r => r.ReviewedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<AppNotification>(entity =>
+            {
+                entity.HasKey(n => n.Id);
+
+                entity.Property(n => n.Title)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.Property(n => n.Message)
+                      .IsRequired()
+                      .HasMaxLength(1000);
+
+                entity.Property(n => n.Type)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(n => n.Link)
+                      .HasMaxLength(500);
+
+                entity.HasIndex(n => new { n.UserId, n.IsRead, n.CreatedAt });
+
+                entity.HasOne(n => n.User)
+                      .WithMany(u => u.Notifications)
+                      .HasForeignKey(n => n.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Room>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Code)
+                      .IsRequired()
+                      .HasMaxLength(20);
+
+                entity.Property(r => r.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+
+                entity.HasIndex(r => r.Code)
+                      .IsUnique();
+
+                entity.HasOne(r => r.Department)
+                      .WithMany()
+                      .HasForeignKey(r => r.DepartmentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<QueueEntry>(entity =>
+            {
+                entity.ToTable("Queues");
+
+                entity.HasKey(q => q.Id);
+
+                entity.Property(q => q.Status)
+                      .HasConversion<string>()
+                      .IsRequired();
+
+                entity.Property(q => q.QueuedAt)
+                      .IsRequired();
+
+                entity.HasIndex(q => new { q.RoomId, q.QueuedAt });
+                entity.HasIndex(q => q.AppointmentId);
+
+                entity.HasOne(q => q.Appointment)
+                      .WithMany(a => a.QueueEntries)
+                      .HasForeignKey(q => q.AppointmentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(q => q.Room)
+                      .WithMany(r => r.QueueEntries)
+                      .HasForeignKey(q => q.RoomId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -284,6 +507,12 @@ namespace ClinicManagement.Api.Data
                 entity.Property(i => i.Amount)
                       .HasColumnType("decimal(18,2)")
                       .IsRequired();
+                entity.Property(i => i.TotalDeposit)
+                      .HasColumnType("decimal(18,2)")
+                      .HasDefaultValue(0m);
+                entity.Property(i => i.BalanceDue)
+                      .HasColumnType("decimal(18,2)")
+                      .HasDefaultValue(0m);
                 entity.Property(i => i.InvoiceType)
                       .HasConversion<string>()
                       .HasMaxLength(20)
@@ -306,10 +535,15 @@ namespace ClinicManagement.Api.Data
                       .HasForeignKey(p => p.MedicalRecordId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PrescriptionDetail>()
-                .HasOne(d => d.Prescription)
-                .WithMany(p => p.PrescriptionDetails)
-                .HasForeignKey(d => d.PrescriptionId);
+            modelBuilder.Entity<PrescriptionDetail>(entity =>
+            {
+                entity.Property(d => d.UnitPrice)
+                      .HasColumnType("decimal(18,2)");
+
+                entity.HasOne(d => d.Prescription)
+                      .WithMany(p => p.PrescriptionDetails)
+                      .HasForeignKey(d => d.PrescriptionId);
+            });
 
             modelBuilder.Entity<ClinicalTest>(entity =>
             {

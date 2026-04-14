@@ -211,6 +211,9 @@ onMounted(async () => {
                     <button class="btn-icon info" title="Chi tiết" @click="$router.push(`/doctors/${d.id}`)">
                       <i class="bi bi-eye"></i>
                     </button>
+                    <button class="btn-icon info" title="Lịch làm việc" @click="$router.push(`/doctors/${d.id}/schedules`)">
+                      <i class="bi bi-calendar3"></i>
+                    </button>
                  
                     <button class="btn-icon delete" title="Xóa" @click="remove(d.id)">
                       <i class="bi bi-trash"></i>

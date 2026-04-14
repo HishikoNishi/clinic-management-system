@@ -18,5 +18,7 @@ namespace ClinicManagement.Api.Models
 
         public Doctor? Doctor { get; set; }
         public Staff? Staff { get; set; }
+        public ICollection<AppNotification> Notifications { get; set; } = new List<AppNotification>();
+        public ICollection<DoctorShiftRequest> ReviewedShiftRequests { get; set; } = new List<DoctorShiftRequest>();
     }
 }
