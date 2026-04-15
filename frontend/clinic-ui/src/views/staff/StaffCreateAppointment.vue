@@ -5,7 +5,7 @@
         <div class="staff-eyebrow">Staff</div>
         <h2 class="staff-title">Äáº·t lá»‹ch táº¡i quáº§y</h2>
         <p class="staff-subtitle">
-          Táº¡o lá»‹ch nhanh cho khách đến trực tiếp, có thể chọn bác sĩ hoặc chỉ giữ chỗ theo khung giờ mong muốn.
+          Tạo lịch nhanh cho khách đến trực tiếp, có thể chọn bác sĩ hoặc chỉ giữ chỗ theo khung giờ mong muốn.
         </p>
       </div>
       <button type="button" class="btn btn-outline-primary" @click="router.push('/staff/appointments')">
@@ -37,8 +37,8 @@
         <div class="lookup-box">
           <div class="lookup-head">
             <div>
-              <div class="lookup-title">Bá»‡nh nhÃ¢n cÅ©?</div>
-              <div class="lookup-note">Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i hoáº·c email Ä‘á»ƒ Ä‘iá»n nhanh thÃ´ng tin Ä‘Ã£ cÃ³.</div>
+              <div class="lookup-title">Bệnh nhân cũ?</div>
+              <div class="lookup-note">Nhập số điện thoại hoặc email để điền nhanh thông tin đã có.</div>
             </div>
             <button type="button" class="btn btn-sm btn-outline-secondary" @click="showLookup = !showLookup">
               {{ showLookup ? 'áº¨n' : 'Má»Ÿ tra cá»©u' }}
@@ -72,7 +72,7 @@
         <form class="booking-form" @submit.prevent="submitBooking">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Há» vÃ  tÃªn *</label>
+              <label class="form-label">Họ và tên *</label>
               <input ref="fullNameInput" v-model="form.fullName" type="text" class="form-control" :readonly="isReturning" />
               <div v-if="errors.fullName" class="form-error">{{ errors.fullName }}</div>
             </div>
@@ -123,25 +123,25 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Sá»‘ CCCD</label>
-              <input v-model="form.citizenId" type="text" class="form-control" placeholder="Nháº­p 12 sá»‘ CCCD" maxlength="12" />
+              <label class="form-label">Số CCCD</label>
+              <input v-model="form.citizenId" type="text" class="form-control" placeholder="Nhập 12 số CCCD" maxlength="12" />
             </div>
             <div class="form-group">
-              <label class="form-label">MÃ£ sá»‘ BHYT</label>
-              <input v-model="form.insuranceCardNumber" type="text" class="form-control" placeholder="VÃ­ dá»¥: GD479..." />
+              <label class="form-label">Mã số BHYT</label>
+              <input v-model="form.insuranceCardNumber" type="text" class="form-control" placeholder="Ví dụ: GD479..." />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">NgÃ y khÃ¡m *</label>
+              <label class="form-label">Ngày khám *</label>
               <input v-model="form.appointmentDate" type="date" class="form-control" :min="todayStr" />
               <div v-if="errors.appointmentDate" class="form-error">{{ errors.appointmentDate }}</div>
             </div>
             <div class="form-group">
-              <label class="form-label">Khoa mong muá»‘n (tÃ¹y chá»n)</label>
+              <label class="form-label">Khoa mong muốn (tùy chọn)</label>
               <select v-model="selectedDepartmentId" class="form-select">
-                <option value="">Táº¥t cáº£ khoa</option>
+                <option value="">Tất cả khoa</option>
                 <option v-for="department in departments" :key="department.id" :value="department.id">
                   {{ department.name }}
                 </option>
@@ -165,7 +165,7 @@
               <select v-model="form.appointmentTime" class="form-select" :disabled="!form.appointmentDate || slotLoading">
                 <option value="">{{ slotLoading ? 'Đang tải slot...' : 'Chọn khung giờ' }}</option>
                 <option v-for="slot in availableSlots" :key="slot.id || `${slot.shiftCode}-${slot.startTime}`" :value="String(slot.startTime).slice(0, 5)">
-                  {{ slot.slotLabel || String(slot.startTime).slice(0, 5) }}
+                  {{ slot.slotLabel }}
                 </option>
               </select>
               <div v-if="errors.appointmentTime" class="form-error">{{ errors.appointmentTime }}</div>
@@ -173,7 +173,7 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">LÃ½ do khÃ¡m *</label>
+            <label class="form-label">Lý do khám *</label>
             <textarea
               v-model="form.reason"
               rows="4"
@@ -194,7 +194,7 @@
       <aside class="booking-card side-card">
         <div class="tip-badge">Quy trÃ¬nh gá»£i Ã½</div>
         <ol class="tip-list">
-          <li>Tra cá»©u nhanh há»“ sÆ¡ cÅ© náº¿u bá»‡nh nhÃ¢n Ä‘Ã£ tá»«ng khÃ¡m.</li>
+          <li>Tra cứu nhanh hồ sơ cũ nếu bệnh nhân đã từng khám.</li>
           <li>Chọn ngày, khung giờ; bác sĩ là tùy chọn nếu bệnh nhân có yêu cầu cụ thể.</li>
           <li>Tạo lịch xong thì sang danh sách để check-in, chọn phòng và đưa vào hàng chờ.</li>
         </ol>
@@ -202,7 +202,7 @@
         <div class="helper-card">
           <div class="helper-title">LÆ°u Ã½</div>
           <ul>
-            <li>KhÃ´ng cáº§n OTP vÃ¬ bá»‡nh nhÃ¢n Ä‘Ã£ cÃ³ máº·t táº¡i quáº§y.</li>
+            <li>Không cần OTP vì bệnh nhân đã có mặt tại quầy.</li>
             <li>Nếu chọn bác sĩ, slot chỉ hiện khi bác sĩ đó đã được cấu hình lịch làm việc.</li>
             <li>Nếu không chọn bác sĩ, hệ thống dùng khung giờ hành chính để giữ chỗ trước.</li>
             <li>Hệ thống vẫn chặn trùng giờ của bệnh nhân và các slot đã được đặt với bác sĩ.</li>
@@ -353,7 +353,7 @@ const validateForm = () => {
   }
 
   if (!form.appointmentTime.trim()) {
-    errors.appointmentTime = 'Slot khÃ¡m lÃ  báº¯t buá»™c'
+    errors.appointmentTime = 'Giờ khám là bắt buộc'
     ok = false
   }
 
@@ -539,6 +539,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Giữ nguyên toàn bộ CSS của bạn */
 .staff-booking-page {
   max-width: 1240px;
   margin: 0 auto;
@@ -732,4 +733,3 @@ onMounted(async () => {
   }
 }
 </style>
-

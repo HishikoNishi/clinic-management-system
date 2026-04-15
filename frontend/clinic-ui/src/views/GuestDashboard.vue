@@ -232,6 +232,31 @@
                   />
                 </div>
               </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Số CCCD/Passport</label>
+                  <input 
+                    v-model="bookingForm.CitizenId" 
+                    type="tel" 
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    class="form-input" 
+                    :readonly="isReturning"
+                    maxlength="12"
+                    placeholder="Nhập số CCCD"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Mã số BHYT (nếu có)</label>
+                  <input 
+                    v-model="bookingForm.insuranceNumber" 
+                    type="text" 
+                    class="form-input" 
+                    :readonly="isReturning"
+                    placeholder="Nhập mã BHYT"
+                  />
+                </div>
+              </div>
               <!-- OTP -->
               <div class="form-row align-items-end otp-row">
                 <div class="form-group flex-grow-1">
@@ -273,34 +298,12 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Bác sĩ (tùy chọn)</label>
-                  <select v-model="bookingForm.doctorId" class="form-select">
-                    <option value="">Không chọn trước</option>
-                    <option v-for="doctor in filteredDoctors" :key="doctor.id" :value="doctor.id">
-                      {{ doctor.fullName }} - {{ doctor.departmentName }}
-                    </option>
-                  </select>
-                  <span v-if="bookingErrors.doctorId" class="form-error">{{ bookingErrors.doctorId }}</span>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">{{ bookingForm.doctorId ? 'Thời gian khám *' : 'Khung giờ mong muốn *' }}</label>
-                  <select v-model="bookingForm.appointmentTime" class="form-select" :disabled="!bookingForm.appointmentDate || slotLoading" required>
-                    <option value="">
-                      {{ slotLoading ? 'Đang tải slot...' : (bookingForm.doctorId ? 'Chọn slot khám' : 'Chọn khung giờ mong muốn') }}
-                    </option>
-                    <option
-                      v-for="slot in availableSlots"
-                      :key="slot.id || `${slot.shiftCode}-${slot.startTime}`"
-                      :value="String(slot.startTime).slice(0, 5)"
-                      :disabled="slot.isBooked"
-                    >
-                      {{ (slot.slotLabel || String(slot.startTime).slice(0, 5)) }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
-                    </option>
-                  </select>
-                  <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
-                </div>
+              <div class="form-group">
+                <label class="form-label">Khoa muốn khám (tùy chọn)</label>
+                <select v-model="selectedDepartmentId" class="form-select">
+                  <option value="">Không rõ / để phòng khám sắp xếp</option>
+                  <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+                </select>
               </div>
 
               <div class="form-group">
@@ -377,6 +380,62 @@
                   <div class="result-item"><label>Điện thoại</label><p class="result-value">{{ searchResult.phone }}</p></div>
                   <div class="result-item"><label>Email</label><p class="result-value">{{ searchResult.email }}</p></div>
                   <div class="result-item"><label>Lý do</label><p class="result-value">{{ searchResult.reason }}</p></div>
+                </div>
+                <div class="mt-3 border rounded-3 p-3 bg-light">
+                  <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                    <div>
+                      <h4 class="h6 mb-1">Theo dõi hàng chờ</h4>
+                      <p class="text-muted small mb-0">Số thứ tự sẽ xuất hiện sau khi nhân viên check-in tại quầy.</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" @click="loadPatientQueueStatus(searchResult.appointmentCode)">
+                      <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                  </div>
+
+                  <div v-if="queueStatusLoading" class="text-muted small">
+                    <span class="spinner-border spinner-border-sm me-2"></span>Đang tải trạng thái hàng chờ...
+                  </div>
+
+                  <div v-else-if="queueStatusError" class="alert alert-warning py-2 mb-0">
+                    {{ queueStatusError }}
+                  </div>
+
+                  <template v-else-if="patientQueueStatus">
+                    <div v-if="patientQueueStatus.ownQueue" class="row g-3">
+                      <div class="col-md-6">
+                        <div class="border rounded-3 p-3 h-100">
+                          <div class="text-muted small text-uppercase">Số thứ tự của bạn</div>
+                          <div class="display-6 fw-bold mb-1">#{{ patientQueueStatus.ownQueue.queueNumber }}</div>
+                          <div class="small">Phòng: {{ patientQueueStatus.ownQueue.roomName }}</div>
+                          <div class="small text-muted">Trạng thái: {{ patientQueueStatus.ownQueue.status }}</div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="border rounded-3 p-3 h-100">
+                          <div class="text-muted small text-uppercase">Đang được gọi</div>
+                          <div class="display-6 fw-bold mb-1">
+                            {{ patientQueueStatus.currentCalling ? `#${patientQueueStatus.currentCalling.queueNumber}` : '—' }}
+                          </div>
+                          <div class="small" v-if="patientQueueStatus.currentCalling">
+                            {{ patientQueueStatus.currentCalling.fullName }}
+                          </div>
+                          <div class="small text-muted">
+                            {{ patientQueueStatus.currentCalling?.roomName || patientQueueStatus.ownQueue.roomName }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="alert alert-info py-2 mb-0">
+                          Còn <strong>{{ patientQueueStatus.waitingAhead }}</strong> người ở trước bạn.
+                          <span v-if="patientQueueStatus.message"> {{ patientQueueStatus.message }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-else class="alert alert-secondary py-2 mb-0">
+                      {{ patientQueueStatus.message || 'Lịch khám này chưa được check-in vào hàng chờ.' }}
+                    </div>
+                  </template>
                 </div>
                 <div class="mt-3 border rounded-3 p-3 bg-light">
                   <div class="d-flex justify-content-between align-items-start gap-2 mb-2">

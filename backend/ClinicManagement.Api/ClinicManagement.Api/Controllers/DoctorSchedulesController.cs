@@ -1,4 +1,4 @@
-﻿using ClinicManagement.Api.Data;
+using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.DoctorSchedules;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Services;
