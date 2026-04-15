@@ -1,219 +1,229 @@
 <template>
-  <div class="container-fluid py-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-      <div>
-        <h2 class="mb-1">Hàng chờ khám</h2>
-        <p class="text-muted mb-0">Bác sĩ gọi bệnh nhân theo phòng và theo hàng chờ thực tế.</p>
-      </div>
+  <div class="exam-queue-container bg-light min-vh-100 pb-5">
+    <div class="glass-header sticky-top bg-white border-bottom shadow-sm py-3 mb-4">
+      <div class="container-fluid px-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          
+          <div class="flex-shrink-0">
+            <h3 class="fw-bold mb-0 text-primary"><i class="bi bi-person-lines-fill me-2"></i>Hàng chờ khám</h3>
+            <p class="text-muted small mb-0">Hệ thống điều phối phòng khám</p>
+          </div>
 
-      <div class="d-flex flex-wrap gap-2 align-items-end">
-        <div>
-          <label class="form-label small fw-semibold mb-1">Trạng thái</label>
-          <select v-model="doctorStatus" @change="updateDoctorStatus" class="form-select form-select-sm" style="min-width: 170px;">
-            <option value="Active">Hoạt động</option>
-            <option value="Busy">Đang khám</option>
-            <option value="Inactive">Không hoạt động</option>
-          </select>
+          <div class="d-flex flex-column align-items-center flex-grow-1">
+            <div class="status-box" style="min-width: 280px;">
+              <span class="x-small fw-bold text-uppercase text-primary mb-1 d-block text-center">
+                <i class="bi bi-person-badge-fill me-1"></i>Trạng thái của bạn
+              </span>
+              <div class="status-control p-1 bg-white rounded-pill border border-primary shadow-sm">
+                <select v-model="doctorStatus" @change="updateDoctorStatus" 
+                  class="form-select form-select-sm border-0 fw-bold text-center" 
+                  style="border-radius: 50px; background-position: right 15px center;">
+                  <option value="Active">🟢 Sẵn sàng làm việc</option>
+                  <option value="Busy">🟡 Đang bận khám</option>
+                  <option value="Inactive">🔴 Tạm nghỉ / Vắng mặt</option>
+                </select>
+              </div>
+              <span class="x-small text-muted mt-1 d-block text-center italic">Chỉnh trạng thái hoạt động của bác sĩ</span>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-3 align-items-end flex-shrink-0">
+            <div class="d-flex flex-column">
+              <span class="x-small fw-bold text-uppercase text-muted mb-1">
+                <i class="bi bi-funnel-fill me-1"></i>Lọc danh sách
+              </span>
+              <div class="filter-control p-1 bg-white rounded-3 border">
+                <select v-model="currentStatus" class="form-select form-select-sm border-0" 
+                  style="min-width: 200px;" @change="loadAppointments">
+                  <option value="CheckedIn,Completed">Đã check-in + đã khám</option>
+                  <option value="CheckedIn">Đã check-in</option>
+                  <option value="Confirmed">Đã phân công (chưa check-in)</option>
+                  <option value="Completed">Đã khám xong</option>
+                  <option value="All">Tất cả</option>
+                </select>
+              </div>
+              <span class="x-small text-muted mt-1 d-block italic">Lọc hiển thị bảng bên dưới</span>
+            </div>
+
+            <button class="btn btn-outline-secondary btn-sm px-3 rounded-pill shadow-sm mb-4" @click="refreshAll" style="height: 38px;">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
         </div>
-        <div>
-          <label class="form-label small fw-semibold mb-1">Lọc lịch</label>
-          <select v-model="currentStatus" class="form-select form-select-sm" style="min-width: 220px;" @change="loadAppointments">
-            <option value="CheckedIn,Completed">Đã check-in + đã khám</option>
-            <option value="CheckedIn">Đã check-in</option>
-            <option value="Confirmed">Đã phân công (chưa check-in)</option>
-            <option value="Completed">Đã khám xong</option>
-            <option value="All">Tất cả</option>
-          </select>
-        </div>
-        <button class="btn btn-outline-secondary btn-sm mt-4" @click="refreshAll">
-          <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
-        </button>
       </div>
     </div>
 
-    <div v-if="error" class="alert alert-danger py-2">{{ error }}</div>
+    <div class="container-fluid px-4">
+      <div v-if="error" class="alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__shakeX">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+      </div>
 
-    <div class="row g-3 mb-4">
-      <div class="col-lg-4">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="mb-0">Phòng của tôi</h5>
-              <span class="badge bg-primary-subtle text-primary">{{ roomSummaries.length }}</span>
+      <div class="row g-4">
+        <div class="col-xl-4 col-lg-5">
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+            <div class="card-header bg-white border-0 py-3 px-4 border-bottom">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-door-open me-2 text-primary"></i>Phòng của tôi</h6>
+                <span class="badge rounded-pill bg-primary px-3">{{ roomSummaries.length }} phòng</span>
+              </div>
             </div>
-
-            <div v-if="roomLoading" class="text-muted small">
-              <span class="spinner-border spinner-border-sm me-2"></span>Đang tải phòng...
-            </div>
-
-            <div v-else class="d-grid gap-2">
-              <button
-                v-for="room in roomSummaries"
-                :key="room.roomId"
-                class="btn text-start room-btn"
-                :class="selectedRoomId === room.roomId ? 'btn-primary' : 'btn-outline-primary'"
-                @click="selectedRoomId = room.roomId"
-              >
-                <div class="fw-semibold">{{ room.roomName }}</div>
-                <div class="small opacity-75">{{ room.roomCode }} · {{ room.departmentName }}</div>
-                <div class="small mt-1">
-                  Chờ: {{ room.waitingCount }} · Đang khám: {{ room.inProgressCount }}
+            <div class="card-body px-3 pb-4">
+              <div v-if="roomLoading" class="text-center py-5">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+              </div>
+              <div v-else class="d-grid gap-3">
+                <div
+                  v-for="room in roomSummaries"
+                  :key="room.roomId"
+                  class="room-card p-3 rounded-4 border-2 transition-all cursor-pointer shadow-sm"
+                  :class="selectedRoomId === room.roomId ? 'border-primary bg-primary-subtle' : 'border-light bg-white'"
+                  @click="selectedRoomId = room.roomId"
+                >
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="fw-bold fs-5" :class="selectedRoomId === room.roomId ? 'text-primary' : 'text-dark'">{{ room.roomName }}</span>
+                    <span class="badge bg-white text-dark shadow-sm border">{{ room.roomCode }}</span>
+                  </div>
+                  <div class="small text-muted mb-3">{{ room.departmentName }}</div>
+                  <div class="d-flex gap-2">
+                    <div class="flex-fill bg-white p-2 rounded-3 text-center border shadow-sm">
+                      <div class="x-small text-muted fw-bold text-uppercase">Chờ</div>
+                      <div class="fw-bold text-primary fs-5">{{ room.waitingCount }}</div>
+                    </div>
+                    <div class="flex-fill bg-white p-2 rounded-3 text-center border shadow-sm">
+                      <div class="x-small text-muted fw-bold text-uppercase">Khám</div>
+                      <div class="fw-bold text-success fs-5">{{ room.inProgressCount }}</div>
+                    </div>
+                  </div>
                 </div>
-              </button>
-              <div v-if="roomSummaries.length === 0" class="text-muted small">
-                Chưa có phòng nào trong khoa của bác sĩ.
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="col-lg-8">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div class="col-xl-8 col-lg-7">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
               <div>
-                <h5 class="mb-1">Điều phối phòng</h5>
-                <p class="text-muted small mb-0" v-if="selectedRoomState">
-                  {{ selectedRoomState.roomName }} · {{ selectedRoomState.departmentName }}
-                </p>
+                <h6 class="mb-0 fw-bold text-dark">
+                  <i class="bi bi-cpu me-2 text-primary"></i>Điều phối: 
+                  <span class="text-primary fw-bold" v-if="selectedRoomState">{{ selectedRoomState.roomName }}</span>
+                </h6>
               </div>
               <div class="d-flex gap-2">
-                <button class="btn btn-success btn-sm" :disabled="!selectedRoomId" @click="callNextPatient">
-                  <i class="bi bi-megaphone me-1"></i>Gọi bệnh nhân tiếp theo
+                <button class="btn btn-success btn-sm rounded-pill px-4 shadow-sm fw-bold" :disabled="!selectedRoomId" @click="callNextPatient">
+                  <i class="bi bi-megaphone-fill me-1"></i> Gọi tiếp theo
                 </button>
-                <button class="btn btn-outline-secondary btn-sm" :disabled="!selectedRoomId" @click="loadSelectedRoomQueue">
+                <button class="btn btn-light btn-sm rounded-circle border shadow-sm" :disabled="!selectedRoomId" @click="loadSelectedRoomQueue">
                   <i class="bi bi-arrow-clockwise"></i>
                 </button>
               </div>
             </div>
 
-            <div v-if="queueLoading" class="text-muted small">
-              <span class="spinner-border spinner-border-sm me-2"></span>Đang tải hàng chờ...
-            </div>
+            <div class="card-body px-4">
+              <div v-if="queueLoading" class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+              </div>
 
-            <template v-else-if="selectedRoomState">
-              <div class="card border-warning-subtle bg-warning-subtle mb-3" v-if="selectedRoomState.currentCalling">
-                <div class="card-body">
-                  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="small text-uppercase text-muted">Đang gọi</div>
-                      <h4 class="mb-1">#{{ selectedRoomState.currentCalling.queueNumber }} - {{ selectedRoomState.currentCalling.fullName }}</h4>
-                      <div class="text-muted small">
-                        {{ selectedRoomState.currentCalling.appointmentCode }} · {{ selectedRoomState.currentCalling.phone || '—' }}
+              <template v-else-if="selectedRoomState">
+                <div class="calling-card p-4 rounded-4 mb-4 animate__animated animate__fadeInDown" v-if="selectedRoomState.currentCalling">
+                   <div class="row align-items-center">
+                      <div class="col-md-7 d-flex align-items-center gap-3">
+                          <div class="queue-number-lg shadow">#{{ selectedRoomState.currentCalling.queueNumber }}</div>
+                          <div>
+                            <div class="small text-uppercase text-primary fw-bold">Bệnh nhân đang gọi</div>
+                            <h3 class="fw-bold mb-1 text-dark">{{ selectedRoomState.currentCalling.fullName }}</h3>
+                            <div class="text-muted small">Mã: {{ selectedRoomState.currentCalling.appointmentCode }}</div>
+                          </div>
                       </div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2">
-                      <button class="btn btn-primary btn-sm" @click="goExamine(selectedRoomState.currentCalling.appointmentId)">
-                        <i class="bi bi-stethoscope me-1"></i>Mở màn khám
-                      </button>
-                      <button class="btn btn-outline-success btn-sm" @click="markCurrentDone">
-                        Hoàn tất lượt
-                      </button>
-                      <button class="btn btn-outline-danger btn-sm" @click="skipCurrent">
-                        Bỏ lượt
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else class="alert alert-light border mb-3">
-                Chưa có bệnh nhân nào đang được gọi ở phòng này.
-              </div>
-
-              <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th>STT</th>
-                      <th>Bệnh nhân</th>
-                      <th>Mã lịch</th>
-                      <th>Ưu tiên</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="item in waitingItems" :key="item.id">
-                      <td class="fw-semibold">#{{ item.queueNumber }}</td>
-                      <td>
-                        <div class="fw-semibold">{{ item.fullName }}</div>
-                        <div class="text-muted small">{{ item.phone || '—' }}</div>
-                      </td>
-                      <td class="text-monospace">{{ item.appointmentCode }}</td>
-                      <td>
-                        <span class="badge" :class="item.isPriority ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
-                          {{ item.isPriority ? 'Đặt trước' : 'Tại quầy' }}
-                        </span>
-                      </td>
-                      <td>
-                        <button class="btn btn-outline-primary btn-sm" @click="goExamine(item.appointmentId)">
-                          Xem hồ sơ
+                      <div class="col-md-5 d-flex justify-content-md-end gap-2">
+                        <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" @click="goExamine(selectedRoomState.currentCalling.appointmentId)">
+                          <i class="bi bi-stethoscope me-1"></i> Khám bệnh
                         </button>
-                      </td>
-                    </tr>
-                    <tr v-if="waitingItems.length === 0">
-                      <td colspan="5" class="text-center text-muted py-3">Không còn bệnh nhân đang chờ trong phòng này.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </template>
+                        <div class="dropdown">
+                          <button class="btn btn-outline-secondary rounded-pill shadow-sm px-3" data-bs-toggle="dropdown">Xử lý</button>
+                          <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 rounded-3">
+                            <li><a class="dropdown-item rounded-2 text-success fw-medium" @click="markCurrentDone"><i class="bi bi-check-circle me-2"></i>Hoàn tất</a></li>
+                            <li><a class="dropdown-item rounded-2 text-danger fw-medium" @click="skipCurrent"><i class="bi bi-slash-circle me-2"></i>Bỏ lượt</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                   </div>
+                </div>
 
-            <div v-else class="text-muted small">
-              Chọn một phòng để xem hàng chờ.
+                <div class="table-responsive custom-scrollbar" style="max-height: 400px;">
+                  <table class="table table-hover align-middle">
+                    <thead class="sticky-top bg-white shadow-sm">
+                      <tr class="x-small text-uppercase text-muted fw-bold">
+                        <th class="border-0 px-3">STT</th>
+                        <th class="border-0">Bệnh nhân</th>
+                        <th class="border-0">Mã lịch</th>
+                        <th class="border-0">Ưu tiên</th>
+                        <th class="border-0 text-end px-3">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in waitingItems" :key="item.id">
+                        <td class="fw-bold text-primary fs-5 px-3">#{{ item.queueNumber }}</td>
+                        <td>
+                          <div class="fw-bold text-dark">{{ item.fullName }}</div>
+                          <div class="text-muted small">{{ item.phone || '—' }}</div>
+                        </td>
+                        <td class="small font-monospace">{{ item.appointmentCode }}</td>
+                        <td>
+                          <span :class="['badge rounded-pill px-3', item.isPriority ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary']">
+                            {{ item.isPriority ? 'Ưu tiên' : 'Tại quầy' }}
+                          </span>
+                        </td>
+                        <td class="text-end px-3">
+                          <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" @click="goExamine(item.appointmentId)">Khám</button>
+                        </td>
+                      </tr>
+                      <tr v-if="waitingItems.length === 0">
+                        <td colspan="5" class="text-center py-5 text-muted">Hàng chờ trống.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="card shadow-sm">
-      <div class="card-body p-0">
-        <div class="d-flex justify-content-between align-items-center px-3 pt-3">
-          <div>
-            <h5 class="mb-1">Danh sách lịch được phân công</h5>
-            <p class="text-muted small mb-0">Giữ lại danh sách lịch cũ để bác sĩ tra cứu nhanh các ca đã/đang xử lý.</p>
-          </div>
+      <div class="card border-0 shadow-sm rounded-4 mt-5 overflow-hidden">
+        <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-list-stars me-2 text-primary"></i>Toàn bộ danh sách ca khám</h5>
+            <span class="small text-muted italic">Dữ liệu theo bộ lọc phía trên</span>
         </div>
-
         <div class="table-responsive">
-          <table class="table mb-0 align-middle">
-            <thead>
-              <tr>
-                <th>Bệnh nhân</th>
-                <th>Điện thoại</th>
-                <th>Mã bệnh nhân</th>
-                <th>CCCD</th>
-                <th>BHYT</th>
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr class="x-small text-uppercase text-muted">
+                <th class="px-4">Bệnh nhân</th>
+                <th>Liên hệ</th>
+                <th>Mã BN</th>
+                <th>CCCD / BHYT</th>
                 <th>Ngày khám</th>
                 <th>Trạng thái</th>
-                <th class="text-end">Thao tác</th>
+                <th class="text-end px-4">Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="loading">
-                <td colspan="8" class="text-center py-4 text-muted">
-                  <span class="spinner-border spinner-border-sm me-2"></span>Đang tải...
-                </td>
-              </tr>
-              <tr v-else-if="filteredAppointments.length === 0">
-                <td colspan="8" class="text-center py-4 text-muted">Không có lịch khám</td>
-              </tr>
-              <tr v-else v-for="a in filteredAppointments" :key="a.id">
-                <td class="fw-semibold">{{ a.fullName }}</td>
+              <tr v-for="a in filteredAppointments" :key="a.id">
+                <td class="px-4 fw-bold text-dark">{{ a.fullName }}</td>
                 <td>{{ a.phone }}</td>
-                <td>{{ a.patientCode || '—' }}</td>
-                <td>{{ a.citizenId || '—' }}</td>
-                <td>{{ a.insuranceCardNumber || '—' }}</td>
-                <td>{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+                <td><span class="badge bg-light text-dark border">{{ a.patientCode || '—' }}</span></td>
                 <td>
-                  <span :class="['badge', badgeClass(a.status)]">{{ statusLabel(a.status) }}</span>
+                   <div class="x-small fw-bold">BHYT: {{ a.insuranceCardNumber || '—' }}</div>
+                   <div class="x-small text-muted">CCCD: {{ a.citizenId || '—' }}</div>
                 </td>
-                <td class="text-end">
-                  <button class="btn btn-primary btn-sm" @click="goExamine(a.id)">
-                    <i class="bi bi-stethoscope me-1"></i>
-                    {{ a.status === 'Completed' ? 'Xem hồ sơ khám' : 'Khám / tiếp tục' }}
+                <td class="small">{{ formatDateTime(a.appointmentDate, a.appointmentTime) }}</td>
+                <td>
+                  <span :class="['badge rounded-pill px-3 py-2', badgeClass(a.status)]">{{ statusLabel(a.status) }}</span>
+                </td>
+                <td class="text-end px-4">
+                  <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" @click="goExamine(a.id)">
+                    <i class="bi bi-stethoscope me-1"></i> {{ a.status === 'Completed' ? 'Xem lại' : 'Tiếp tục' }}
                   </button>
                 </td>
               </tr>
@@ -225,6 +235,8 @@
   </div>
 </template>
 
+
+
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRouter } from "vue-router"
@@ -235,7 +247,6 @@ const router = useRouter()
 const appointments = ref<any[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-// Mặc định chỉ hiển thị ca đã check-in hoặc đã khám xong.
 const currentStatus = ref("CheckedIn,Completed")
 const doctorStatus = ref("Active")
 const doctorId = localStorage.getItem("doctorId")
@@ -403,7 +414,20 @@ watch(selectedRoomId, () => {
   loadSelectedRoomQueue()
 })
 
+const loadCurrentDoctorStatus = async () => {
+  if (!doctorId) return
+  try {
+    const res = await api.get(`/doctor/${doctorId}`) 
+    if (res.data && res.data.status) {
+      doctorStatus.value = res.data.status
+    }
+  } catch (err) {
+    console.error("Không thể lấy trạng thái hiện tại của bác sĩ")
+  }
+}
+
 onMounted(async () => {
+  await loadCurrentDoctorStatus() 
   await refreshAll()
   refreshTimer = setInterval(() => {
     loadDoctorRooms()
@@ -417,9 +441,141 @@ onBeforeUnmount(() => {
   }
 })
 </script>
-
 <style scoped>
-.room-btn {
-  white-space: normal;
+.exam-queue-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc; /* Màu nền nhẹ nhàng hơn */
+}
+
+.x-small { 
+  font-size: 0.68rem; 
+  text-transform: uppercase; 
+  font-weight: 700; 
+  letter-spacing: 0.8px; 
+  opacity: 0.8;
+}
+
+.transition-all { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.cursor-pointer { cursor: pointer; }
+.border-dashed { border: 2px dashed #cbd5e1 !important; background: transparent; }
+
+.glass-header {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  z-index: 1020;
+}
+
+.room-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+  border-color: #e2e8f0 !important;
+}
+
+.room-card.border-primary {
+  background: white !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.12) !important;
+}
+
+.room-card.border-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, transparent 50%, rgba(59, 130, 246, 0.1) 50%);
+}
+
+.calling-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 6px solid #3b82f6;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  position: relative;
+}
+
+.queue-number-lg {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.25);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.status-control, .filter-control {
+  transition: border-color 0.2s;
+}
+
+.status-control:focus-within, .filter-control:focus-within {
+  border-color: #3b82f6 !important;
+}
+
+.form-select-sm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none !important;
+  color: #334155;
+}
+
+.badge {
+  font-weight: 700;
+  padding: 0.5em 1em;
+  letter-spacing: 0.3px;
+}
+
+.bg-success-subtle { background-color: #ecfdf5 !important; color: #059669 !important; border: 1px solid #d1fae5; }
+.bg-info-subtle { background-color: #f0f9ff !important; color: #0284c7 !important; border: 1px solid #e0f2fe; }
+.bg-warning-subtle { background-color: #fffbeb !important; color: #d97706 !important; border: 1px solid #fef3c7; }
+.bg-primary-subtle { background-color: #eff6ff !important; color: #2563eb !important; }
+
+.table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+  border-top: none;
+  padding: 1rem 0.75rem;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+  background-color: #fcfdfe !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+  background: #cbd5e1; 
+  border-radius: 10px; 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeIn 0.4s ease-out;
 }
 </style>

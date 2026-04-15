@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClinicManagement.Api.Services
 {
-    /// <summary>
-    /// Tinh hoa don tu ho so kham, don thuoc, xet nghiem, bao hiem va tam ung.
-    /// </summary>
     public class BillingService
     {
         private readonly ClinicDbContext _context;
@@ -18,6 +15,10 @@ namespace ClinicManagement.Api.Services
             _pricing = pricing;
         }
 
+        /// <summary>
+        /// Tạo hoặc cập nhật hóa đơn thuốc dựa trên đơn thuốc (Prescription).
+        /// Logic: Ưu tiên lấy giá từ danh mục Medicine, sau đó mới dùng bảng giá cấu hình.
+        /// </summary>
         public async Task<Invoice?> GenerateDrugInvoiceAsync(Guid prescriptionId)
         {
             var prescription = await _context.Prescriptions
@@ -34,7 +35,7 @@ namespace ClinicManagement.Api.Services
             decimal subtotal = 0m;
             var lines = new List<InvoiceLine>();
 
-            // Prefer medicine catalog prices (admin-managed) over billing.json (fallback).
+            // Lấy danh mục thuốc hiện có để truy xuất giá gốc
             var medicineCatalog = await _context.Medicines
                 .AsNoTracking()
                 .Select(m => new { m.Id, m.Name, m.Price })
@@ -47,25 +48,26 @@ namespace ClinicManagement.Api.Services
                     var qty = d.TotalQuantity > 0 ? d.TotalQuantity : (d.Duration > 0 ? d.Duration : 1);
 
                     decimal unitPrice = 0m;
+                    // 1. Ưu tiên giá đã lưu trực tiếp trên chi tiết đơn thuốc
                     if (d.UnitPrice > 0)
                     {
                         unitPrice = d.UnitPrice;
                     }
+                    // 2. Tìm theo MedicineId trong danh mục
                     else if (d.MedicineId.HasValue)
                     {
                         unitPrice = medicineCatalog.FirstOrDefault(m => m.Id == d.MedicineId.Value)?.Price ?? 0m;
                     }
 
+                    // 3. Nếu vẫn chưa có giá, tìm kiếm theo tên thuốc (Exact match & Prefix match)
                     if (unitPrice <= 0)
                     {
                         var medName = (d.MedicineName ?? string.Empty).Trim();
 
-                        // 1) Exact match by name
                         unitPrice = medicineCatalog
                             .FirstOrDefault(m => string.Equals(m.Name, medName, StringComparison.OrdinalIgnoreCase))
                             ?.Price ?? 0m;
 
-                        // 2) Prefix match: "Paracetamol 500mg" -> "Paracetamol"
                         if (unitPrice <= 0 && !string.IsNullOrWhiteSpace(medName))
                         {
                             var match = medicineCatalog
@@ -82,9 +84,9 @@ namespace ClinicManagement.Api.Services
                         }
                     }
 
+                    // 4. Cuối cùng, fallback về cấu hình pricing cố định
                     if (unitPrice <= 0)
                     {
-                        // Fallback to billing.json config
                         unitPrice = _pricing.GetDrugPrice(d.MedicineName);
                     }
 
@@ -100,11 +102,10 @@ namespace ClinicManagement.Api.Services
                         Duration = d.Duration > 0 ? d.Duration : 1,
                         Dosage = d.Dosage
                     });
-
-
                 }
             }
 
+            // Tính toán chiết khấu từ bảo hiểm cho đơn thuốc
             var insuranceCover = medicalRecord.InsuranceCoverPercent;
             decimal insuranceDiscount = 0m;
             if (insuranceCover > 0 && insuranceCover <= 1)
@@ -114,7 +115,7 @@ namespace ClinicManagement.Api.Services
                 {
                     lines.Add(new InvoiceLine
                     {
-                        Description = $"Bao hiem chi tra ({insuranceCover:P0})",
+                        Description = $"Bảo hiểm chi trả ({insuranceCover:P0})",
                         ItemType = "Insurance",
                         Amount = -insuranceDiscount
                     });
@@ -124,35 +125,43 @@ namespace ClinicManagement.Api.Services
             var total = subtotal - insuranceDiscount;
             if (total < 0) total = 0;
 
-            // Thay vì tìm theo prescriptionId, Nhàn hãy tìm theo appointmentId + loại Drug
+            // Xử lý Upsert (Cập nhật nếu có, tạo mới nếu chưa) hóa đơn thuốc
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId && i.InvoiceType == InvoiceType.Drug);
 
             if (invoice == null)
             {
-                // Tạo mới nếu chưa từng có hóa đơn thuốc cho cuộc hẹn này
                 invoice = new Invoice
                 {
                     Id = Guid.NewGuid(),
                     AppointmentId = appointmentId,
-                    PrescriptionId = prescriptionId, // Gán ID đơn thuốc mới nhất
+                    PrescriptionId = prescriptionId,
                     InvoiceType = InvoiceType.Drug,
-                    // ... các trường khác giữ nguyên
+                    Amount = total,
+                    BalanceDue = total,
+                    TotalDeposit = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    IsPaid = false,
+                    PaymentDate = null,
                 };
                 _context.Invoices.Add(invoice);
             }
             else
             {
-                if (invoice.IsPaid) return invoice; // Đã thu tiền thì không cho sửa
-                                                    // Cập nhật quan trọng: Gán lại PrescriptionId mới nhất cho hóa đơn cũ
+                // Nếu hóa đơn đã thanh toán, không cho phép cập nhật lại nội dung
+                if (invoice.IsPaid) return invoice;
+
                 invoice.PrescriptionId = prescriptionId;
                 invoice.Amount = total;
                 invoice.BalanceDue = total;
 
-                // Làm sạch dòng cũ để nạp dòng mới
-                _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
-                invoice.InvoiceLines.Clear();
+                // Xóa các dòng chi tiết cũ để nạp lại dữ liệu mới tránh trùng lặp
+                if (invoice.InvoiceLines != null && invoice.InvoiceLines.Any())
+                {
+                    _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
+                    invoice.InvoiceLines.Clear();
+                }
             }
 
             foreach (var line in lines)
@@ -165,6 +174,10 @@ namespace ClinicManagement.Api.Services
             return invoice;
         }
 
+        /// <summary>
+        /// Tạo hóa đơn phòng khám (Clinic Invoice) bao gồm phí khám, xét nghiệm, phụ thu và khấu trừ tạm ứng.
+        /// Lưu ý: Hóa đơn này không bao gồm chi phí thuốc.
+        /// </summary>
         public async Task<Invoice?> GenerateInvoiceAsync(Guid appointmentId)
         {
             var appointment = await _context.Appointments
@@ -180,17 +193,16 @@ namespace ClinicManagement.Api.Services
 
             if (medicalRecord == null) return null;
 
-            // Clinic invoice ONLY: bỏ thuốc, chỉ tính khám + xét nghiệm + bảo hiểm + tạm ứng
+            // Lấy danh sách các xét nghiệm lâm sàng đã chỉ định
             var tests = await _context.ClinicalTests
                 .Where(t => t.MedicalRecordId == medicalRecord.Id)
                 .ToListAsync();
 
             decimal subtotal = 0m;
             var lines = new List<InvoiceLine>();
-
             var insuranceCover = medicalRecord.InsuranceCoverPercent;
 
-            // Clinic ticket: free with insurance, otherwise charge clinic ticket fee (fallback consultation fee)
+            // Tính phí khám (Miễn phí nếu có bảo hiểm, hoặc lấy phí theo bảng giá)
             var consultationFee = insuranceCover > 0
                 ? 0m
                 : (_pricing.ClinicTicketFee > 0 ? _pricing.ClinicTicketFee : _pricing.ConsultationFee);
@@ -199,13 +211,13 @@ namespace ClinicManagement.Api.Services
                 subtotal += consultationFee;
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Phieu kham",
+                    Description = "Phiếu khám",
                     ItemType = "Consultation",
                     Amount = consultationFee
                 });
             }
 
-            // Clinical tests
+            // Tính phí các xét nghiệm
             foreach (var t in tests)
             {
                 var price = _pricing.GetTestPrice(t.TestName);
@@ -213,13 +225,13 @@ namespace ClinicManagement.Api.Services
                 subtotal += price;
                 lines.Add(new InvoiceLine
                 {
-                    Description = $"Xet nghiem: {t.TestName}",
+                    Description = $"Xét nghiệm: {t.TestName}",
                     ItemType = "Test",
                     Amount = price
                 });
             }
 
-            // Insurance discount
+            // Khấu trừ bảo hiểm trên tổng phí dịch vụ phòng khám
             decimal insuranceDiscount = 0m;
             if (insuranceCover > 0 && insuranceCover <= 1)
             {
@@ -228,19 +240,19 @@ namespace ClinicManagement.Api.Services
                 {
                     lines.Add(new InvoiceLine
                     {
-                        Description = $"Bao hiem chi tra ({insuranceCover:P0})",
+                        Description = $"Bảo hiểm chi trả ({insuranceCover:P0})",
                         ItemType = "Insurance",
                         Amount = -insuranceDiscount
                     });
                 }
             }
 
-            // Manual surcharge / discount
+            // Xử lý các khoản phụ thu hoặc giảm giá thủ công
             if (medicalRecord.Surcharge != 0)
             {
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Phu thu",
+                    Description = "Phụ thu",
                     ItemType = "Surcharge",
                     Amount = medicalRecord.Surcharge
                 });
@@ -250,7 +262,7 @@ namespace ClinicManagement.Api.Services
             {
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Giam tru",
+                    Description = "Giảm trừ",
                     ItemType = "Discount",
                     Amount = -Math.Abs(medicalRecord.Discount)
                 });
@@ -259,20 +271,20 @@ namespace ClinicManagement.Api.Services
             var subtotalAfterInsurance = subtotal - insuranceDiscount + medicalRecord.Surcharge - Math.Abs(medicalRecord.Discount);
             if (subtotalAfterInsurance < 0) subtotalAfterInsurance = 0;
 
-            // Deposits thu truoc
+            // Xử lý khấu trừ tiền tạm ứng (Deposit)
             var deposits = await _context.Payments
                 .Where(p => p.AppointmentId == appointmentId && p.IsDeposit)
                 .ToListAsync();
             var totalDepositCollected = deposits.Sum(d => d.Amount);
 
-            // khau tru toi da bang subtotalAfterInsurance
+            // Số tiền tạm ứng thực tế được áp dụng (không vượt quá tổng hóa đơn)
             var appliedDeposit = Math.Min(totalDepositCollected, subtotalAfterInsurance);
 
             if (appliedDeposit > 0)
             {
                 var desc = totalDepositCollected > appliedDeposit
-                    ? $"Tam ung da thu (ap dung {appliedDeposit:N0}/{totalDepositCollected:N0})"
-                    : "Tam ung da thu";
+                    ? $"Tạm ứng đã thu (áp dụng {appliedDeposit:N0}/{totalDepositCollected:N0})"
+                    : "Tạm ứng đã thu";
 
                 lines.Add(new InvoiceLine
                 {
@@ -285,20 +297,20 @@ namespace ClinicManagement.Api.Services
             var balanceDue = subtotalAfterInsurance - appliedDeposit;
             if (balanceDue < 0) balanceDue = 0;
 
-            // tien du tam ung (refund)
+            // Xử lý tiền thừa tạm ứng (Refund) nếu có
             var depositRefund = totalDepositCollected - appliedDeposit;
             if (depositRefund > 0)
             {
                 lines.Add(new InvoiceLine
                 {
-                    Description = "Hoan tam ung du",
+                    Description = "Hoàn tạm ứng dư",
                     ItemType = "DepositRefund",
                     Amount = -depositRefund
                 });
                 balanceDue = 0;
             }
 
-            // Upsert invoice by appointment (Clinic type)
+            // Upsert hóa đơn phòng khám
             var invoice = await _context.Invoices
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.AppointmentId == appointmentId && i.InvoiceType == InvoiceType.Clinic);
@@ -321,16 +333,13 @@ namespace ClinicManagement.Api.Services
             }
             else
             {
-                if (invoice.IsPaid)
-                {
-                    // khong tu dong cap nhat hoa don da thanh toan
-                    return invoice;
-                }
+                if (invoice.IsPaid) return invoice;
+
                 invoice.Amount = subtotalAfterInsurance;
                 invoice.BalanceDue = balanceDue;
                 invoice.TotalDeposit = totalDepositCollected;
 
-                // refresh lines
+                // Làm mới danh sách chi tiết dòng hóa đơn
                 _context.InvoiceLines.RemoveRange(invoice.InvoiceLines);
                 invoice.InvoiceLines.Clear();
             }
@@ -341,7 +350,7 @@ namespace ClinicManagement.Api.Services
                 _context.InvoiceLines.Add(line);
             }
 
-            // gan invoiceId cho cac khoan tam ung chua gan
+            // Gắn InvoiceId cho các khoản tạm ứng để theo dõi vết thanh toán
             foreach (var deposit in deposits.Where(d => d.InvoiceId == null))
             {
                 deposit.InvoiceId = invoice.Id;

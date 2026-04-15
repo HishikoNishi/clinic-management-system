@@ -553,9 +553,14 @@ const loadDetail = async () => {
       await loadClinicalTestsDetail(currentMedicalRecordId.value)
     }
   } catch (err: any) {
-    console.error(err)
-    error.value = err?.response?.data?.message || "Không tải được thông tin khám"
-  }
+      console.error(err)
+      const errorAxios = err as AxiosError<any>
+      const data: any = errorAxios?.response?.data
+      error.value =
+        data?.message ||
+        (typeof data === "string" ? data : "") ||
+        "SubmitExamination failed"
+    }
 }
 const submit = async () => {
   if (!form.diagnosis.trim()) {
@@ -661,11 +666,9 @@ const submit = async () => {
   } catch (err: unknown) {
   const errorAxios = err as AxiosError<any>
   console.error(err)
-  const data: any = errorAxios?.response?.data
   error.value =
-    data?.message ||
-    (typeof data === "string" ? data : "") ||
-    "SubmitExamination failed"
+    errorAxios?.response?.data?.message ||
+    "Không tải được thông tin khám"
 } finally {
 saving.value = false
 }

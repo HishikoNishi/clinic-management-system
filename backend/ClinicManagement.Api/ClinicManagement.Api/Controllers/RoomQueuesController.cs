@@ -309,7 +309,6 @@ namespace ClinicManagement.Api.Controllers
             {
                 return NotFound(new { message = "Khong con benh nhan dang cho trong phong nay" });
             }
-
             // Gan bac si cho lich kham neu benh nhan dat lich khong chon bac si (DoctorId null).
             // Neu lich da gan bac si khac thi chan goi nham phong/nham bac si.
             if (next.Appointment != null)
@@ -326,7 +325,6 @@ namespace ClinicManagement.Api.Controllers
                     });
                 }
             }
-
             next.Status = QueueStatus.InProgress;
             next.CalledAt = DateTime.Now;
 
