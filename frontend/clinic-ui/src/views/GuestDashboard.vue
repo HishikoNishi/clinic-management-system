@@ -296,7 +296,7 @@
                       :value="String(slot.startTime).slice(0, 5)"
                       :disabled="slot.isBooked"
                     >
-                      {{ slot.slotLabel }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
+                      {{ (slot.slotLabel || String(slot.startTime).slice(0, 5)) }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
                     </option>
                   </select>
                   <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>

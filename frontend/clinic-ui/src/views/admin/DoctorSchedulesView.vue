@@ -41,7 +41,7 @@ const loadingPreview = ref(false)
 const savingTemplate = ref(false)
 const error = ref('')
 const success = ref('')
-
+const previewDayOfWeek = new Date(previewDate.value + 'T00:00:00').getDay()
 const modalOpen = ref(false)
 const modalLoading = ref(false)
 const modalSubmitting = ref(false)
@@ -242,7 +242,7 @@ const saveWeeklyTemplate = async () => {
     })
 
     if (missingRoom) {
-      error.value = `Vui long chon phong cho slot ${missingRoom.slotLabel}.`
+      error.value = `Vui lòng chọn phòng cho slot ${missingRoom.slotLabel}.`
       return
     }
 
@@ -258,6 +258,13 @@ const saveWeeklyTemplate = async () => {
       }))
 
     const response = await doctorScheduleService.saveWeeklyTemplate(doctorId, selectedWeekday.value, payload)
+        if (previewDayOfWeek === selectedWeekday.value) {
+      try {
+        await doctorScheduleService.deleteDayOverride(doctorId, previewDate.value)
+      } catch {
+        // Bỏ qua nếu ngày đó có appointments — override vẫn giữ nguyên
+      }
+    }
     await Promise.all([loadWeeklyTemplate(), loadPreviewSchedule()])
     const slotsSaved = Number(response?.data?.slotsSaved ?? payload.length)
     success.value = slotsSaved > 0

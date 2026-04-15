@@ -18,10 +18,9 @@
         <div>
           <label class="form-label small fw-semibold mb-1">Lọc lịch</label>
           <select v-model="currentStatus" class="form-select form-select-sm" style="min-width: 220px;" @change="loadAppointments">
-            <option value="CheckedIn,Confirmed,Completed">Đang xử lý + đã khám</option>
-            <option value="CheckedIn,Confirmed">Đã check-in + Chờ khám</option>
+            <option value="CheckedIn,Completed">Đã check-in + đã khám</option>
             <option value="CheckedIn">Đã check-in</option>
-            <option value="Confirmed">Chờ khám</option>
+            <option value="Confirmed">Đã phân công (chưa check-in)</option>
             <option value="Completed">Đã khám xong</option>
             <option value="All">Tất cả</option>
           </select>
@@ -236,7 +235,8 @@ const router = useRouter()
 const appointments = ref<any[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
-const currentStatus = ref("CheckedIn,Confirmed,Completed")
+// Mặc định chỉ hiển thị ca đã check-in hoặc đã khám xong.
+const currentStatus = ref("CheckedIn,Completed")
 const doctorStatus = ref("Active")
 const doctorId = localStorage.getItem("doctorId")
 

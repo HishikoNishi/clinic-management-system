@@ -40,9 +40,74 @@ public class MedicalRecordService
 
             var appointment = await _context.Appointments
                 .Include(a => a.Patient)
-                .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId && a.DoctorId == doctor.Id);
+                .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
-            if (appointment == null) throw new InvalidOperationException("Appointment not found or not assigned to this doctor");
+            if (appointment == null) throw new InvalidOperationException("Appointment not found");
+
+            if (appointment.DoctorId.HasValue && appointment.DoctorId.Value != doctor.Id)
+            {
+                // Luồng điều phối theo phòng có thể khiến bệnh nhân được bác sĩ khác khám thực tế.
+                // Chỉ cho phép trong trường hợp bệnh nhân đang được gọi/đang khám (InProgress) trong phòng của bác sĩ hiện tại.
+                var dayStart = DateTime.Today;
+                var dayEnd = dayStart.AddDays(1);
+
+                var inProgressQueue = await _context.QueueEntries
+                    .AsNoTracking()
+                    .Include(q => q.Room)
+                    .FirstOrDefaultAsync(q =>
+                        q.AppointmentId == appointment.Id &&
+                        q.QueuedAt >= dayStart &&
+                        q.QueuedAt < dayEnd &&
+                        q.Status == QueueStatus.InProgress);
+
+                var allowedByRoom = false;
+                if (inProgressQueue?.RoomId != Guid.Empty && inProgressQueue?.Room?.IsActive == true)
+                {
+                    var nowTime = DateTime.Now.TimeOfDay;
+
+                    // Effective schedule: override day (DoctorSchedules) wins, otherwise weekly template.
+                    var hasOverrideDay = await _context.DoctorScheduleOverrideDays
+                        .AsNoTracking()
+                        .AnyAsync(o => o.DoctorId == doctor.Id && o.WorkDate == dayStart);
+
+                    if (hasOverrideDay)
+                    {
+                        allowedByRoom = await _context.DoctorSchedules
+                            .AsNoTracking()
+                            .AnyAsync(s =>
+                                s.DoctorId == doctor.Id &&
+                                s.WorkDate == dayStart &&
+                                s.RoomId == inProgressQueue.RoomId &&
+                                s.StartTime <= nowTime &&
+                                s.EndTime >= nowTime &&
+                                s.IsActive);
+                    }
+                    else
+                    {
+                        var todayDow = dayStart.DayOfWeek;
+                        allowedByRoom = await _context.DoctorWeeklySchedules
+                            .AsNoTracking()
+                            .AnyAsync(s =>
+                                s.DoctorId == doctor.Id &&
+                                s.DayOfWeek == todayDow &&
+                                s.RoomId == inProgressQueue.RoomId &&
+                                s.StartTime <= nowTime &&
+                                s.EndTime >= nowTime &&
+                                s.IsActive);
+                    }
+                }
+
+                if (!allowedByRoom)
+                {
+                    throw new InvalidOperationException("Appointment not found or not assigned to this doctor");
+                }
+
+                appointment.DoctorId = doctor.Id;
+            }
+
+            // Với luồng điều phối theo phòng, lịch có thể chưa gán DoctorId.
+            // Khi bác sĩ lưu khám lần đầu, gán luôn để các nghiệp vụ phía sau dùng chung.
+            appointment.DoctorId ??= doctor.Id;
 
             // allow update if record exists
             var medicalRecord = await _context.MedicalRecords
