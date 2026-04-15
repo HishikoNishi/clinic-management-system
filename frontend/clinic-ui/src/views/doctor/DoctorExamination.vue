@@ -661,9 +661,11 @@ const submit = async () => {
   } catch (err: unknown) {
   const errorAxios = err as AxiosError<any>
   console.error(err)
+  const data: any = errorAxios?.response?.data
   error.value =
-    errorAxios?.response?.data?.message ||
-    "Không tải được thông tin khám"
+    data?.message ||
+    (typeof data === "string" ? data : "") ||
+    "SubmitExamination failed"
 } finally {
 saving.value = false
 }

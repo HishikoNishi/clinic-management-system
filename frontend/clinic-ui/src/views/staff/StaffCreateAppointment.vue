@@ -165,7 +165,7 @@
               <select v-model="form.appointmentTime" class="form-select" :disabled="!form.appointmentDate || slotLoading">
                 <option value="">{{ slotLoading ? 'Đang tải slot...' : 'Chọn khung giờ' }}</option>
                 <option v-for="slot in availableSlots" :key="slot.id || `${slot.shiftCode}-${slot.startTime}`" :value="String(slot.startTime).slice(0, 5)">
-                  {{ slot.slotLabel }}
+                  {{ slot.slotLabel || String(slot.startTime).slice(0, 5) }}
                 </option>
               </select>
               <div v-if="errors.appointmentTime" class="form-error">{{ errors.appointmentTime }}</div>

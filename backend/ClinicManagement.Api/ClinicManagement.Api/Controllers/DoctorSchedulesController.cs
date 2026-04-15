@@ -1,4 +1,4 @@
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.DoctorSchedules;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Services;
@@ -656,6 +656,38 @@ namespace ClinicManagement.Api.Controllers
             }
 
             return null;
+        }
+        [HttpDelete("doctors/{doctorId:guid}/day-override")]
+        [Authorize(Roles = "Admin,Staff")]
+        public async Task<IActionResult> DeleteDayOverride(Guid doctorId, [FromQuery] DateTime date)
+        {
+            var workDate = date.Date;
+
+            // Không cho xóa nếu ngày đó có appointments đã booked
+            var hasBooked = await _context.Appointments.AnyAsync(a =>
+                a.DoctorId == doctorId &&
+                a.AppointmentDate == workDate &&
+                a.Status != AppointmentStatus.Cancelled &&
+                a.Status != AppointmentStatus.NoShow);
+
+            if (hasBooked)
+                return BadRequest(new { message = "Ngày này đã có lịch hẹn, không thể xóa override." });
+
+            var overrideSlots = await _context.DoctorSchedules
+                .Where(s => s.DoctorId == doctorId && s.WorkDate == workDate)
+                .ToListAsync();
+
+            _context.DoctorSchedules.RemoveRange(overrideSlots);
+
+            var overrideDay = await _context.DoctorScheduleOverrideDays
+                .FirstOrDefaultAsync(o => o.DoctorId == doctorId && o.WorkDate == workDate);
+
+            if (overrideDay != null)
+                _context.DoctorScheduleOverrideDays.Remove(overrideDay);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đã xóa override, ngày này sẽ dùng lịch tuần cố định." });
         }
     }
 }

@@ -310,6 +310,23 @@ namespace ClinicManagement.Api.Controllers
                 return NotFound(new { message = "Khong con benh nhan dang cho trong phong nay" });
             }
 
+            // Gan bac si cho lich kham neu benh nhan dat lich khong chon bac si (DoctorId null).
+            // Neu lich da gan bac si khac thi chan goi nham phong/nham bac si.
+            if (next.Appointment != null)
+            {
+                if (!next.Appointment.DoctorId.HasValue)
+                {
+                    next.Appointment.DoctorId = doctorId.Value;
+                }
+                else if (next.Appointment.DoctorId.Value != doctorId.Value)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Lich kham nay da duoc gan cho bac si khac, khong the goi vao phong nay."
+                    });
+                }
+            }
+
             next.Status = QueueStatus.InProgress;
             next.CalledAt = DateTime.Now;
 

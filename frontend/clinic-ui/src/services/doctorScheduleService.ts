@@ -67,26 +67,43 @@ export interface AvailableDoctorSlot {
   specialtyName: string
 }
 
+const normalizeSlot = (raw: any): DoctorScheduleSlot => {
+  return {
+    id: raw?.id ?? raw?.Id ?? '',
+    shiftCode: raw?.shiftCode ?? raw?.ShiftCode ?? '',
+    slotLabel: raw?.slotLabel ?? raw?.SlotLabel ?? '',
+    startTime: raw?.startTime ?? raw?.StartTime ?? '',
+    endTime: raw?.endTime ?? raw?.EndTime ?? '',
+    roomId: raw?.roomId ?? raw?.RoomId ?? null,
+    roomCode: raw?.roomCode ?? raw?.RoomCode ?? null,
+    roomName: raw?.roomName ?? raw?.RoomName ?? null,
+    isBooked: raw?.isBooked ?? raw?.IsBooked ?? false
+  }
+}
+
 export const doctorScheduleService = {
   async getDoctorDay(doctorId: string, date: string): Promise<DoctorScheduleSlot[]> {
     const response = await api.get(`/DoctorSchedules/doctors/${doctorId}`, {
       params: { date }
     })
-    return response.data ?? []
+    const items = response.data ?? []
+    return Array.isArray(items) ? items.map(normalizeSlot) : []
   },
 
   async getWeeklyTemplate(doctorId: string, dayOfWeek: number): Promise<DoctorScheduleSlot[]> {
     const response = await api.get(`/DoctorSchedules/doctors/${doctorId}/weekly-template`, {
       params: { dayOfWeek }
     })
-    return response.data ?? []
+    const items = response.data ?? []
+    return Array.isArray(items) ? items.map(normalizeSlot) : []
   },
 
   async getAvailableSlots(doctorId: string, date: string): Promise<DoctorScheduleSlot[]> {
     const response = await api.get(`/DoctorSchedules/doctors/${doctorId}/available-slots`, {
       params: { date }
     })
-    return response.data ?? []
+    const items = response.data ?? []
+    return Array.isArray(items) ? items.map(normalizeSlot) : []
   },
 
   async getWorkSummary(doctorId: string, date: string): Promise<DoctorWorkSummary> {
@@ -136,5 +153,10 @@ export const doctorScheduleService = {
 
   async deleteSchedule(id: string) {
     return api.delete(`/DoctorSchedules/${id}`)
-  }
+  },
+  async deleteDayOverride(doctorId: string, date: string) {
+  return api.delete(`/DoctorSchedules/doctors/${doctorId}/day-override`, {
+    params: { date }
+  })
+}  
 }

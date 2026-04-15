@@ -94,8 +94,8 @@
           </div>
           <div class="card-body">
             <div v-for="slot in group.slots" :key="slot.id" class="schedule-slot">
-              <div class="fw-semibold">{{ slot.slotLabel }}</div>
-              <div class="small text-muted">{{ slot.startTime }} - {{ slot.endTime }}</div>
+              <div class="fw-semibold">{{ slot.slotLabel || `${slot.startTime} - ${slot.endTime}` }}</div>
+              <div class="small text-muted" v-if="slot.startTime && slot.endTime">{{ slot.startTime }} - {{ slot.endTime }}</div>
               <div class="small text-muted" v-if="slot.roomName">Phòng: {{ slot.roomName }}</div>
             </div>
           </div>
