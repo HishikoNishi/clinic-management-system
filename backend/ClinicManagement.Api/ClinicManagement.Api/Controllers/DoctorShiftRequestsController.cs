@@ -151,6 +151,7 @@ namespace ClinicManagement.Api.Controllers
             return Ok(await MapShiftRequestAsync(request, includeAppointments: false, includeAvailableDoctors: false));
         }
 
+        [HttpGet("notifications")]
         [HttpGet("/api/doctor/notifications")]
         public async Task<IActionResult> GetNotifications([FromQuery] int take = 10)
         {
@@ -190,6 +191,7 @@ namespace ClinicManagement.Api.Controllers
             });
         }
 
+        [HttpPost("notifications/{id:guid}/read")]
         [HttpPost("/api/doctor/notifications/{id:guid}/read")]
         public async Task<IActionResult> MarkNotificationAsRead(Guid id)
         {

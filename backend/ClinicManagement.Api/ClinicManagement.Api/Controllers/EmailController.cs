@@ -1,4 +1,5 @@
 ﻿using ClinicManagement.Api.Dtos.Otp;
+using ClinicManagement.Api.Extensions;
 using ClinicManagement.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,8 +19,6 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] SendOtpRequestDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             await _otpService.SendOtpAsync(dto.Email);
             return Ok(new { message = "OTP đã được gửi" });
         }
@@ -27,10 +26,8 @@ namespace ClinicManagement.Api.Controllers
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequestDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var ok = await _otpService.VerifyOtpAsync(dto.Email, dto.Code);
-            if (!ok) return BadRequest(new { message = "OTP sai hoặc đã hết hạn" });
+            if (!ok) return this.ApiBadRequest("OTP sai hoặc đã hết hạn", "otp_invalid");
 
             return Ok(new { message = "Xác thực OTP thành công" });
         }

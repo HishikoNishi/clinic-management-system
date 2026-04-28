@@ -8,6 +8,7 @@ using System.IO;
 namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
+    [Route("api/doctor")]
     [Route("api/Doctor")]
     public class DoctorMediaController : ControllerBase
     {

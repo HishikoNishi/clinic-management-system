@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
 using ClinicManagement.Api.DTOs.Auth;
+using ClinicManagement.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ClinicManagement.Api.Controllers
@@ -42,7 +43,7 @@ namespace ClinicManagement.Api.Controllers
             if (!string.IsNullOrWhiteSpace(_loginPin) && dto?.Pin == _loginPin)
                 return Ok(new { ok = true });
 
-            return Unauthorized(new { message = "Mã PIN không đúng" });
+            return this.ApiUnauthorized("Mã PIN không đúng");
         }
 
         [HttpPost("login")]
@@ -51,13 +52,13 @@ namespace ClinicManagement.Api.Controllers
             var user = await _userRepo.GetByUsernameAsync(request.Username);
             if (user == null || !user.IsActive)
             {
-                return Unauthorized(new { message = "Invalid credentials." });
+                return this.ApiUnauthorized("Invalid credentials.");
             }
 
             var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verify == PasswordVerificationResult.Failed)
             {
-                return Unauthorized(new { message = "Invalid credentials." });
+                return this.ApiUnauthorized("Invalid credentials.");
             }
 
             var token = _jwtService.GenerateToken(user);
@@ -96,7 +97,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(r => r.Token == request.RefreshToken);
 
             if (stored == null || stored.IsRevoked || stored.ExpiresAt <= DateTime.UtcNow)
-                return Unauthorized(new { message = "Refresh token không hợp lệ hoặc đã hết hạn" });
+                return this.ApiUnauthorized("Refresh token không hợp lệ hoặc đã hết hạn");
 
             stored.IsRevoked = true;
 
@@ -104,7 +105,7 @@ namespace ClinicManagement.Api.Controllers
             if (user == null)
             {
                 user = await _context.Users.Include(u => u.RoleNavigation).FirstOrDefaultAsync(u => u.Id == stored.UserId);
-                if (user == null) return Unauthorized(new { message = "User không tồn tại" });
+                if (user == null) return this.ApiUnauthorized("User không tồn tại");
             }
 
             var newAccess = _jwtService.GenerateToken(user);

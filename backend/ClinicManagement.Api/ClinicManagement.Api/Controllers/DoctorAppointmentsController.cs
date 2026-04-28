@@ -3,11 +3,13 @@ using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.Dtos.MedicalRecords;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Models;
+using ClinicManagement.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,10 +22,17 @@ namespace ClinicManagement.Api.Controllers
     public class DoctorAppointmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
+        private readonly AppointmentBookingService _appointmentBookingService;
+        private readonly DoctorScheduleService _doctorScheduleService;
 
-        public DoctorAppointmentsController(ClinicDbContext context)
+        public DoctorAppointmentsController(
+            ClinicDbContext context,
+            AppointmentBookingService appointmentBookingService,
+            DoctorScheduleService doctorScheduleService)
         {
             _context = context;
+            _appointmentBookingService = appointmentBookingService;
+            _doctorScheduleService = doctorScheduleService;
         }
 
         [HttpGet("{id}")]
@@ -273,6 +282,160 @@ namespace ClinicManagement.Api.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(new { message = "Appointment marked as completed" });
+        }
+
+        [HttpPost("{id}/transfer-department")]
+        public async Task<IActionResult> TransferDepartment(Guid id, [FromBody] TransferDepartmentRequestDto dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized("Invalid user id in token");
+
+            var doctor = await _context.Doctors
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+            if (doctor == null) return Unauthorized("Doctor not found");
+
+            var sourceAppointment = await _context.Appointments
+                .Include(a => a.Patient)
+                .Include(a => a.Doctor)
+                    .ThenInclude(d => d.Department)
+                .FirstOrDefaultAsync(a => a.Id == id && a.DoctorId == doctor.Id);
+            if (sourceAppointment == null) return NotFound("Source appointment not found or not assigned to this doctor");
+
+            if (sourceAppointment.Patient == null)
+                return BadRequest(new { message = "Source appointment has no patient data." });
+
+            var workDate = dto.AppointmentDate.Date;
+            var businessStart = new TimeSpan(7, 0, 0);
+            var businessEnd = new TimeSpan(22, 0, 0);
+            if (workDate < DateTime.Today)
+                return BadRequest(new { message = "Transfer date must be today or later." });
+            if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
+                return BadRequest(new { message = "Transfer time must be within 07:00 - 22:00." });
+
+            var targetDepartment = await _context.Departments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == dto.TargetDepartmentId);
+            if (targetDepartment == null)
+                return BadRequest(new { message = "Target department not found." });
+
+            if (doctor.DepartmentId == dto.TargetDepartmentId)
+                return BadRequest(new { message = "Target department must be different from current department." });
+
+            var targetDoctor = await _context.Doctors
+                .AsNoTracking()
+                .Include(d => d.Department)
+                .FirstOrDefaultAsync(d =>
+                    d.Id == dto.TargetDoctorId &&
+                    d.DepartmentId == dto.TargetDepartmentId &&
+                    d.Status != DoctorStatus.Inactive);
+            if (targetDoctor == null)
+                return BadRequest(new { message = "Target doctor is invalid or inactive." });
+
+            var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
+                targetDoctor.Id,
+                workDate,
+                dto.AppointmentTime);
+            if (slotError != null)
+                return BadRequest(new { message = slotError });
+
+            var hasDuplicate = await _appointmentBookingService.HasExistingAppointmentAsync(
+                sourceAppointment.PatientId,
+                workDate,
+                dto.AppointmentTime);
+            if (hasDuplicate)
+                return Conflict(new { message = "Patient already has an appointment at this time." });
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            var transferCode = await _appointmentBookingService.GenerateUniqueAppointmentCodeAsync();
+            var reasonPrefix = $"[CHUYEN_KHOA:{sourceAppointment.AppointmentCode}->{targetDepartment.Name}]";
+            var reasonSuffix = string.IsNullOrWhiteSpace(dto.Reason) ? string.Empty : $" {dto.Reason.Trim()}";
+
+            var transferAppointment = new Appointment
+            {
+                Id = Guid.NewGuid(),
+                PatientId = sourceAppointment.PatientId,
+                DoctorId = targetDoctor.Id,
+                AppointmentCode = transferCode,
+                AppointmentDate = workDate,
+                AppointmentTime = dto.AppointmentTime,
+                Reason = $"{reasonPrefix}{reasonSuffix}".Trim(),
+                Status = AppointmentStatus.Confirmed,
+                StaffId = sourceAppointment.StaffId
+            };
+
+            _context.Appointments.Add(transferAppointment);
+
+            QueueEntry? createdQueue = null;
+            if (dto.EnqueueNow && workDate == DateTime.Today)
+            {
+                var slot = await _doctorScheduleService.GetEffectiveSlotAsync(targetDoctor.Id, workDate, dto.AppointmentTime);
+                if (slot?.RoomId != null)
+                {
+                    var room = await _context.Rooms
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(r => r.Id == slot.RoomId.Value && r.IsActive);
+
+                    if (room != null)
+                    {
+                        var dayStart = DateTime.Today;
+                        var dayEnd = dayStart.AddDays(1);
+                        var queueNumber = await _context.QueueEntries
+                            .Where(q => q.RoomId == room.Id && q.QueuedAt >= dayStart && q.QueuedAt < dayEnd)
+                            .Select(q => (int?)q.QueueNumber)
+                            .MaxAsync() ?? 0;
+
+                        createdQueue = new QueueEntry
+                        {
+                            Id = Guid.NewGuid(),
+                            AppointmentId = transferAppointment.Id,
+                            RoomId = room.Id,
+                            QueueNumber = queueNumber + 1,
+                            Status = QueueStatus.Waiting,
+                            IsPriority = true,
+                            QueuedAt = DateTime.Now
+                        };
+                        _context.QueueEntries.Add(createdQueue);
+
+                        transferAppointment.Status = AppointmentStatus.CheckedIn;
+                        transferAppointment.CheckedInAt = DateTime.UtcNow;
+                        transferAppointment.CheckInChannel = "DepartmentTransfer";
+                    }
+                }
+            }
+
+            if (sourceAppointment.Status != AppointmentStatus.Completed)
+            {
+                sourceAppointment.Status = AppointmentStatus.Completed;
+            }
+
+            var sourceQueue = await _context.QueueEntries
+                .FirstOrDefaultAsync(q =>
+                    q.AppointmentId == sourceAppointment.Id &&
+                    (q.Status == QueueStatus.Waiting || q.Status == QueueStatus.InProgress));
+            if (sourceQueue != null)
+            {
+                sourceQueue.Status = QueueStatus.Done;
+                sourceQueue.CalledAt ??= DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new
+            {
+                message = "Transfer created successfully.",
+                sourceAppointmentId = sourceAppointment.Id,
+                sourceAppointmentCode = sourceAppointment.AppointmentCode,
+                targetAppointmentId = transferAppointment.Id,
+                targetAppointmentCode = transferAppointment.AppointmentCode,
+                targetDepartment = targetDepartment.Name,
+                targetDoctor = targetDoctor.FullName,
+                transferAppointmentStatus = transferAppointment.Status.ToString(),
+                queueNumber = createdQueue?.QueueNumber
+            });
         }
     }
 }

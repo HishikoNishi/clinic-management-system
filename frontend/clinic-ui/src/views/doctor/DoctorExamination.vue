@@ -219,7 +219,7 @@
 
 
 
-   <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
+    <div class="card shadow-sm mt-3" v-if="clinicalTestsDetail.length">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="mb-0">📋 Xét nghiệm đã yêu cầu</h6>
         <button class="btn btn-outline-secondary btn-sm" type="button" @click="currentMedicalRecordId && loadClinicalTestsDetail(currentMedicalRecordId)">
@@ -247,6 +247,75 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Chuyển khoa</h6>
+        <button
+          v-if="canTransferDepartment"
+          class="btn btn-sm btn-outline-primary"
+          @click="showTransferForm = !showTransferForm"
+        >
+          {{ showTransferForm ? "Ẩn form" : "Mở form chuyển khoa" }}
+        </button>
+        <span v-else class="text-muted small">Lưu khám nền trước để mở chuyển khoa</span>
+      </div>
+      <div v-if="canTransferDepartment && showTransferForm" class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Khoa đích</label>
+            <select v-model="transferForm.targetDepartmentId" class="form-select">
+              <option value="">Chọn khoa</option>
+              <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Bác sĩ đích</label>
+            <select v-model="transferForm.targetDoctorId" class="form-select" :disabled="!transferForm.targetDepartmentId || transferLoadingDoctors">
+              <option value="">{{ transferLoadingDoctors ? "Đang tải bác sĩ..." : "Chọn bác sĩ" }}</option>
+              <option v-for="d in transferDoctors" :key="d.id" :value="d.id">
+                {{ d.fullName }}{{ d.specialtyName ? ` - ${d.specialtyName}` : "" }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Ngày</label>
+            <input v-model="transferForm.appointmentDate" type="date" class="form-control" :min="todayStr" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Khung giờ</label>
+            <select v-model="transferForm.appointmentTime" class="form-select" :disabled="!transferForm.targetDoctorId || transferLoadingSlots">
+              <option value="">{{ transferLoadingSlots ? "Đang tải..." : "Chọn giờ" }}</option>
+              <option v-for="slot in transferSlots" :key="slot.id || slot.startTime" :value="toApiTime(slot.startTime)">
+                {{ slot.slotLabel || `${slot.startTime} - ${slot.endTime}` }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="form-label">Lý do chuyển khoa</label>
+          <textarea v-model="transferForm.reason" class="form-control" rows="2" placeholder="Ví dụ: nghi ngờ cần khám chuyên khoa khác"></textarea>
+        </div>
+
+        <div class="form-check mt-2">
+          <input v-model="transferForm.enqueueNow" class="form-check-input" type="checkbox" id="enqueueNow" />
+          <label class="form-check-label" for="enqueueNow">Cho vào hàng chờ ngay (nếu là lịch trong hôm nay)</label>
+        </div>
+
+        <div v-if="transferResult" class="alert alert-success mt-3 py-2 mb-0">
+          Lịch mới: <strong>{{ transferResult.targetAppointmentCode }}</strong>
+          <span v-if="transferResult.queueNumber"> · STT: <strong>#{{ transferResult.queueNumber }}</strong></span>
+        </div>
+
+        <div class="d-flex justify-content-end mt-3">
+          <button class="btn btn-outline-primary" @click="submitTransfer" :disabled="transferring">
+            <span v-if="transferring" class="spinner-border spinner-border-sm me-1"></span>
+            Xác nhận chuyển khoa
+          </button>
+        </div>
       </div>
     </div>
 
@@ -310,7 +379,7 @@
 </div>
 </template>
 <script setup lang="ts">
-import { onMounted, reactive, ref, computed } from "vue"
+import { onMounted, reactive, ref, computed, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 import { useAuthStore } from "@/stores/auth"
@@ -332,6 +401,29 @@ const isPaid = ref(false)
 const showMedicineModal = ref(false)
 const medicineSearch = ref("")
 const medicines = ref<any[]>([])
+const departments = ref<any[]>([])
+const transferDoctors = ref<any[]>([])
+const transferSlots = ref<any[]>([])
+const transferLoadingDoctors = ref(false)
+const transferLoadingSlots = ref(false)
+const transferring = ref(false)
+const transferResult = ref<any | null>(null)
+const showTransferForm = ref(false)
+const localDateInput = (d: Date = new Date()) => {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+const todayStr = localDateInput()
+const transferForm = reactive({
+  targetDepartmentId: "",
+  targetDoctorId: "",
+  appointmentDate: todayStr,
+  appointmentTime: "",
+  reason: "",
+  enqueueNow: true
+})
 
 const loadMedicines = async () => {
   try {
@@ -399,6 +491,7 @@ onMounted(() => {
   }
   loadDetail()
   loadMedicines() // Thêm dòng này
+  loadTransferDepartments()
 })
 const form = reactive({
   chiefComplaint: "",
@@ -440,6 +533,8 @@ const computedBmi = computed(() => {
   if (!Number.isFinite(bmi)) return ""
   return bmi.toFixed(1)
 })
+
+const canTransferDepartment = computed(() => Boolean(currentMedicalRecordId.value))
 
 const addRow = () => {
   form.prescriptionItems.push({ medicineName: "", dosage: "", quantity: 1 })
@@ -499,11 +594,24 @@ const labStatusClass = (s: string) => {
   return "bg-warning-subtle text-warning"
 }
 
+const toApiTime = (value: string | null | undefined) => {
+  const raw = String(value || "").trim()
+  if (!raw) return ""
+  if (/^\d{2}:\d{2}$/.test(raw)) return `${raw}:00`
+  if (/^\d{2}:\d{2}:\d{2}$/.test(raw)) return raw
+  const matched = raw.match(/\b(\d{2}:\d{2})(?::(\d{2}))?\b/)
+  if (!matched) return raw
+  return matched[2] ? `${matched[1]}:${matched[2]}` : `${matched[1]}:00`
+}
+
 const loadDetail = async () => {
   try {
     const res = await api.get(`/doctor/DoctorAppointments/${appointmentId}/examination`)
     const data = res.data
     currentMedicalRecordId.value = data.currentMedicalRecordId || null
+    if (!currentMedicalRecordId.value) {
+      showTransferForm.value = false
+    }
     dataFromRecord.value = data
     Object.assign(appointment, data.appointment || {})
    Object.assign(patient, {
@@ -561,6 +669,86 @@ const loadDetail = async () => {
         (typeof data === "string" ? data : "") ||
         "SubmitExamination failed"
     }
+}
+const loadTransferDepartments = async () => {
+  try {
+    const { data } = await api.get("/Departments")
+    departments.value = Array.isArray(data) ? data : []
+  } catch (err) {
+    console.error("Không tải được khoa", err)
+    departments.value = []
+  }
+}
+
+const loadTransferDoctors = async () => {
+  transferDoctors.value = []
+  transferSlots.value = []
+  transferForm.targetDoctorId = ""
+  transferForm.appointmentTime = ""
+  if (!transferForm.targetDepartmentId) return
+
+  try {
+    transferLoadingDoctors.value = true
+    const { data } = await api.get(`/Doctor/by-department/${transferForm.targetDepartmentId}`)
+    const list = Array.isArray(data) ? data : []
+    transferDoctors.value = list.filter((d: any) => d.id !== authStore.doctorId)
+  } catch (err) {
+    console.error("Không tải được bác sĩ theo khoa", err)
+    transferDoctors.value = []
+  } finally {
+    transferLoadingDoctors.value = false
+  }
+}
+
+const loadTransferSlots = async () => {
+  transferSlots.value = []
+  transferForm.appointmentTime = ""
+  if (!transferForm.targetDoctorId || !transferForm.appointmentDate) return
+
+  try {
+    transferLoadingSlots.value = true
+    const { data } = await api.get(`/DoctorSchedules/doctors/${transferForm.targetDoctorId}/available-slots`, {
+      params: { date: transferForm.appointmentDate }
+    })
+    const slots = Array.isArray(data) ? data : []
+    transferSlots.value = slots.filter((s: any) => !s.isBooked)
+  } catch (err) {
+    console.error("Không tải được slot chuyển khoa", err)
+    transferSlots.value = []
+  } finally {
+    transferLoadingSlots.value = false
+  }
+}
+
+const submitTransfer = async () => {
+  if (!transferForm.targetDepartmentId || !transferForm.targetDoctorId || !transferForm.appointmentDate || !transferForm.appointmentTime) {
+    alert("Vui lòng chọn đủ khoa, bác sĩ, ngày và khung giờ chuyển khoa")
+    return
+  }
+
+  transferring.value = true
+  transferResult.value = null
+  try {
+    const { data } = await api.post(`/doctor/DoctorAppointments/${appointmentId}/transfer-department`, {
+      targetDepartmentId: transferForm.targetDepartmentId,
+      targetDoctorId: transferForm.targetDoctorId,
+      appointmentDate: transferForm.appointmentDate,
+      appointmentTime: toApiTime(transferForm.appointmentTime),
+      reason: transferForm.reason?.trim() || null,
+      enqueueNow: transferForm.enqueueNow
+    })
+    transferResult.value = data
+    alert(
+      `Đã chuyển khoa thành công. Mã lịch mới: ${data?.targetAppointmentCode || "N/A"}${
+        data?.queueNumber ? ` | Số thứ tự: ${data.queueNumber}` : ""
+      }`
+    )
+  } catch (err: any) {
+    console.error(err)
+    alert(err?.response?.data?.message || "Không chuyển khoa được")
+  } finally {
+    transferring.value = false
+  }
 }
 const submit = async () => {
   if (!form.diagnosis.trim()) {
@@ -686,6 +874,20 @@ historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === rec
 } catch (err: any) { alert("Không tải được hồ sơ chi tiết") }
 }
 const goBack = () => router.push("/doctor/appointments")
+
+watch(
+  () => transferForm.targetDepartmentId,
+  async () => {
+    await loadTransferDoctors()
+  }
+)
+
+watch(
+  () => [transferForm.targetDoctorId, transferForm.appointmentDate],
+  async () => {
+    await loadTransferSlots()
+  }
+)
 </script>
 <style src="@/styles/layouts/doctor-exam.css"></style>
 
