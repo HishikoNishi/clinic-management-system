@@ -2,9 +2,9 @@
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Repositories;
 using ClinicManagement.Api.Services;
-using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -22,6 +22,24 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(kvp => kvp.Value?.Errors.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray());
+
+        return new BadRequestObjectResult(new ApiErrorResponse
+        {
+            Code = "validation_error",
+            Message = "Validation failed.",
+            Details = errors
+        });
+    };
+});
 
 // Load billing.json (optional override)
 builder.Configuration.AddJsonFile("billing.json", optional: true, reloadOnChange: true);
@@ -76,12 +94,11 @@ builder.Services.AddSingleton<IPricingProvider, PricingProvider>();
 builder.Services.AddScoped<BillingService>();
 builder.Services.AddSingleton<FakeInsuranceService>();
 builder.Services.AddScoped<DoctorScheduleService>();
+builder.Services.AddScoped<AppointmentBookingService>();
 builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddHostedService<NoShowBackgroundService>();
-builder.Services.AddScoped<AppointmentService>();
-builder.Services.AddScoped<EmailService>();
 
 var jwtKey = configuration["Jwt:Key"]
     ?? throw new ArgumentNullException("Jwt:Key is missing in appsettings.json");
@@ -140,7 +157,10 @@ using (var scope = app.Services.CreateScope())
     {
         dbContext.Database.ExecuteSqlRaw("UPDATE Invoices SET InvoiceType = 'Clinic' WHERE InvoiceType IS NULL OR InvoiceType = ''");
     }
-    catch { }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Failed to normalize InvoiceType values during startup.");
+    }
 
     // Bổ sung cột cho hồ sơ khám trên DB hiện có
     try
@@ -160,7 +180,10 @@ IF COL_LENGTH('dbo.MedicalRecords', 'Temperature') IS NULL ALTER TABLE dbo.Medic
 IF COL_LENGTH('dbo.MedicalRecords', 'Spo2') IS NULL ALTER TABLE dbo.MedicalRecords ADD Spo2 INT NULL;
 ");
     }
-    catch { }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Failed to apply MedicalRecords compatibility columns.");
+    }
 
     // Bổ sung cột cho InvoiceLines (dùng cho hóa đơn thuốc)
     try
@@ -185,7 +208,10 @@ BEGIN
 END
 ");
     }
-    catch { }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Failed to apply InvoiceLines compatibility columns.");
+    }
     await SeedData.SeedAsync(scope.ServiceProvider);
 }
 

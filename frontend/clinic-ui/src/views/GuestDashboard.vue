@@ -232,31 +232,6 @@
                   />
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Số CCCD/Passport</label>
-                  <input 
-                    v-model="bookingForm.CitizenId" 
-                    type="tel" 
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    class="form-input" 
-                    :readonly="isReturning"
-                    maxlength="12"
-                    placeholder="Nhập số CCCD"
-                  />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Mã số BHYT (nếu có)</label>
-                  <input 
-                    v-model="bookingForm.insuranceNumber" 
-                    type="text" 
-                    class="form-input" 
-                    :readonly="isReturning"
-                    placeholder="Nhập mã BHYT"
-                  />
-                </div>
-              </div>
               <!-- OTP -->
               <div class="form-row align-items-end otp-row">
                 <div class="form-group flex-grow-1">
@@ -286,7 +261,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Ngày khám *</label>
-                  <input v-model="bookingForm.appointmentDate" type="date" class="form-input" required />
+                  <input v-model="bookingForm.appointmentDate" type="date" class="form-input" required @change="loadAvailableSlots" />
                   <span v-if="bookingErrors.appointmentDate" class="form-error">{{ bookingErrors.appointmentDate }}</span>
                 </div>
                 <div class="form-group">
@@ -298,12 +273,39 @@
                 </div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Khoa muốn khám (tùy chọn)</label>
-                <select v-model="selectedDepartmentId" class="form-select">
-                  <option value="">Không rõ / để phòng khám sắp xếp</option>
-                  <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
-                </select>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Bác sĩ mong muốn (tùy chọn)</label>
+                  <select v-model="bookingForm.doctorId" class="form-select" @change="loadAvailableSlots">
+                    <option value="">Không chọn bác sĩ</option>
+                    <option v-for="doctor in filteredDoctors" :key="doctor.id" :value="doctor.id">
+                      {{ doctor.fullName }}{{ doctor.code ? ` (${doctor.code})` : '' }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Khung giờ *</label>
+                  <select v-model="bookingForm.appointmentTime" class="form-select" :disabled="slotLoading" required>
+                    <option value="" disabled>
+                      {{
+                        slotLoading
+                          ? 'Đang tải khung giờ...'
+                          : availableSlots.length
+                            ? 'Chọn khung giờ'
+                            : 'Không có khung giờ, vui lòng đổi ngày hoặc bác sĩ'
+                      }}
+                    </option>
+                    <option
+                      v-for="slot in availableSlots"
+                      :key="slot.id || slot.startTime"
+                      :value="(slot.startTime || '').slice(0, 5)"
+                      :disabled="slot.isBooked"
+                    >
+                      {{ slot.slotLabel || (slot.startTime || '').slice(0, 5) }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
+                    </option>
+                  </select>
+                  <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
+                </div>
               </div>
 
               <div class="form-group">
@@ -620,7 +622,7 @@ const bookingForm = reactive({
   address: '',
   CitizenId: '', // Thêm mới
   insuranceNumber: '', // Thêm mới
-  appointmentDate: '',
+  appointmentDate: toLocalDateInputValue(),
   doctorId: '',
   appointmentTime: '',
   reason: ''
@@ -684,9 +686,16 @@ const doctors = ref<any[]>([])
 const availableSlots = ref<any[]>([])
 const slotLoading = ref(false)
 
+const isDoctorActive = (status: unknown) => {
+  if (status === null || status === undefined) return true
+  if (typeof status === 'number') return status !== 2
+  const normalized = String(status).toLowerCase()
+  return normalized !== 'inactive'
+}
+
 const filteredDoctors = computed(() =>
   doctors.value.filter((doctor) =>
-    doctor.status === 'Active' &&
+    isDoctorActive(doctor.status) &&
     (!selectedDepartmentId.value || doctor.departmentId === selectedDepartmentId.value)
   )
 )
@@ -944,6 +953,7 @@ const submitBooking = async () => {
 
 const resetBookingForm = () => {
   Object.keys(bookingForm).forEach((k) => (bookingForm as any)[k] = '')
+  bookingForm.appointmentDate = toLocalDateInputValue()
   bookingSuccess.value = false
   bookingError.value = ''
   otpCode.value = ''
@@ -953,6 +963,7 @@ const resetBookingForm = () => {
   countdown.value = 0
   selectedDepartmentId.value = ''
   availableSlots.value = []
+  loadAvailableSlots()
 }
 
 /* Search */
@@ -1100,6 +1111,7 @@ watch(
 onMounted(() => {
   loadDepartments()
   loadDoctors()
+  loadAvailableSlots()
   loadRecent()
 })
 

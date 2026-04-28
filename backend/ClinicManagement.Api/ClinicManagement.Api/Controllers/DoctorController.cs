@@ -240,7 +240,7 @@ namespace ClinicManagement.Api.Controllers
 
         /* ================= GET BY DEPARTMENT ================= */
         [HttpGet("by-department/{departmentId:guid}")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff,Doctor")]
         public async Task<IActionResult> GetByDepartment(Guid departmentId)
         {
             var doctors = await _context.Doctors

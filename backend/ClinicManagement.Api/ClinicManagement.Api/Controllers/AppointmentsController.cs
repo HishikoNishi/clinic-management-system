@@ -2,9 +2,9 @@ using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
+using ClinicManagement.Api.Extensions;
 using ClinicManagement.Api.Models;
 using ClinicManagement.Api.Services;
-using ClinicManagement.Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,20 +16,14 @@ namespace ClinicManagement.Api.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;
-        private readonly OtpService _otpService;
-        private readonly EmailService _emailService;
-        private readonly DoctorScheduleService _doctorScheduleService;
+        private readonly AppointmentBookingService _appointmentBookingService;
 
         public AppointmentsController(
             ClinicDbContext context,
-            OtpService otpService,
-            EmailService emailService,
-            DoctorScheduleService doctorScheduleService)
+            AppointmentBookingService appointmentBookingService)
         {
             _context = context;
-            _otpService = otpService;
-            _emailService = emailService;
-            _doctorScheduleService = doctorScheduleService;
+            _appointmentBookingService = appointmentBookingService;
         }
 
         [HttpPost]
@@ -40,24 +34,20 @@ namespace ClinicManagement.Api.Controllers
             var businessStart = new TimeSpan(7, 0, 0);
             var businessEnd = new TimeSpan(22, 0, 0);
 
-            dto.CitizenId = dto.CitizenId?.Trim();
-            dto.Phone = dto.Phone?.Trim();
-            dto.FullName = dto.FullName?.Trim();
-            dto.Email = dto.Email?.Trim();
-            dto.InsuranceCardNumber = dto.InsuranceCardNumber?.Trim();
+            _appointmentBookingService.NormalizeInput(dto);
 
             if (dto.AppointmentDate.Date < today)
-                return BadRequest("Chi duoc dat lich tu hom nay tro di");
+                return this.ApiBadRequest("Chi duoc dat lich tu hom nay tro di");
 
             var localNow = DateTime.Now;
             if (dto.AppointmentDate.Date == localNow.Date && dto.AppointmentTime <= localNow.TimeOfDay)
-                return BadRequest("Chi duoc dat lich o gio tuong lai");
+                return this.ApiBadRequest("Chi duoc dat lich o gio tuong lai");
 
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
-                return BadRequest("Chi nhan dat lich 07:00 - 22:00");
+                return this.ApiBadRequest("Chi nhan dat lich 07:00 - 22:00");
 
             if (string.IsNullOrWhiteSpace(dto.Email))
-                return BadRequest("Email bat buoc");
+                return this.ApiBadRequest("Email bat buoc");
 
             Doctor? doctor = null;
             if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
@@ -68,109 +58,52 @@ namespace ClinicManagement.Api.Controllers
                     .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
                 if (doctor == null)
-                    return BadRequest("Bac si khong kha dung");
+                    return this.ApiBadRequest("Bac si khong kha dung");
 
-                var slotError = await ValidateDoctorSlotAsync(dto.DoctorId.Value, dto.AppointmentDate.Date, dto.AppointmentTime);
+                var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
+                    dto.DoctorId.Value,
+                    dto.AppointmentDate.Date,
+                    dto.AppointmentTime);
                 if (slotError != null)
-                    return BadRequest(slotError);
+                    return this.ApiBadRequest(slotError);
             }
 
             if (!string.IsNullOrWhiteSpace(dto.CitizenId) &&
                 (!dto.CitizenId.All(char.IsDigit) || dto.CitizenId.Length != 12))
             {
-                return BadRequest("CCCD phai gom 12 chu so");
+                return this.ApiBadRequest("CCCD phai gom 12 chu so");
             }
 
-            var verified = await _otpService.IsVerifiedAsync(dto.Email);
+            var verified = await _appointmentBookingService.IsOtpVerifiedAsync(dto.Email);
             if (!verified)
-                return BadRequest("Email chua xac thuc OTP");
+                return this.ApiBadRequest("Email chua xac thuc OTP");
 
-            Patient? patient = null;
-
-            if (!string.IsNullOrWhiteSpace(dto.CitizenId))
-            {
-                patient = await _context.Patients
-                    .FirstOrDefaultAsync(p => p.CitizenId == dto.CitizenId);
-            }
+            var patient = await _appointmentBookingService.FindPatientAsync(dto);
 
             if (patient == null)
             {
-                patient = await _context.Patients
-                    .FirstOrDefaultAsync(p =>
-                        p.Phone == dto.Phone &&
-                        p.FullName == dto.FullName);
-            }
-
-            if (patient == null)
-            {
-                string patientCode;
-                do
-                {
-                    patientCode = CodeGenerator.GeneratePatientCode();
-                }
-                while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
-
-                patient = new Patient
-                {
-                    Id = Guid.NewGuid(),
-                    PatientCode = patientCode,
-                    FullName = dto.FullName!,
-                    Phone = dto.Phone!,
-                    Email = dto.Email,
-                    Address = dto.Address,
-                    DateOfBirth = dto.DateOfBirth,
-                    Gender = dto.Gender,
-                    CitizenId = dto.CitizenId,
-                    InsuranceCardNumber = dto.InsuranceCardNumber
-                };
+                var patientCode = await _appointmentBookingService.GenerateUniquePatientCodeAsync();
+                patient = _appointmentBookingService.BuildNewPatient(dto, patientCode);
 
                 _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(patient.PatientCode))
-                {
-                    string patientCode;
-                    do
-                    {
-                        patientCode = CodeGenerator.GeneratePatientCode();
-                    }
-                    while (await _context.Patients.AnyAsync(p => p.PatientCode == patientCode));
-
-                    patient.PatientCode = patientCode;
-                }
-
-                if (string.IsNullOrWhiteSpace(patient.CitizenId) &&
-                    !string.IsNullOrWhiteSpace(dto.CitizenId))
-                {
-                    patient.CitizenId = dto.CitizenId;
-                }
-
-                if (string.IsNullOrWhiteSpace(patient.InsuranceCardNumber) &&
-                    !string.IsNullOrWhiteSpace(dto.InsuranceCardNumber))
-                {
-                    patient.InsuranceCardNumber = dto.InsuranceCardNumber;
-                }
-
+                await _appointmentBookingService.EnsurePatientCodeAsync(patient);
+                _appointmentBookingService.MergePatientProfile(patient, dto);
                 await _context.SaveChangesAsync();
             }
 
-            var existed = await _context.Appointments.AnyAsync(a =>
-                a.PatientId == patient.Id &&
-                a.AppointmentDate == dto.AppointmentDate.Date &&
-                a.AppointmentTime == dto.AppointmentTime &&
-                a.Status != AppointmentStatus.Cancelled);
+            var existed = await _appointmentBookingService.HasExistingAppointmentAsync(
+                patient.Id,
+                dto.AppointmentDate.Date,
+                dto.AppointmentTime);
 
             if (existed)
-                return BadRequest("Ban da dat lich gio nay roi");
+                return this.ApiConflict("Ban da dat lich gio nay roi", "appointment_exists");
 
-            string code;
-            do
-            {
-                code = CodeGenerator.GenerateAppointmentCode();
-            }
-            while (await _context.Appointments.AnyAsync(a => a.AppointmentCode == code));
+            var code = await _appointmentBookingService.GenerateUniqueAppointmentCodeAsync();
 
             var appointment = new Appointment
             {
@@ -187,19 +120,14 @@ namespace ClinicManagement.Api.Controllers
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            try
+            if (!string.IsNullOrWhiteSpace(dto.Email))
             {
-                if (!string.IsNullOrWhiteSpace(dto.Email))
-                {
-                    await _emailService.SendAsync(
-                        dto.Email,
-                        "Xac nhan lich kham",
-                        $"Ma kham: <b>{appointment.AppointmentCode}</b><br/>Ho ten: {patient.FullName}<br/>Ngay: {appointment.AppointmentDate:dd/MM/yyyy} - Gio: {appointment.AppointmentTime}");
-                }
-            }
-            catch (Exception)
-            {
-                // Ignore email failure.
+                await _appointmentBookingService.SendAppointmentConfirmationAsync(
+                    dto.Email,
+                    patient.FullName,
+                    appointment.AppointmentCode,
+                    appointment.AppointmentDate,
+                    appointment.AppointmentTime);
             }
 
             return Ok(ToDetailDto(appointment, patient, doctor));
@@ -210,7 +138,7 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> LookupPatient([FromQuery] string? phone, [FromQuery] string? email)
         {
             if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
-                return BadRequest("Nhap SDT hoac email");
+                return this.ApiBadRequest("Nhap SDT hoac email");
 
             var patient = await _context.Patients
                 .AsNoTracking()
@@ -219,7 +147,7 @@ namespace ClinicManagement.Api.Controllers
                     (!string.IsNullOrWhiteSpace(email) && p.Email == email));
 
             if (patient == null)
-                return NotFound("Khong tim thay");
+                return this.ApiNotFound("Khong tim thay");
 
             return Ok(new
             {
@@ -245,7 +173,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(a => a.AppointmentCode == code);
 
             if (appointment == null || appointment.Patient == null)
-                return NotFound();
+                return this.ApiNotFound("Khong tim thay lich kham");
 
             return Ok(ToDetailDto(appointment, appointment.Patient, appointment.Doctor));
         }
@@ -260,7 +188,7 @@ namespace ClinicManagement.Api.Controllers
                 !string.IsNullOrWhiteSpace(dto.InsuranceCardNumber);
 
             if (!hasIdentity)
-                return BadRequest(new { message = "Can nhap SDT, email, CCCD hoac BHYT" });
+                return this.ApiBadRequest("Can nhap SDT, email, CCCD hoac BHYT");
 
             var query = _context.Appointments
                 .Include(x => x.Patient)
@@ -303,7 +231,7 @@ namespace ClinicManagement.Api.Controllers
                     a.Patient.Phone == dto.Phone);
 
             if (appointment == null)
-                return NotFound("Khong tim thay lich kham");
+                return this.ApiNotFound("Khong tim thay lich kham");
 
             appointment.Status = AppointmentStatus.Cancelled;
             await _context.SaveChangesAsync();
@@ -345,26 +273,6 @@ namespace ClinicManagement.Api.Controllers
                 .Select(a => ToDetailDto(a, a.Patient!, a.Doctor));
 
             return Ok(result);
-        }
-
-        private async Task<string?> ValidateDoctorSlotAsync(Guid doctorId, DateTime appointmentDate, TimeSpan appointmentTime)
-        {
-            var hasSchedule = await _doctorScheduleService.HasEffectiveSlotAsync(doctorId, appointmentDate, appointmentTime);
-
-            if (!hasSchedule)
-                return "Bac si khong co lich lam viec o khung gio nay";
-
-            var isBooked = await _context.Appointments.AnyAsync(a =>
-                a.DoctorId == doctorId &&
-                a.AppointmentDate == appointmentDate &&
-                a.AppointmentTime == appointmentTime &&
-                a.Status != AppointmentStatus.Cancelled &&
-                a.Status != AppointmentStatus.NoShow);
-
-            if (isBooked)
-                return "Khung gio nay da co nguoi dat";
-
-            return null;
         }
 
         private static AppointmentDetailDto ToDetailDto(Appointment appointment, Patient patient, Doctor? doctor = null)

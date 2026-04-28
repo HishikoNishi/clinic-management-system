@@ -41,6 +41,7 @@ namespace ClinicManagement.Api.Controllers
 
             var payment = new Payment
             {
+                Id = Guid.NewGuid(),
                 InvoiceId = dto.InvoiceId,
                 AppointmentId = invoice.AppointmentId,
                 Amount = dto.Amount,

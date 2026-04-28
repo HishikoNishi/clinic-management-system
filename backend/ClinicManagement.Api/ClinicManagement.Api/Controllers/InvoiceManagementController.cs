@@ -142,6 +142,7 @@ namespace ClinicManagement.Api.Controllers
 
             var payment = new Payment
             {
+                Id = Guid.NewGuid(),
                 InvoiceId = invoice.Id,
                 AppointmentId = invoice.AppointmentId,
                 Amount = invoice.Amount,

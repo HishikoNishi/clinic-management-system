@@ -439,6 +439,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<MedicalRecord>(entity =>
             {
                 entity.HasKey(r => r.Id);
+                entity.HasIndex(r => r.AppointmentId).IsUnique();
                 entity.Property(r => r.Symptoms).HasMaxLength(1000);
                 entity.Property(r => r.DetailedSymptoms).HasMaxLength(4000);
                 entity.Property(r => r.PastMedicalHistory).HasMaxLength(4000);

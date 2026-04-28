@@ -169,6 +169,7 @@ namespace ClinicManagement.Api.Controllers
                 invoice.PaymentDate = DateTime.UtcNow;
                 _ctx.Payments.Add(new Payment
                 {
+                    Id = Guid.NewGuid(),
                     InvoiceId = invoice.Id,
                     AppointmentId = invoice.AppointmentId,
                     Amount = expected,
