@@ -138,6 +138,7 @@ namespace ClinicManagement.Api.Controllers
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.Department)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
 
             return Ok(appointments
@@ -153,6 +154,7 @@ namespace ClinicManagement.Api.Controllers
                 .Include(a => a.Doctor)
                     .ThenInclude(d => d.Department)
                 .Where(a => a.Status == status)
+                .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
 
             return Ok(appointments

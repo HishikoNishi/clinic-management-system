@@ -164,10 +164,34 @@ namespace ClinicManagement.Api.Controllers
             if (staff == null)
                 return NotFound();
 
-            _context.Staffs.Remove(staff);
+            staff.IsDeleted = true;
+            staff.IsActive = false;
+            staff.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Staff profile deleted successfully." });
+            return Ok(new { message = "Staff profile deleted successfully (soft delete)." });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id:guid}/restore")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            var staff = await _context.Staffs
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (staff == null)
+                return NotFound();
+
+            if (!staff.IsDeleted)
+                return BadRequest(new { message = "Staff is not deleted." });
+
+            staff.IsDeleted = false;
+            staff.IsActive = true;
+            staff.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Staff restored successfully." });
         }
         [HttpGet("profile")]
         [Authorize(Roles = "Staff")]

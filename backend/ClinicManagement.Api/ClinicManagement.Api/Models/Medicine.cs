@@ -9,6 +9,7 @@ namespace ClinicManagement.Api.Models
         public string Unit { get; set; } = "Viên"; // Đơn vị: Viên, Gói, Chai
         public decimal Price { get; set; } // GIÁ TIỀN để tính hóa đơn
         public bool IsActive { get; set; } = true;
+        public bool IsDeleted { get; set; } = false;
     }
 }
 

@@ -98,18 +98,43 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var department = await _context.Departments
+                .IgnoreQueryFilters()
                 .Include(d => d.Doctors)
                 .FirstOrDefaultAsync(d => d.Id == id);
 
             if (department == null)
                 return NotFound(new { message = "Department not found." });
 
-            if (department.Doctors.Any())
+            var hasActiveDoctors = await _context.Doctors
+                .IgnoreQueryFilters()
+                .AnyAsync(d => d.DepartmentId == id && !d.IsDeleted);
+
+            if (hasActiveDoctors)
                 return BadRequest(new { message = "Cannot delete: there are doctors assigned to this department." });
 
-            _context.Departments.Remove(department);
+            department.IsDeleted = true;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Department deleted successfully." });
+            return Ok(new { message = "Department deleted successfully (soft delete)." });
+        }
+
+        [HttpPost("{id:guid}/restore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            var department = await _context.Departments
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (department == null)
+                return NotFound(new { message = "Department not found." });
+
+            if (!department.IsDeleted)
+                return BadRequest(new { message = "Department is not deleted." });
+
+            department.IsDeleted = false;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Department restored successfully." });
         }
     }
 }

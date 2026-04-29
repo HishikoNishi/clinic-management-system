@@ -146,13 +146,35 @@ namespace ClinicManagement.Api.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var medicine = await _context.Medicines.FindAsync(id);
+            var medicine = await _context.Medicines
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
 
+            medicine.IsDeleted = true;
             medicine.IsActive = false;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Da an thuoc khoi danh muc" });
+            return Ok(new { message = "Da xoa thuoc (soft delete)" });
+        }
+
+        [HttpPost("{id:guid}/restore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            var medicine = await _context.Medicines
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
+
+            if (!medicine.IsDeleted)
+                return BadRequest(new { message = "Thuoc chua bi xoa" });
+
+            medicine.IsDeleted = false;
+            medicine.IsActive = true;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Da khoi phuc thuoc" });
         }
     }
 }

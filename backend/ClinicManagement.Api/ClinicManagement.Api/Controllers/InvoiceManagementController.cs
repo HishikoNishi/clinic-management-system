@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ClinicManagement.Api.Services;
+using ClinicManagement.Api.Utils;
 
 namespace ClinicManagement.Api.Controllers
 {
@@ -80,6 +81,33 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(r => r.AppointmentId == invoice.AppointmentId);
 
             return Ok(MapInvoice(invoice, record));
+        }
+
+        [HttpGet("{id}/pdf")]
+        public async Task<IActionResult> DownloadInvoicePdf(Guid id)
+        {
+            var invoice = await _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Appointment)
+                    .ThenInclude(a => a.Patient)
+                .Include(i => i.InvoiceLines)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (invoice == null)
+                return NotFound(new { message = "Khong tim thay hoa don" });
+
+            if (!invoice.IsPaid)
+                return BadRequest(new { message = "Chi duoc tai PDF sau khi hoa don da thanh toan" });
+
+            var record = await _context.MedicalRecords
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.AppointmentId == invoice.AppointmentId);
+
+            var bytes = SimplePdfInvoiceExporter.Build(invoice, record);
+            var appointmentCode = invoice.Appointment?.AppointmentCode ?? invoice.AppointmentId.ToString("N")[..8];
+            var fileName = $"invoice-{appointmentCode}.pdf";
+
+            return File(bytes, "application/pdf", fileName);
         }
 
         // ==============================

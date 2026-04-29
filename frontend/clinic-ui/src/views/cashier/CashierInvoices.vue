@@ -6,6 +6,7 @@ import InvoiceDetail from '@/components/cashier/InvoiceDetail.vue'
 import { useInvoice } from '@/composables/useInvoice'
 import { usePayment } from '@/composables/usePayment'
 import type { PaymentMethod } from '@/services/invoiceApi'
+import { invoiceApi } from '@/services/invoiceApi'
 import { payosApi, type PayOsCreateResponse } from '@/services/payosApi'
 import { formatCurrency } from '@/utils/format'
 
@@ -82,6 +83,26 @@ const openPayOs = async () => {
     payosLoading.value = false
   }
 }
+
+const downloadPdf = async () => {
+  if (!invoice.value?.id) return
+  try {
+    const { blob, headers } = await invoiceApi.downloadInvoicePdf(invoice.value.id)
+    const contentDisposition = headers?.['content-disposition'] as string | undefined
+    const fileNameMatch = contentDisposition?.match(/filename="?([^"]+)"?/)
+    const fileName = fileNameMatch?.[1] || `invoice-${invoice.value.id}.pdf`
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    payError.value = err?.response?.data?.message ?? 'Không tải được file PDF'
+  }
+}
 </script>
 
 <template>
@@ -147,6 +168,13 @@ const openPayOs = async () => {
               </button>
               <button class="btn btn-outline-primary w-100 mt-2" :disabled="isPaid || payosLoading" @click="openPayOs">
                 <span v-if="payosLoading" class="spinner-border spinner-border-sm me-1" />QR PayOS
+              </button>
+              <button
+                v-if="isPaid"
+                class="btn btn-outline-success w-100 mt-2"
+                @click="downloadPdf"
+              >
+                Tải PDF hóa đơn
               </button>
               <div v-if="payMessage" class="alert alert-success mt-2 py-2">{{ payMessage }}</div>
               <div v-if="payError" class="alert alert-danger mt-2 py-2">{{ payError }}</div>

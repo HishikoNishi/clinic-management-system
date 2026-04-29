@@ -99,6 +99,7 @@ builder.Services.Configure<PayOsOptions>(configuration.GetSection("PayOs"));
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddHostedService<NoShowBackgroundService>();
+builder.Services.AddHttpContextAccessor();
 
 var jwtKey = configuration["Jwt:Key"]
     ?? throw new ArgumentNullException("Jwt:Key is missing in appsettings.json");
@@ -211,6 +212,24 @@ END
     catch (Exception ex)
     {
         app.Logger.LogWarning(ex, "Failed to apply InvoiceLines compatibility columns.");
+    }
+
+    // Soft delete flags compatibility (Add IsDeleted columns if missing)
+    try
+    {
+        dbContext.Database.ExecuteSqlRaw(@"
+IF COL_LENGTH('dbo.Doctors', 'IsDeleted') IS NULL ALTER TABLE dbo.Doctors ADD IsDeleted bit NOT NULL CONSTRAINT DF_Doctors_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.Staffs', 'IsDeleted') IS NULL ALTER TABLE dbo.Staffs ADD IsDeleted bit NOT NULL CONSTRAINT DF_Staffs_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.Departments', 'IsDeleted') IS NULL ALTER TABLE dbo.Departments ADD IsDeleted bit NOT NULL CONSTRAINT DF_Departments_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.Specialties', 'IsDeleted') IS NULL ALTER TABLE dbo.Specialties ADD IsDeleted bit NOT NULL CONSTRAINT DF_Specialties_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.Rooms', 'IsDeleted') IS NULL ALTER TABLE dbo.Rooms ADD IsDeleted bit NOT NULL CONSTRAINT DF_Rooms_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.Medicines', 'IsDeleted') IS NULL ALTER TABLE dbo.Medicines ADD IsDeleted bit NOT NULL CONSTRAINT DF_Medicines_IsDeleted DEFAULT(0);
+IF COL_LENGTH('dbo.InsurancePlans', 'IsDeleted') IS NULL ALTER TABLE dbo.InsurancePlans ADD IsDeleted bit NOT NULL CONSTRAINT DF_InsurancePlans_IsDeleted DEFAULT(0);
+");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Failed to apply soft delete compatibility columns.");
     }
     await SeedData.SeedAsync(scope.ServiceProvider);
 }

@@ -261,7 +261,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Ngày khám *</label>
-                  <input v-model="bookingForm.appointmentDate" type="date" class="form-input" required @change="loadAvailableSlots" />
+                  <input v-model="bookingForm.appointmentDate" type="date" class="form-input" required />
                   <span v-if="bookingErrors.appointmentDate" class="form-error">{{ bookingErrors.appointmentDate }}</span>
                 </div>
                 <div class="form-group">
@@ -276,7 +276,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Bác sĩ mong muốn (tùy chọn)</label>
-                  <select v-model="bookingForm.doctorId" class="form-select" @change="loadAvailableSlots">
+                  <select v-model="bookingForm.doctorId" class="form-select">
                     <option value="">Không chọn bác sĩ</option>
                     <option v-for="doctor in filteredDoctors" :key="doctor.id" :value="doctor.id">
                       {{ doctor.fullName }}{{ doctor.code ? ` (${doctor.code})` : '' }}
@@ -741,21 +741,31 @@ const addRecent = (item: any) => {
 
 const validateBookingForm = () => {
   Object.keys(bookingErrors).forEach((k) => (bookingErrors[k] = ''))
-  let ok = true
   const todayStr = toLocalDateInputValue()
-  if (!bookingForm.fullName.trim()) { bookingErrors.fullName = 'Họ và tên là bắt buộc'; ok = false }
-  if (!bookingForm.dateOfBirth) { bookingErrors.dateOfBirth = 'Ngày sinh là bắt buộc'; ok = false }
-  if (!bookingForm.gender) { bookingErrors.gender = 'Giới tính là bắt buộc'; ok = false }
-  if (!bookingForm.phone.trim()) { bookingErrors.phone = 'Số điện thoại là bắt buộc'; ok = false }
-  else if (!/^[0-9]{9,11}$/.test(bookingForm.phone)) { bookingErrors.phone = 'Số điện thoại phải có 9-11 chữ số'; ok = false }
-  if (!bookingForm.email.trim()) { bookingErrors.email = 'Email là bắt buộc'; ok = false }
-  else if (!/\S+@\S+\.\S+/.test(bookingForm.email)) { bookingErrors.email = 'Định dạng email không hợp lệ'; ok = false }
-  if (!bookingForm.address.trim()) { bookingErrors.address = 'Địa chỉ là bắt buộc'; ok = false }
-  if (!bookingForm.appointmentDate) { bookingErrors.appointmentDate = 'Ngày khám là bắt buộc'; ok = false }
-  else if (bookingForm.appointmentDate < todayStr) { bookingErrors.appointmentDate = 'Chỉ được đặt từ hôm nay trở đi'; ok = false }
-  if (!bookingForm.appointmentTime) { bookingErrors.appointmentTime = 'Thời gian khám là bắt buộc'; ok = false }
-  if (!bookingForm.reason.trim()) { bookingErrors.reason = 'Lý do khám là bắt buộc'; ok = false }
-  return ok
+
+  const setError = (field: keyof typeof bookingErrors, message: string) => {
+    bookingErrors[field] = message
+  }
+
+  if (!bookingForm.fullName.trim()) setError('fullName', 'Họ và tên là bắt buộc')
+  if (!bookingForm.dateOfBirth) setError('dateOfBirth', 'Ngày sinh là bắt buộc')
+  if (!bookingForm.gender) setError('gender', 'Giới tính là bắt buộc')
+
+  if (!bookingForm.phone.trim()) setError('phone', 'Số điện thoại là bắt buộc')
+  else if (!/^[0-9]{9,11}$/.test(bookingForm.phone)) setError('phone', 'Số điện thoại phải có 9-11 chữ số')
+
+  if (!bookingForm.email.trim()) setError('email', 'Email là bắt buộc')
+  else if (!/\S+@\S+\.\S+/.test(bookingForm.email)) setError('email', 'Định dạng email không hợp lệ')
+
+  if (!bookingForm.address.trim()) setError('address', 'Địa chỉ là bắt buộc')
+
+  if (!bookingForm.appointmentDate) setError('appointmentDate', 'Ngày khám là bắt buộc')
+  else if (bookingForm.appointmentDate < todayStr) setError('appointmentDate', 'Chỉ được đặt từ hôm nay trở đi')
+
+  if (!bookingForm.appointmentTime) setError('appointmentTime', 'Thời gian khám là bắt buộc')
+  if (!bookingForm.reason.trim()) setError('reason', 'Lý do khám là bắt buộc')
+
+  return !Object.values(bookingErrors).some(Boolean)
 }
 
 const mapGenderToOption = (value: any) => {

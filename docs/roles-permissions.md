@@ -18,9 +18,10 @@
   - `api/departments/*`
   - `api/specialties/*`
   - `api/medicines/*`
+  - lưu ý: `DELETE` là soft delete, có endpoint `restore` cho các nhóm này
 - Quản lý bác sĩ/nhân viên:
-  - `api/doctor/*` (create/update/delete)
-  - `api/staffs/*`
+  - `api/doctor/*` (create/update/soft-delete/restore)
+  - `api/staffs/*` (create/update/soft-delete/restore)
 - Duyệt đổi ca:
   - `api/admin/shift-requests/*`
 - Dashboard:
@@ -90,3 +91,4 @@
 - Khi backend trả `401/403`, FE cần điều hướng:
   - `401`: thử refresh token -> fail thì về login
   - `403`: hiển thị “không có quyền truy cập”
+- Với màn hình quản trị, nên có thao tác khôi phục dữ liệu đã soft delete (doctor/staff/department/specialty/medicine).
