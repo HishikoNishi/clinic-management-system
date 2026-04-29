@@ -70,6 +70,24 @@ Gợi ý tạo file FE:
 
 ## 5) API theo màn hình chính
 
+### Quản trị soft delete (Admin)
+
+- Doctor:
+  - `DELETE /api/doctor/{id}` (soft delete)
+  - `POST /api/doctor/{id}/restore`
+- Staff:
+  - `DELETE /api/staffs/{id}` (soft delete)
+  - `POST /api/staffs/{id}/restore`
+- Departments:
+  - `DELETE /api/departments/{id}` (soft delete)
+  - `POST /api/departments/{id}/restore`
+- Specialties:
+  - `DELETE /api/specialties/{id}` (soft delete)
+  - `POST /api/specialties/{id}/restore`
+- Medicines:
+  - `DELETE /api/medicines/{id}` (soft delete + `IsActive=false`)
+  - `POST /api/medicines/{id}/restore`
+
 ### Đặt lịch online (public)
 
 1. `POST /api/email/send-otp`
@@ -124,6 +142,7 @@ Nguyên tắc:
 - [ ] 401 auto refresh 1 lần, không loop
 - [ ] Parse lỗi theo `message`/`code`
 - [ ] Mapping status đầy đủ ở badge/filter
+- [ ] Màn hình admin có tab/list cho dữ liệu đã soft delete + nút restore
 - [ ] Các flow chính chạy end-to-end:
   - [ ] đặt lịch online
   - [ ] check-in staff

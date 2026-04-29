@@ -106,17 +106,45 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var specialty = await _context.Specialties
+                .IgnoreQueryFilters()
                 .Include(s => s.Department)
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (specialty == null) return NotFound(new { message = "Specialty not found." });
 
-            var hasDoctors = await _context.Doctors.AnyAsync(d => d.SpecialtyId == id);
+            var hasDoctors = await _context.Doctors
+                .IgnoreQueryFilters()
+                .AnyAsync(d => d.SpecialtyId == id && !d.IsDeleted);
             if (hasDoctors)
                 return BadRequest(new { message = "Cannot delete: there are doctors assigned to this specialty." });
 
-            _context.Specialties.Remove(specialty);
+            specialty.IsDeleted = true;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Specialty deleted successfully." });
+            return Ok(new { message = "Specialty deleted successfully (soft delete)." });
+        }
+
+        [HttpPost("{id:guid}/restore")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            var specialty = await _context.Specialties
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (specialty == null) return NotFound(new { message = "Specialty not found." });
+            if (!specialty.IsDeleted) return BadRequest(new { message = "Specialty is not deleted." });
+
+            var departmentExists = await _context.Departments
+                .IgnoreQueryFilters()
+                .AnyAsync(d => d.Id == specialty.DepartmentId && !d.IsDeleted);
+
+            if (!departmentExists)
+            {
+                return BadRequest(new { message = "Cannot restore: department is deleted." });
+            }
+
+            specialty.IsDeleted = false;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Specialty restored successfully." });
         }
     }
 }

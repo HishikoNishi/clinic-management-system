@@ -5,6 +5,7 @@ import GuestLayout from '@/layouts/GuestLayout.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import DoctorLayout from '@/layouts/DoctorLayout.vue'
 import CashierLayout from '@/layouts/CashierLayout.vue'
+import AppToastContainer from '@/components/common/AppToastContainer.vue'
 
 const route = useRoute()
 
@@ -31,6 +32,7 @@ const LayoutComponent = computed(() => {
 
 <template>
   <component :is="LayoutComponent" />
+  <AppToastContainer />
 </template>
 
 <style scoped>

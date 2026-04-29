@@ -1,14 +1,27 @@
 using ClinicManagement.Api.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace ClinicManagement.Api.Data
 {
     public class ClinicDbContext : DbContext
     {
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         public ClinicDbContext(DbContextOptions<ClinicDbContext> options)
             : base(options)
         {
+        }
+        public ClinicDbContext(
+            DbContextOptions<ClinicDbContext> options,
+            IHttpContextAccessor httpContextAccessor)
+            : base(options)
+        {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public DbSet<User> Users { get; set; } = null!;
@@ -37,6 +50,127 @@ namespace ClinicManagement.Api.Data
         public DbSet<AppNotification> Notifications { get; set; } = null!;
         public DbSet<Room> Rooms { get; set; } = null!;
         public DbSet<QueueEntry> QueueEntries { get; set; } = null!;
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ApplySoftDeleteRules();
+            var auditLogs = BuildAuditLogs();
+            if (auditLogs.Count > 0)
+            {
+                AuditLogs.AddRange(auditLogs);
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            ApplySoftDeleteRules();
+            var auditLogs = BuildAuditLogs();
+            if (auditLogs.Count > 0)
+            {
+                AuditLogs.AddRange(auditLogs);
+            }
+
+            return base.SaveChanges();
+        }
+
+        private void ApplySoftDeleteRules()
+        {
+            foreach (var entry in ChangeTracker.Entries().Where(e => e.State == EntityState.Deleted))
+            {
+                var isDeletedProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "IsDeleted" && p.Metadata.ClrType == typeof(bool));
+                if (isDeletedProp == null) continue;
+
+                entry.State = EntityState.Modified;
+                isDeletedProp.CurrentValue = true;
+            }
+        }
+
+        private List<AuditLog> BuildAuditLogs()
+        {
+            var logs = new List<AuditLog>();
+            var now = DateTime.UtcNow;
+            var userId = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var username = _httpContextAccessor?.HttpContext?.User?.Identity?.Name;
+
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (!IsAuditableEntry(entry)) continue;
+
+                var action = entry.State switch
+                {
+                    EntityState.Added => "Create",
+                    EntityState.Modified => IsSoftDelete(entry) ? "SoftDelete" : "Update",
+                    EntityState.Deleted => "Delete",
+                    _ => string.Empty
+                };
+
+                if (string.IsNullOrEmpty(action)) continue;
+
+                var key = entry.Properties.FirstOrDefault(p => p.Metadata.IsPrimaryKey());
+                var recordId = key?.CurrentValue?.ToString() ?? key?.OriginalValue?.ToString() ?? string.Empty;
+
+                var beforeData = entry.State switch
+                {
+                    EntityState.Added => null,
+                    EntityState.Modified => SerializeValues(entry.OriginalValues),
+                    EntityState.Deleted => SerializeValues(entry.OriginalValues),
+                    _ => null
+                };
+
+                var afterData = entry.State switch
+                {
+                    EntityState.Added => SerializeValues(entry.CurrentValues),
+                    EntityState.Modified => SerializeValues(entry.CurrentValues),
+                    EntityState.Deleted => null,
+                    _ => null
+                };
+
+                logs.Add(new AuditLog
+                {
+                    Id = Guid.NewGuid(),
+                    Action = action,
+                    EntityName = entry.Metadata.ClrType.Name,
+                    RecordId = recordId,
+                    UserId = userId,
+                    Username = username,
+                    BeforeData = beforeData,
+                    AfterData = afterData,
+                    ChangedAt = now
+                });
+            }
+
+            return logs;
+        }
+
+        private static bool IsAuditableEntry(EntityEntry entry)
+        {
+            if (entry.Entity is AuditLog) return false;
+            if (entry.State != EntityState.Added && entry.State != EntityState.Modified && entry.State != EntityState.Deleted)
+                return false;
+            return true;
+        }
+
+        private static bool IsSoftDelete(EntityEntry entry)
+        {
+            if (entry.State != EntityState.Modified) return false;
+            var prop = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "IsDeleted" && p.Metadata.ClrType == typeof(bool));
+            if (prop == null) return false;
+            return prop.OriginalValue is bool oldVal && prop.CurrentValue is bool newVal && !oldVal && newVal;
+        }
+
+        private static string SerializeValues(PropertyValues values)
+        {
+            var dict = new Dictionary<string, object?>();
+            foreach (var property in values.Properties)
+            {
+                dict[property.Name] = values[property.Name];
+            }
+            return JsonSerializer.Serialize(dict);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -94,6 +228,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Doctor>(entity =>
             {
                 entity.HasKey(d => d.Id);
+                entity.HasQueryFilter(d => !d.IsDeleted);
 
                 entity.Property(d => d.Code)
                       .IsRequired()
@@ -297,6 +432,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Room>(entity =>
             {
                 entity.HasKey(r => r.Id);
+                entity.HasQueryFilter(r => !r.IsDeleted);
 
                 entity.Property(r => r.Code)
                       .IsRequired()
@@ -348,6 +484,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Department>(entity =>
             {
                 entity.HasKey(d => d.Id);
+                entity.HasQueryFilter(d => !d.IsDeleted);
                 entity.Property(d => d.Name).IsRequired().HasMaxLength(150);
                 entity.HasIndex(d => d.Name).IsUnique();
             });
@@ -358,6 +495,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Specialty>(entity =>
             {
                 entity.HasKey(s => s.Id);
+                entity.HasQueryFilter(s => !s.IsDeleted);
                 entity.Property(s => s.Name).IsRequired().HasMaxLength(150);
                 entity.HasOne(s => s.Department)
                       .WithMany(d => d.Specialties)
@@ -371,6 +509,7 @@ namespace ClinicManagement.Api.Data
             modelBuilder.Entity<Staff>(entity =>
             {
                 entity.HasKey(s => s.Id);
+                entity.HasQueryFilter(s => !s.IsDeleted);
 
                 entity.Property(s => s.Code)
                       .IsRequired()
@@ -464,6 +603,7 @@ namespace ClinicManagement.Api.Data
             {
                 entity.HasIndex(m => m.Name); 
                 entity.Property(m => m.Price).HasColumnType("decimal(18,2)");
+                entity.HasQueryFilter(m => !m.IsDeleted);
             });
             modelBuilder.Entity<Medicine>().HasData(
                 new Medicine { Id = Guid.Parse("f001f001-1111-1111-1111-111111111111"), Name = "Paracetamol", DefaultDosage = "500mg", Unit = "Viên", Price = 2000, IsActive = true },
@@ -492,6 +632,7 @@ namespace ClinicManagement.Api.Data
                 entity.HasKey(p => p.Id);
                 entity.Property(p => p.FullName).IsRequired().HasMaxLength(150);
                 entity.Property(p => p.Gender).HasConversion<string>().IsRequired();
+                entity.HasQueryFilter(p => !p.IsDeleted);
 
                 entity.Property(p => p.PatientCode).HasMaxLength(20); 
                 entity.Property(p => p.CitizenId).HasMaxLength(20);
@@ -584,6 +725,7 @@ namespace ClinicManagement.Api.Data
                 entity.Property(p => p.CoveragePercent).HasColumnType("decimal(5,4)");
                 entity.Property(p => p.ExpiryDate);
                 entity.HasIndex(p => p.Code).IsUnique();
+                entity.HasQueryFilter(p => !p.IsDeleted);
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>
@@ -635,6 +777,22 @@ namespace ClinicManagement.Api.Data
                       .WithMany(a => a.Payments)
                       .HasForeignKey(p => p.AppointmentId)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Action).IsRequired().HasMaxLength(30);
+                entity.Property(a => a.EntityName).IsRequired().HasMaxLength(120);
+                entity.Property(a => a.RecordId).IsRequired().HasMaxLength(100);
+                entity.Property(a => a.UserId).HasMaxLength(100);
+                entity.Property(a => a.Username).HasMaxLength(200);
+                entity.Property(a => a.BeforeData).HasColumnType("nvarchar(max)");
+                entity.Property(a => a.AfterData).HasColumnType("nvarchar(max)");
+                entity.Property(a => a.ChangedAt).IsRequired();
+
+                entity.HasIndex(a => a.ChangedAt);
+                entity.HasIndex(a => new { a.EntityName, a.Action });
             });
 
 

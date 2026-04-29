@@ -247,6 +247,7 @@ useAuthStore()
 interface Appointment {
   id: string
   appointmentCode: string
+  createdAt?: string
   fullName: string
   phone: string
   dateOfBirth: string
@@ -297,7 +298,8 @@ const doctorOptions = computed(() => {
 })
 
 const filteredAppointments = computed(() => {
-  return appointments.value.filter(a => {
+  return appointments.value
+    .filter(a => {
     const matchCode = !searchCode.value || a.appointmentCode?.toLowerCase().includes(searchCode.value.toLowerCase())
     const matchName = !searchName.value || a.fullName?.toLowerCase().includes(searchName.value.toLowerCase())
     const matchPhone = !searchPhone.value || a.phone?.includes(searchPhone.value)
@@ -306,6 +308,11 @@ const filteredAppointments = computed(() => {
     const matchDoctor = !selectedDoctor.value || a.statusDetail.doctorId === selectedDoctor.value
     return matchCode && matchName && matchPhone && matchDate && matchDept && matchDoctor
   })
+    .sort((a, b) => {
+      const timeA = a.createdAt ? Date.parse(a.createdAt) : 0
+      const timeB = b.createdAt ? Date.parse(b.createdAt) : 0
+      return timeB - timeA
+    })
 })
 
 const getDepartmentName = (depId: string) => departments.value.find(d => d.id === depId)?.name || ''

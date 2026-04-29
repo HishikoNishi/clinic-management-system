@@ -8,6 +8,7 @@ namespace ClinicManagement.Api.Models
         public decimal CoveragePercent { get; set; } = 0m; // 0-1
         public string? Note { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsDeleted { get; set; } = false;
         public DateTime? ExpiryDate { get; set; }
     }
 }

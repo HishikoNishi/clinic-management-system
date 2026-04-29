@@ -36,7 +36,8 @@
 - `POST /api/doctor` - Tạo bác sĩ mới (Admin)
 - `PUT /api/doctor/{id}` - Cập nhật hồ sơ bác sĩ
 - `PUT /api/doctor/{id}/status` - Cập nhật trạng thái bác sĩ
-- `DELETE /api/doctor/{id}` - Xóa bác sĩ
+- `DELETE /api/doctor/{id}` - Soft delete bác sĩ (ẩn khỏi danh sách)
+- `POST /api/doctor/{id}/restore` - Khôi phục bác sĩ đã soft delete
 - `GET /api/doctor/by-department/{departmentId}` - Lấy bác sĩ theo khoa
 - `GET /api/doctor/departments/{departmentId}/specialties` - Chuyên khoa theo khoa
 - `GET /api/doctor/by-specialty/{specialtyId}` - Lấy bác sĩ theo chuyên khoa
@@ -83,7 +84,8 @@
 - `GET /api/staffs/{id}` - Chi tiết nhân viên
 - `POST /api/staffs` - Tạo nhân viên
 - `PUT /api/staffs/{id}` - Cập nhật nhân viên
-- `DELETE /api/staffs/{id}` - Xóa nhân viên
+- `DELETE /api/staffs/{id}` - Soft delete nhân viên
+- `POST /api/staffs/{id}/restore` - Khôi phục nhân viên
 - `GET /api/staffs/profile` - Hồ sơ staff hiện tại
 - `PUT /api/staffs/profile` - Cập nhật hồ sơ staff hiện tại
 - `POST /api/staffs/{id}/avatar` - Upload avatar staff
@@ -183,20 +185,23 @@
 - `GET /api/departments/{id}`
 - `POST /api/departments` (Admin)
 - `PUT /api/departments/{id}` (Admin)
-- `DELETE /api/departments/{id}` (Admin)
+- `DELETE /api/departments/{id}` (Admin, soft delete)
+- `POST /api/departments/{id}/restore` (Admin)
 
 - `GET /api/specialties` (Admin)
 - `GET /api/specialties/{id}` (Admin)
 - `POST /api/specialties` (Admin)
 - `PUT /api/specialties/{id}` (Admin)
-- `DELETE /api/specialties/{id}` (Admin)
+- `DELETE /api/specialties/{id}` (Admin, soft delete)
+- `POST /api/specialties/{id}/restore` (Admin)
 
 - `GET /api/medicines`
 - `GET /api/medicines/suggest`
 - `POST /api/medicines` (Admin)
 - `PUT /api/medicines/{id}` (Admin)
 - `PATCH /api/medicines/{id}/toggle` (Admin)
-- `DELETE /api/medicines/{id}` (Admin)
+- `DELETE /api/medicines/{id}` (Admin, soft delete + disable)
+- `POST /api/medicines/{id}/restore` (Admin)
 
 ## Nhóm Email OTP
 
@@ -208,3 +213,4 @@
 - Các endpoint có role cụ thể được enforce bằng `[Authorize(Roles = ...)]` trong controller.
 - Enum trong response/request đang được serialize dạng string (đã bật `JsonStringEnumConverter`).
 - Danh sách trên phản ánh đúng route từ source code hiện tại; chi tiết DTO request/response nên tham chiếu thêm Swagger.
+- Một số nhóm đã dùng soft delete (`Patient`, `Doctor`, `Staff`, `Department`, `Specialty`, `Medicine`), nên `DELETE` không xóa vật lý dữ liệu.

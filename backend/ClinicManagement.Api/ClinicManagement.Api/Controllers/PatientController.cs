@@ -122,6 +122,45 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new { message = "Patient updated successfully." });
         }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeletePatient(Guid id)
+        {
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+            if (patient == null)
+                return NotFound(new { message = "Patient not found." });
+
+            if (patient.IsDeleted)
+                return BadRequest(new { message = "Patient is already deleted." });
+
+            patient.IsDeleted = true;
+            patient.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Patient deleted successfully (soft delete)." });
+        }
+
+        [HttpPost("{id:guid}/restore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RestorePatient(Guid id)
+        {
+            var patient = await _context.Patients
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (patient == null)
+                return NotFound(new { message = "Patient not found." });
+
+            if (!patient.IsDeleted)
+                return BadRequest(new { message = "Patient is not deleted." });
+
+            patient.IsDeleted = false;
+            patient.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Patient restored successfully." });
+        }
     }
 
     // ============================================================

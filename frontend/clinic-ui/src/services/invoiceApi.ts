@@ -122,6 +122,13 @@ export const invoiceApi = {
     return data
   },
 
+  async downloadInvoicePdf(invoiceId: string) {
+    const { data, headers } = await api.get(`/invoicemanagement/${invoiceId}/pdf`, {
+      responseType: 'blob'
+    })
+    return { blob: data as Blob, headers }
+  },
+
   async validateInsurance(code: string) {
     const { data } = await api.get('/insurance/validate', { params: { code } })
     return data

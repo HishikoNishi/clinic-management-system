@@ -9,6 +9,7 @@ public class Department
     public string Name { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool IsDeleted { get; set; } = false;
     public ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
     public ICollection<Specialty> Specialties { get; set; } = new List<Specialty>();
 }

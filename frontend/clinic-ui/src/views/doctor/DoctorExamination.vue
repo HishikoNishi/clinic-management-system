@@ -384,9 +384,11 @@ import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
 import { useAuthStore } from "@/stores/auth"
 import type { AxiosError } from "axios"
+import { useToast } from "@/composables/useToast"
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const toast = useToast()
 const appointmentId = route.params.id as string
 const appointment = reactive<any>({})
 const patient = reactive<any>({})
@@ -722,7 +724,7 @@ const loadTransferSlots = async () => {
 
 const submitTransfer = async () => {
   if (!transferForm.targetDepartmentId || !transferForm.targetDoctorId || !transferForm.appointmentDate || !transferForm.appointmentTime) {
-    alert("Vui lòng chọn đủ khoa, bác sĩ, ngày và khung giờ chuyển khoa")
+    toast.warning("Vui lòng chọn đủ khoa, bác sĩ, ngày và khung giờ chuyển khoa")
     return
   }
 
@@ -738,30 +740,27 @@ const submitTransfer = async () => {
       enqueueNow: transferForm.enqueueNow
     })
     transferResult.value = data
-    alert(
+    toast.success(
       `Đã chuyển khoa thành công. Mã lịch mới: ${data?.targetAppointmentCode || "N/A"}${
         data?.queueNumber ? ` | Số thứ tự: ${data.queueNumber}` : ""
-      }`
+      }`,
+      4500
     )
   } catch (err: any) {
     console.error(err)
-    alert(err?.response?.data?.message || "Không chuyển khoa được")
+    toast.error(err?.response?.data?.message || "Không chuyển khoa được")
   } finally {
     transferring.value = false
   }
 }
-const submit = async () => {
-  if (!form.diagnosis.trim()) {
-    alert("Vui lòng nhập chẩn đoán")
-    return
-  }
 
-  // Giới hạn đơn giản cho sinh hiệu (chặn giá trị phi thực tế)
+const validateVitals = () => {
   const hr = form.vitals.heartRate ? Number(form.vitals.heartRate) : null
   const temp = form.vitals.temperature ? Number(form.vitals.temperature) : null
   const spo2 = form.vitals.spo2 ? Number(form.vitals.spo2) : null
   const height = form.vitals.heightCm ? Number(form.vitals.heightCm) : null
   const weight = form.vitals.weightKg ? Number(form.vitals.weightKg) : null
+
   let bpOk = true
   if (form.vitals.bloodPressure) {
     const m = form.vitals.bloodPressure.match(/^\s*(\d{2,3})\s*\/\s*(\d{2,3})\s*$/)
@@ -771,6 +770,7 @@ const submit = async () => {
       if (sys < 70 || sys > 250 || dia < 40 || dia > 150) bpOk = false
     }
   }
+
   const vitalOut =
     (hr !== null && (hr < 30 || hr > 220)) ||
     (temp !== null && (temp < 34 || temp > 42)) ||
@@ -778,47 +778,57 @@ const submit = async () => {
     (height !== null && (height < 30 || height > 250)) ||
     (weight !== null && (weight < 1 || weight > 400)) ||
     !bpOk
-  if (vitalOut) {
-    alert("Chỉ số vượt giới hạn thực tế (HR 30–220, nhiệt 34–42°C, SpO₂ 70–100%, cao 30–250cm, nặng 1–400kg, HA hợp lệ theo dạng 120/80 và trong khoảng 70–250 / 40–150).")
-    return
-  }
 
-  if (form.requestClinicalTest) {
-    const anyName =
-      form.clinicalTests.some(t => t && t.trim()) ||
-      (form.clinicalTestType !== "Other" && form.clinicalTestType) ||
-      (form.clinicalTestType === "Other" && form.clinicalTestName.trim())
-    if (!anyName) {
-      alert("Vui lòng nhập ít nhất một xét nghiệm")
-      return
-    }
-  }
+  if (!vitalOut) return null
+  return "Chỉ số vượt giới hạn thực tế (HR 30–220, nhiệt 34–42°C, SpO₂ 70–100%, cao 30–250cm, nặng 1–400kg, HA hợp lệ theo dạng 120/80 và trong khoảng 70–250 / 40–150)."
+}
 
-  const prescriptionItems = form.prescriptionItems
-    .filter(item => item.medicineName && item.medicineName.trim())
-    .map(item => ({
+const buildClinicalTestNames = () => {
+  if (!form.requestClinicalTest) return [] as string[]
+  return form.clinicalTests
+    .filter((t) => t && t.trim())
+    .map((t) => t.trim())
+    .concat(
+      form.clinicalTestType === "Other" && form.clinicalTestName.trim()
+        ? [`${testTypeLabel(form.clinicalTestType)}: ${form.clinicalTestName.trim()}`]
+        : form.clinicalTestType !== "Other"
+        ? [testTypeLabel(form.clinicalTestType)]
+        : []
+    )
+}
+
+const buildPrescriptionItems = () =>
+  form.prescriptionItems
+    .filter((item) => item.medicineName && item.medicineName.trim())
+    .map((item) => ({
       ...item,
       dosage: item.dosage?.trim() || "",
       quantity: item.quantity || 1
     }))
 
+const submit = async () => {
+  if (!form.diagnosis.trim()) {
+    toast.warning("Vui lòng nhập chẩn đoán")
+    return
+  }
+
+  const vitalError = validateVitals()
+  if (vitalError) {
+    toast.warning(vitalError, 5000)
+    return
+  }
+
+  const clinicalTestNames = buildClinicalTestNames()
+  if (form.requestClinicalTest && !clinicalTestNames.length) {
+    toast.warning("Vui lòng nhập ít nhất một xét nghiệm")
+    return
+  }
+  const prescriptionItems = buildPrescriptionItems()
+
   saving.value = true
   error.value = null
   try {
     const combinedNotes = form.notes.trim()
-
-    const clinicalTestNames = form.requestClinicalTest
-      ? (form.clinicalTests
-          .filter(t => t && t.trim())
-          .map(t => t.trim())
-          .concat(
-            form.clinicalTestType === "Other" && form.clinicalTestName.trim()
-              ? [`${testTypeLabel(form.clinicalTestType)}: ${form.clinicalTestName.trim()}`]
-              : form.clinicalTestType !== "Other"
-              ? [testTypeLabel(form.clinicalTestType)]
-              : []
-          ))
-      : []
 
     await api.post("/medical-record/examination", {
       appointmentId,
@@ -843,7 +853,7 @@ const submit = async () => {
       surcharge: dataFromRecord.value?.surcharge ?? 0,
       discount: dataFromRecord.value?.discount ?? 0
     })
-    alert("Đã lưu hồ sơ khám")
+    toast.success("Đã lưu hồ sơ khám")
     await loadDetail()
     // reset flag để tránh cảm giác lưu xong vẫn bật ghi chú xét nghiệm cũ
     if (!form.requestClinicalTest) {
@@ -871,7 +881,7 @@ const viewHistoryDetail = async (recordId: string) => {
 try {
 const { data } = await api.get(`/medical-record/${recordId}`)
 historyDetail.value = { ...data, createdAt: history.value.find(h => h.id === recordId)?.createdAt }
-} catch (err: any) { alert("Không tải được hồ sơ chi tiết") }
+} catch (err: any) { toast.error("Không tải được hồ sơ chi tiết") }
 }
 const goBack = () => router.push("/doctor/appointments")
 

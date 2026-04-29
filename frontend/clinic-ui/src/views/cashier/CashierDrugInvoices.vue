@@ -62,6 +62,26 @@ const payInvoiceCash = async () => {
   }
 }
 
+const downloadPdf = async () => {
+  if (!invoice.value?.id) return
+  try {
+    const { blob, headers } = await invoiceApi.downloadInvoicePdf(invoice.value.id)
+    const contentDisposition = headers?.['content-disposition'] as string | undefined
+    const fileNameMatch = contentDisposition?.match(/filename="?([^"]+)"?/)
+    const fileName = fileNameMatch?.[1] || `invoice-${invoice.value.id}.pdf`
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (err: any) {
+    error.value = err?.response?.data?.message ?? 'Không tải được file PDF'
+  }
+}
+
 const filteredList = () => {
   let data = list.value.filter(i => i.invoiceType === 'Drug')
   if (!searchText.value.trim()) return data
@@ -220,6 +240,11 @@ watch(filterStatus, loadData)
               QR PayOS
             </button>
           </div>
+          </div>
+          <div v-if="invoice?.isPaid" class="mt-3 pt-3 border-top">
+            <button class="btn btn-outline-success btn-sm" @click="downloadPdf">
+              Tải PDF hóa đơn
+            </button>
           </div>
         </InvoiceDetail>
       </div>

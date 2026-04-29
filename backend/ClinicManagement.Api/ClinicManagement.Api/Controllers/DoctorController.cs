@@ -222,20 +222,35 @@ namespace ClinicManagement.Api.Controllers
             if (doctor == null)
                 return NotFound();
 
-            // ✅ Check có appointment không
-            var hasAppointments = await _context.Appointments
-                .AnyAsync(a => a.DoctorId == id);
-
-            if (hasAppointments)
-                return BadRequest(new
-                {
-                    message = "Cannot delete doctor with existing appointments."
-                });
-
-            _context.Doctors.Remove(doctor);
+            doctor.IsDeleted = true;
+            doctor.Status = DoctorStatus.Inactive;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Doctor deleted successfully." });
+            return Ok(new { message = "Doctor deleted successfully (soft delete)." });
+        }
+
+        [HttpPost("{id:guid}/restore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Restore(Guid id)
+        {
+            var doctor = await _context.Doctors
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (doctor == null)
+                return NotFound();
+
+            if (!doctor.IsDeleted)
+                return BadRequest(new { message = "Doctor is not deleted." });
+
+            doctor.IsDeleted = false;
+            if (doctor.Status == DoctorStatus.Inactive)
+            {
+                doctor.Status = DoctorStatus.Active;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Doctor restored successfully." });
         }
 
         /* ================= GET BY DEPARTMENT ================= */

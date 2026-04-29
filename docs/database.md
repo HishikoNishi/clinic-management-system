@@ -5,6 +5,7 @@
 - Database context: `ClinicDbContext`
 - DB engine: SQL Server (EF Core Code First + Migration)
 - Một số enum đang lưu dạng string: `AppointmentStatus`, `DoctorStatus`, `DoctorShiftRequestStatus`, `DoctorShiftRequestType`, `PaymentMethod`, `InvoiceType`, `QueueStatus`, `Gender`.
+- Các bảng nghiệp vụ có áp dụng soft delete qua cột `IsDeleted` + query filter.
 
 ## Danh sách bảng chính
 
@@ -61,13 +62,14 @@
   - `UserId -> Users.Id` (unique)
   - `DepartmentId -> Departments.Id`
   - `SpecialtyId -> Specialties.Id`
-- Cột quan trọng: `Code` (unique), `FullName`, `LicenseNumber`, `Status`, `AvatarUrl`, `CreatedAt`
+- Cột quan trọng: `Code` (unique), `FullName`, `LicenseNumber`, `Status`, `AvatarUrl`, `CreatedAt`, `IsDeleted`
 - Quan hệ:
   - 1 - n `Appointments`
   - 1 - n `DoctorSchedules`
   - 1 - n `DoctorWeeklySchedules`
   - 1 - n `DoctorScheduleOverrideDays`
   - 1 - n `DoctorShiftRequests`
+- Soft delete: `DELETE` API chuyển thành set `IsDeleted = true` (không xóa vật lý)
 
 ### 4) Staffs
 
@@ -75,7 +77,7 @@
 - FK:
   - `UserId -> Users.Id` (unique)
   - `DepartmentId -> Departments.Id` (nullable)
-- Cột quan trọng: `Code` (unique), `FullName`, `Role`, `Position`, `AvatarUrl`, `IsActive`, `CreatedAt`, `UpdatedAt`
+- Cột quan trọng: `Code` (unique), `FullName`, `Role`, `Position`, `AvatarUrl`, `IsActive`, `IsDeleted`, `CreatedAt`, `UpdatedAt`
 
 ### 5) Patients
 
@@ -90,7 +92,7 @@
 ### 6) Departments
 
 - PK: `Id` (`Guid`)
-- Cột quan trọng: `Name` (unique), `Description`, `CreatedAt`
+- Cột quan trọng: `Name` (unique), `Description`, `CreatedAt`, `IsDeleted`
 - Quan hệ:
   - 1 - n với `Doctors`
   - 1 - n với `Specialties`
@@ -100,7 +102,7 @@
 
 - PK: `Id` (`Guid`)
 - FK: `DepartmentId -> Departments.Id`
-- Cột quan trọng: `Name`
+- Cột quan trọng: `Name`, `IsDeleted`
 - Quan hệ: n - 1 với `Departments`, 1 - n với `Doctors`
 
 ### 8) Appointments
@@ -155,7 +157,7 @@
 ### 13) Medicines
 
 - PK: `Id` (`Guid`)
-- Cột: `Name` (indexed), `DefaultDosage`, `Unit`, `Price` (`decimal(18,2)`), `IsActive`
+- Cột: `Name` (indexed), `DefaultDosage`, `Unit`, `Price` (`decimal(18,2)`), `IsActive`, `IsDeleted`
 - Có dữ liệu seed mặc định danh mục thuốc
 
 ### 14) Invoices
@@ -195,7 +197,7 @@
 ### 17) InsurancePlans
 
 - PK: `Id` (`Guid`)
-- Cột: `Code` (unique), `Name`, `CoveragePercent`, `Note`, `IsActive`, `ExpiryDate`
+- Cột: `Code` (unique), `Name`, `CoveragePercent`, `Note`, `IsActive`, `ExpiryDate`, `IsDeleted`
 - Có dữ liệu seed gói bảo hiểm mẫu
 
 ### 18) RefreshTokens
@@ -261,7 +263,7 @@
 
 - PK: `Id` (`Guid`)
 - FK: `DepartmentId -> Departments.Id`
-- Cột: `Code` (unique), `Name`, `IsActive`, `CreatedAt`
+- Cột: `Code` (unique), `Name`, `IsActive`, `IsDeleted`, `CreatedAt`
 - Quan hệ: 1 - n với `Queues`
 
 ### 26) Queues
@@ -288,4 +290,5 @@
 
 - Ứng dụng có chạy `Database.Migrate()` khi startup.
 - Có đoạn SQL startup để bổ sung các cột mới cho bảng `MedicalRecords` và `InvoiceLines` nếu DB cũ chưa có.
+- Có đoạn SQL startup để bổ sung cột `IsDeleted` cho các bảng mới áp dụng soft delete (`Doctors`, `Staffs`, `Departments`, `Specialties`, `Rooms`, `Medicines`, `InsurancePlans`) nếu DB cũ chưa có.
 - Một số quan hệ dùng `DeleteBehavior.Restrict` để tránh xóa dây chuyền ngoài ý muốn ở dữ liệu vận hành.
