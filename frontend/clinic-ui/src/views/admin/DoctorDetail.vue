@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/services/api'
@@ -16,6 +16,14 @@ const specialties = ref<any[]>([])
 const uploadLoading = ref(false)
 const uploadError = ref('')
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const notice = ref<{ type: 'success' | 'danger'; text: string } | null>(null)
+
+const showNotice = (type: 'success' | 'danger', text: string) => {
+  notice.value = { type, text }
+  setTimeout(() => {
+    if (notice.value?.text === text) notice.value = null
+  }, 3000)
+}
 
 onMounted(async () => {
   await loadDoctor()
@@ -28,17 +36,16 @@ async function loadDoctor() {
   editForm.value = {
     ...doctor.value,
     departmentId: doctor.value.departmentId?.toString() || '',
-    specialtyId: doctor.value.specialtyId?.toString() || ''   // ✅ thêm dòng này
+    specialtyId: doctor.value.specialtyId?.toString() || ''
   }
 }
-
 
 async function loadAppointments() {
   try {
     const resAppointments = await api.get(`/Doctor/${doctorId}/appointments`)
     appointments.value = resAppointments.data
-  } catch (err:any) {
-    console.error("Lỗi khi load lịch khám:", err)
+  } catch (err: any) {
+    console.error('Lỗi khi load lịch khám:', err)
   }
 }
 
@@ -61,7 +68,7 @@ async function saveDoctor() {
     await api.put(`/Doctor/${doctorId}`, {
       fullName: editForm.value.fullName,
       code: editForm.value.code,
-      specialtyId: editForm.value.specialtyId,   
+      specialtyId: editForm.value.specialtyId,
       licenseNumber: editForm.value.licenseNumber,
       departmentId: editForm.value.departmentId,
       avatarUrl: editForm.value.avatarUrl
@@ -69,13 +76,14 @@ async function saveDoctor() {
 
     showEdit.value = false
     await loadDoctor()
-  } catch (err:any) {
-    alert("Không thể cập nhật bác sĩ: " + err.message)
+    showNotice('success', 'Cập nhật bác sĩ thành công')
+  } catch (err: any) {
+    const message = err?.response?.data?.message || err?.message || 'Không thể cập nhật bác sĩ'
+    showNotice('danger', message)
   }
 }
 
 async function openEdit() {
-  // Reset editForm từ doctor mới nhất
   editForm.value = {
     ...doctor.value,
     departmentId: doctor.value.departmentId?.toString() || '',
@@ -87,10 +95,10 @@ async function openEdit() {
   }
   showEdit.value = true
 }
+
 watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
   if (newVal) {
     await loadSpecialties(newVal)
-    // Chỉ reset nếu department thực sự thay đổi khác với cũ
     if (newVal !== oldVal) {
       editForm.value.specialtyId = ''
     }
@@ -99,8 +107,6 @@ watch(() => editForm.value.departmentId, async (newVal, oldVal) => {
     editForm.value.specialtyId = ''
   }
 })
-
-
 
 const filteredAppointments = computed(() => {
   const term = searchTerm.value.trim().toLowerCase()
@@ -115,26 +121,26 @@ const filteredAppointments = computed(() => {
 })
 
 const doctorBadgeClass = (status: string) => {
-  if (status === "Active") return "bg-success"
-  if (status === "Busy") return "bg-warning"
-  if (status === "Inactive") return "bg-secondary"
-  return "bg-light"
+  if (status === 'Active') return 'bg-success'
+  if (status === 'Busy') return 'bg-warning'
+  if (status === 'Inactive') return 'bg-secondary'
+  return 'bg-light'
 }
 
 const doctorStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    Active: "Hoạt động",
-    Busy: "Đang khám",
-    Inactive: "Không hoạt động"
+    Active: 'Hoạt động',
+    Busy: 'Đang khám',
+    Inactive: 'Không hoạt động'
   }
   return labels[status] || status
 }
 
 const appointmentStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    Pending: "Chờ xác nhận",
-    Confirmed: "Đã xác nhận",
-    Completed: "Đã khám xong"
+    Pending: 'Chờ xác nhận',
+    Confirmed: 'Đã xác nhận',
+    Completed: 'Đã khám xong'
   }
   return labels[status] || status
 }
@@ -159,10 +165,11 @@ const onAvatarSelected = async (e: Event) => {
   }
 }
 </script>
+
 <template>
   <div class="doctor-page-container">
     <div class="container" v-if="doctor">
-      
+
       <div class="page-header-box d-flex justify-content-between align-items-center">
         <div>
           <h2 class="page-title mb-1">Chi tiết bác sĩ</h2>
@@ -182,8 +189,12 @@ const onAvatarSelected = async (e: Event) => {
         </div>
       </div>
 
+      <div v-if="notice" :class="['alert py-2 mt-3 mb-0', notice.type === 'success' ? 'alert-success' : 'alert-danger']">
+        {{ notice.text }}
+      </div>
+
       <div class="doctor-info-card" :class="{ 'is-editing': showEdit }">
-        
+
         <div class="doctor-profile-section">
           <div class="avatar-container-inline">
             <img :src="editForm.avatarUrl || doctor?.avatarUrl || '/default-avatar.png'" class="main-avatar" />
@@ -193,7 +204,7 @@ const onAvatarSelected = async (e: Event) => {
             </div>
           </div>
           <input ref="fileInputRef" type="file" accept="image/*" class="d-none" @change="onAvatarSelected" />
-          
+
           <div v-if="!showEdit" class="mt-2">
             <span :class="['status-badge-modern', doctorBadgeClass(doctor?.status)]">
               {{ doctorStatusLabel(doctor?.status) }}
@@ -203,7 +214,7 @@ const onAvatarSelected = async (e: Event) => {
         </div>
 
         <div class="doctor-details-grid">
-          
+
           <div class="detail-box">
             <label>Họ và tên</label>
             <p v-if="!showEdit">{{ doctor?.fullName }}</p>

@@ -170,6 +170,7 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th width="120">Mã</th>
+                <th>Tên đăng nhập</th>
                 <th>Họ và tên</th>
                 <th>Khoa / Chuyên khoa</th>
                 <th>Giấy phép</th>
@@ -185,6 +186,11 @@ onMounted(async () => {
               </tr>
               <tr v-for="d in filteredDoctors" :key="d.id">
                 <td><span class="code-badge">{{ d.code }}</span></td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="text-dark">{{ d.username }}</span>
+                  </div>
+                </td>
                 <td>
                   <div class="d-flex align-items-center">
                     <span class="fw-bold text-dark">{{ d.fullName }}</span>

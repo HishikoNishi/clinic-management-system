@@ -49,7 +49,7 @@
 
             <div class="form-group">
               <label>Mã bác sĩ</label>
-              <input v-model="form.code" :disabled="!isEditing" :class="{ 'disabled-view': !isEditing }" />
+              <input v-model="form.code" disabled class="disabled-view input-readonly-static" />
             </div>
 
           <div class="form-group">
