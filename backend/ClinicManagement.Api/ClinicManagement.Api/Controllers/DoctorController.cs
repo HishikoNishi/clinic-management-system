@@ -374,8 +374,12 @@ namespace ClinicManagement.Api.Controllers
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId.ToString() == currentUserId);
             if (doctor == null) return NotFound();
 
+            if (!string.Equals(dto.Code, doctor.Code, StringComparison.Ordinal))
+            {
+                return BadRequest(new { message = "Bac si khong duoc tu thay doi ma. Vui long lien he admin." });
+            }
+
             doctor.FullName = dto.FullName;
-            doctor.Code = dto.Code;
             doctor.SpecialtyId = dto.SpecialtyId;
             doctor.DepartmentId = dto.DepartmentId;
             doctor.LicenseNumber = dto.LicenseNumber ?? "";
