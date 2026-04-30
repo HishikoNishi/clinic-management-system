@@ -128,9 +128,7 @@ const handleFileChange = async (e: Event) => {
 
   try {
     uploadBusy.value = true
-    const res = await api.post(`/Doctor/${doctor.value.id}/avatar`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
+    const res = await api.post(`/Doctor/${doctor.value.id}/avatar`, formData)
     
     const url = res.data?.url
     if (url) {

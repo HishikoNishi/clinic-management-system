@@ -9,6 +9,7 @@ namespace ClinicManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Staff profile CRUD (front desk / technician / cashier) with soft-delete for history safety.
     public class StaffsController : ControllerBase
     {
         private readonly ClinicDbContext _context;

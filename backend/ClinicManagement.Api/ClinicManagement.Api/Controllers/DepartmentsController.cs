@@ -15,6 +15,7 @@ namespace ClinicManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // Master data for clinical departments. Referenced by doctors, rooms and specialties.
     public class DepartmentsController : ControllerBase
     {
         private readonly ClinicDbContext _context;

@@ -55,6 +55,7 @@ namespace ClinicManagement.Api.Controllers
 
         [HttpPost("check-in")]
         [Authorize(Roles = "Admin,Staff")]
+        // Check-in = create real queue ticket by room/day; appointment booking itself only reserves slot.
         public async Task<ActionResult<QueueItemDto>> CheckIn([FromBody] QueueCheckInDto dto)
         {
             if (dto.AppointmentId == Guid.Empty)
@@ -243,6 +244,7 @@ namespace ClinicManagement.Api.Controllers
 
         [HttpPost("rooms/{roomId:guid}/next")]
         [Authorize(Roles = "Doctor")]
+        // Doctor call logic: only one InProgress per room; next patient sorted by priority then queue number.
         public async Task<ActionResult<QueueItemDto>> CallNext(Guid roomId)
         {
             var doctorId = await GetCurrentDoctorIdAsync();

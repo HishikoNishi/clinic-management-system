@@ -31,6 +31,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         [HttpPost("create")]
+        // Create merchant order from internal invoice. orderCode is numeric because PayOS requires number type.
         public async Task<IActionResult> Create([FromBody] CreatePayOsRequest req)
         {
             try
@@ -118,6 +119,7 @@ namespace ClinicManagement.Api.Controllers
         [AllowAnonymous]
         [HttpPost("webhook")]
         [Consumes("application/json", "application/x-www-form-urlencoded")]
+        // Webhook is idempotent: if invoice is already paid, return success and do not duplicate payment rows.
         public async Task<IActionResult> Webhook()
         {
             try

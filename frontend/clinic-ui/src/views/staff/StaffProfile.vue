@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="staff-page-container">
     <div class="container" v-if="staff">
       <div class="page-header-box d-flex justify-content-between align-items-center mb-4">
@@ -152,9 +152,7 @@ const handleFileChange = async (e: Event) => {
   
   try {
     uploadBusy.value = true
-    const res = await api.post(`/Staffs/${staff.value.id}/avatar`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const res = await api.post(`/Staffs/${staff.value.id}/avatar`, formData)
     const url = res.data?.url
     if (url) {
       staff.value.avatarUrl = url
@@ -163,7 +161,8 @@ const handleFileChange = async (e: Event) => {
       setTimeout(() => (toast.value = null), 2000)
     }
   } catch (err: any) {
-    alert("Tải ảnh thất bại")
+    const msg = err?.response?.data?.message || err?.response?.data?.detail || "Tải ảnh thất bại"
+    alert(msg)
   } finally {
     uploadBusy.value = false
     target.value = ''
@@ -174,3 +173,4 @@ onMounted(loadProfile)
 </script>
  
 <style src="@/styles/layouts/staff-profile.css"></style>
+

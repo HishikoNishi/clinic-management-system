@@ -1078,11 +1078,29 @@ const getStatusClass = (status: string) => {
   }
 }
 
+const departmentNameMap: Record<string, string> = {
+  'General Medicine': 'Nội tổng quát',
+  Surgery: 'Ngoại khoa',
+  Pediatrics: 'Nhi khoa',
+  ENT: 'Tai Mũi Họng',
+  Obstetrics: 'Sản phụ khoa',
+  Diagnostics: 'Cận lâm sàng'
+}
+
+const toVietnameseDepartmentName = (name?: string) => {
+  if (!name) return ''
+  return departmentNameMap[name.trim()] || name
+}
+
 /* Load departments for optional selection */
 const loadDepartments = async () => {
   try {
     const res = await api.get('/Departments')
-    departments.value = res.data ?? []
+    const rawDepartments = Array.isArray(res.data) ? res.data : []
+    departments.value = rawDepartments.map((department: any) => ({
+      ...department,
+      name: toVietnameseDepartmentName(department?.name)
+    }))
   } catch (err) {
     console.warn('Không tải được danh sách khoa', err)
   }

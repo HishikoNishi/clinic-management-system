@@ -38,6 +38,7 @@ namespace ClinicManagement.Api.Controllers
 
         [HttpPost("login-pin")]
         [AllowAnonymous]
+        // Lightweight gate before opening /login page. Real authorization still uses JWT + role checks.
         public IActionResult VerifyLoginPin([FromBody] PinDto dto)
         {
             if (!string.IsNullOrWhiteSpace(_loginPin) && dto?.Pin == _loginPin)

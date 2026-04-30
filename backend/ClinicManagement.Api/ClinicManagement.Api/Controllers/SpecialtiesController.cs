@@ -10,6 +10,7 @@ namespace ClinicManagement.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
+    // Master data for specialty taxonomy under each department.
     public class SpecialtiesController : ControllerBase
     {
         private readonly ClinicDbContext _context;

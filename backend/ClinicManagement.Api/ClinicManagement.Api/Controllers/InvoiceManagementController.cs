@@ -84,6 +84,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         [HttpGet("{id}/pdf")]
+        // Export official payment proof. Only paid invoices can be downloaded as PDF.
         public async Task<IActionResult> DownloadInvoicePdf(Guid id)
         {
             var invoice = await _context.Invoices
