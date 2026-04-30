@@ -148,9 +148,7 @@ const onAvatarSelected = async (e: Event) => {
   form.append('file', file)
   try {
     uploadLoading.value = true
-    const res = await api.post(`/Doctor/${doctorId}/avatar`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const res = await api.post(`/Doctor/${doctorId}/avatar`, form)
     editForm.value.avatarUrl = res.data?.url
     doctor.value.avatarUrl = res.data?.url
   } catch (err: any) {

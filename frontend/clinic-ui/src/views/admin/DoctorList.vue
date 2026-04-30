@@ -169,7 +169,7 @@ onMounted(async () => {
           <table class="table table-hover align-middle mb-0 custom-table">
             <thead>
               <tr>
-                <th width="80">Mã</th>
+                <th width="120">Mã</th>
                 <th>Họ và tên</th>
                 <th>Khoa / Chuyên khoa</th>
                 <th>Giấy phép</th>

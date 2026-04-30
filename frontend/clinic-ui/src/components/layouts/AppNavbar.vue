@@ -62,6 +62,7 @@ const openPinModal = () => {
 }
 
 const submitPin = async () => {
+  // PIN success writes a short-lived local flag so user can open /login.
   pinError.value = ''
   if (!pinCode.value || pinCode.value.length !== 6) {
     pinError.value = 'Nhập mã PIN 6 chữ số'

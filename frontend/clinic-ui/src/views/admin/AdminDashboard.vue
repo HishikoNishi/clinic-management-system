@@ -55,15 +55,7 @@
       </section>
 
       <!-- ===================== ACTIONS ===================== -->
-      <div>
-        <h5 class="fw-bold mb-3">Hành động nhanh</h5>
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-primary" @click="$router.push('/doctors')">Quản lý bác sĩ</button>
-          <button class="btn btn-outline-primary" @click="$router.push('/staff')">Quản lý nhân viên</button>
-          <button class="btn btn-outline-secondary" @click="$router.push('/admin/users/create')">Thêm người dùng</button>
-          <button class="btn btn-outline-secondary" @click="$router.push('/appointment')">Lịch khám</button>
-        </div>
-      </div>      <section class="mt-4">
+      <section class="mt-4">
         <div class="card p-3">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>

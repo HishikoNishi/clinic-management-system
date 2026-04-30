@@ -125,6 +125,7 @@ namespace ClinicManagement.Api.Controllers
 
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin")]
+        // Soft-delete keeps clinical/invoice history intact while hiding patient from normal queries.
         public async Task<IActionResult> SoftDeletePatient(Guid id)
         {
             var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == id);

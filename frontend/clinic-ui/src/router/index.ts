@@ -16,6 +16,7 @@ const routes: RouteRecordRaw[] = [
   path: "/login",
   name: "Login",
   component: () => import("@/views/Login.vue"),
+  // Direct /login access is blocked until the PIN gate in guest navbar is verified.
   beforeEnter: () => {
     const authStore = useAuthStore()
     const pinOk = localStorage.getItem('pinAuthOk') === 'true'
@@ -258,6 +259,7 @@ router.beforeEach((to) => {
   const authStore = useAuthStore()
   const pinOk = localStorage.getItem('pinAuthOk') === 'true'
 
+  // Double-check PIN gate even if user navigates by typing URL manually.
   if ((to.name === 'Login' || to.path === '/login') && !pinOk && !authStore.token) {
     return { path: '/home' }
   }

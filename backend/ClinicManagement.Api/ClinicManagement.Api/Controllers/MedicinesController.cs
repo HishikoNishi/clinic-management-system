@@ -9,6 +9,7 @@ namespace ClinicManagement.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    // Master data for medicine catalog used by doctor suggestion and prescription pricing.
     public class MedicinesController : ControllerBase
     {
         private readonly ClinicDbContext _context;
@@ -79,11 +80,11 @@ namespace ClinicManagement.Api.Controllers
         {
             var normalizedName = (dto.Name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(normalizedName))
-                return BadRequest(new { message = "Ten thuoc la bat buoc" });
+                return BadRequest(new { message = "Tên thuốc là bắt buộc" });
 
             var exists = await _context.Medicines.AnyAsync(m => m.Name.ToLower() == normalizedName.ToLower());
             if (exists)
-                return BadRequest(new { message = "Thuoc da ton tai trong danh muc" });
+                return BadRequest(new { message = "Thuốc đã tồn tại trong danh mục" });
 
             var medicine = new Medicine
             {
@@ -106,26 +107,25 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] UpsertMedicineDto dto)
         {
             var medicine = await _context.Medicines.FindAsync(id);
-            if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
+            if (medicine == null) return NotFound(new { message = "Không tìm thấy thuốc" });
 
             var normalizedName = (dto.Name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(normalizedName))
-                return BadRequest(new { message = "Ten thuoc la bat buoc" });
-
+                return BadRequest(new { message = "Tên thuốc là bắt buộc" });
             var exists = await _context.Medicines.AnyAsync(m =>
                 m.Id != id && m.Name.ToLower() == normalizedName.ToLower());
 
             if (exists)
-                return BadRequest(new { message = "Ten thuoc da ton tai" });
+                return BadRequest(new { message = "Tên thuốc đã tồn tại" });
 
             medicine.Name = normalizedName;
             medicine.DefaultDosage = string.IsNullOrWhiteSpace(dto.DefaultDosage) ? null : dto.DefaultDosage.Trim();
-            medicine.Unit = string.IsNullOrWhiteSpace(dto.Unit) ? "Vien" : dto.Unit.Trim();
+            medicine.Unit = string.IsNullOrWhiteSpace(dto.Unit) ? "Viên" : dto.Unit.Trim();
             medicine.Price = dto.Price;
             medicine.IsActive = dto.IsActive;
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Cap nhat thuoc thanh cong" });
+            return Ok(new { message = "Cập nhật thuốc thành công" });
         }
 
         [HttpPatch("{id:guid}/toggle")]
@@ -133,12 +133,12 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> ToggleStatus(Guid id)
         {
             var medicine = await _context.Medicines.FindAsync(id);
-            if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
+            if (medicine == null) return NotFound(new { message = "Không tìm thấy thuốc" });
 
             medicine.IsActive = !medicine.IsActive;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cap nhat trang thai thanh cong", medicine.IsActive });
+            return Ok(new { message = "Cập nhật trạng thái thành công", medicine.IsActive });
         }
 
         // Soft delete: deactivate thay vi xoa vat ly de tranh mat lich su don thuoc.
@@ -149,13 +149,13 @@ namespace ClinicManagement.Api.Controllers
             var medicine = await _context.Medicines
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
+            if (medicine == null) return NotFound(new { message = "Không tìm thấy thuốc" });
 
             medicine.IsDeleted = true;
             medicine.IsActive = false;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Da xoa thuoc (soft delete)" });
+            return Ok(new { message = "Đã xóa thuốc (soft delete)" });
         }
 
         [HttpPost("{id:guid}/restore")]
@@ -165,16 +165,16 @@ namespace ClinicManagement.Api.Controllers
             var medicine = await _context.Medicines
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (medicine == null) return NotFound(new { message = "Khong tim thay thuoc" });
+            if (medicine == null) return NotFound(new { message = "Không tìm thấy thuốc" });
 
             if (!medicine.IsDeleted)
-                return BadRequest(new { message = "Thuoc chua bi xoa" });
+                return BadRequest(new { message = "Thuốc chưa bị xóa" });
 
             medicine.IsDeleted = false;
             medicine.IsActive = true;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Da khoi phuc thuoc" });
+            return Ok(new { message = "Đã khôi phục thuốc" });
         }
     }
 }

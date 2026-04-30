@@ -18,6 +18,7 @@ namespace ClinicManagement.Api.Controllers
         }
 
         [HttpGet]
+        // Admin review endpoint: filter by entity/action/date and read newest changes first.
         public async Task<IActionResult> Get(
             [FromQuery] string? entityName,
             [FromQuery] string? action,
@@ -72,4 +73,3 @@ namespace ClinicManagement.Api.Controllers
         }
     }
 }
-
