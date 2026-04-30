@@ -8,63 +8,100 @@ namespace ClinicManagement.Api.Utils
     {
         public static byte[] Build(Invoice invoice, MedicalRecord? record)
         {
-            var lines = BuildLines(invoice, record);
-            return BuildPdf(lines);
+            return BuildPdf(invoice, record);
         }
 
-        private static List<string> BuildLines(Invoice invoice, MedicalRecord? record)
+        private static byte[] BuildPdf(Invoice invoice, MedicalRecord? record)
         {
-            var lines = new List<string>
-            {
-                "CLINIC INVOICE",
-                $"Invoice ID: {invoice.Id}",
-                $"Appointment: {invoice.Appointment?.AppointmentCode ?? invoice.AppointmentId.ToString()}",
-                $"Patient: {invoice.Appointment?.Patient?.FullName ?? "N/A"}",
-                $"Date: {invoice.CreatedAt:yyyy-MM-dd HH:mm:ss}",
-                $"Payment Date: {(invoice.PaymentDate.HasValue ? invoice.PaymentDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A")}",
-                $"Type: {invoice.InvoiceType}",
-                $"Insurance Cover: {Math.Round((record?.InsuranceCoverPercent ?? 0m) * 100m)}%",
-                "----------------------------------------",
-                "DETAILS:"
-            };
+            var content = new StringBuilder();
+            var vi = new CultureInfo("vi-VN");
+            var appointmentCode = invoice.Appointment?.AppointmentCode ?? invoice.AppointmentId.ToString("N")[..8];
+            var patientName = invoice.Appointment?.Patient?.FullName ?? "N/A";
+            var patientPhone = invoice.Appointment?.Patient?.Phone ?? "N/A";
+            var insuranceCover = Math.Round((record?.InsuranceCoverPercent ?? 0m) * 100m);
 
-            foreach (var line in invoice.InvoiceLines ?? new List<InvoiceLine>())
+            // Header band
+            content.AppendLine("0.94 0.97 1 rg");
+            content.AppendLine("36 760 523 60 re f");
+            content.AppendLine("0 g");
+
+            WriteText(content, 50, 800, 16, "F2", "CLINIC MANAGEMENT SYSTEM");
+            WriteText(content, 50, 784, 10, "F1", "INVOICE");
+            WriteText(content, 405, 798, 10, "F1", $"Invoice ID: {invoice.Id.ToString("N")[..10].ToUpperInvariant()}");
+            WriteText(content, 405, 784, 10, "F1", $"Status: {(invoice.IsPaid ? "PAID" : "UNPAID")}");
+
+            // Information boxes
+            DrawRect(content, 36, 666, 255, 88);
+            DrawRect(content, 304, 666, 255, 88);
+
+            WriteText(content, 46, 742, 9, "F2", "PATIENT INFORMATION");
+            WriteText(content, 46, 726, 10, "F1", $"Name: {patientName}");
+            WriteText(content, 46, 712, 10, "F1", $"Phone: {patientPhone}");
+            WriteText(content, 46, 698, 10, "F1", $"Appt Code: {appointmentCode}");
+            WriteText(content, 46, 684, 10, "F1", $"Insurance Cover: {insuranceCover}%");
+
+            WriteText(content, 314, 742, 9, "F2", "INVOICE INFORMATION");
+            WriteText(content, 314, 726, 10, "F1", $"Type: {invoice.InvoiceType}");
+            WriteText(content, 314, 712, 10, "F1", $"Created: {invoice.CreatedAt:dd/MM/yyyy HH:mm}");
+            WriteText(content, 314, 698, 10, "F1", $"Paid At: {(invoice.PaymentDate.HasValue ? invoice.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")}");
+            WriteText(content, 314, 684, 10, "F1", $"Record Ref: {invoice.AppointmentId.ToString("N")[..10].ToUpperInvariant()}");
+
+            // Item table
+            var tableTop = 640;
+            var rowHeight = 22;
+            var col1 = 46;   // description
+            var col2 = 340;  // type
+            var col3 = 430;  // amount
+
+            DrawRect(content, 36, tableTop - rowHeight, 523, rowHeight);
+            content.AppendLine("0.95 0.95 0.95 rg");
+            content.AppendLine($"{36} {tableTop - rowHeight} 523 {rowHeight} re f");
+            content.AppendLine("0 g");
+            DrawRect(content, 36, tableTop - rowHeight, 523, rowHeight);
+            WriteText(content, col1, tableTop - 15, 10, "F2", "Description");
+            WriteText(content, col2, tableTop - 15, 10, "F2", "Category");
+            WriteText(content, col3, tableTop - 15, 10, "F2", "Amount (VND)");
+
+            var lines = invoice.InvoiceLines ?? new List<InvoiceLine>();
+            if (lines.Count == 0)
             {
-                lines.Add($"{line.Description} | {line.ItemType} | {line.Amount.ToString("N0", CultureInfo.InvariantCulture)} VND");
+                DrawRect(content, 36, tableTop - 2 * rowHeight, 523, rowHeight);
+                WriteText(content, col1, tableTop - rowHeight - 15, 10, "F1", "No line items.");
+            }
+            else
+            {
+                var y = tableTop - rowHeight;
+                foreach (var line in lines.Take(12))
+                {
+                    y -= rowHeight;
+                    DrawRect(content, 36, y, 523, rowHeight);
+                    WriteText(content, col1, y + 7, 10, "F1", Clip(line.Description, 48));
+                    WriteText(content, col2, y + 7, 10, "F1", Clip(line.ItemType, 14));
+                    WriteText(content, col3, y + 7, 10, "F1", line.Amount.ToString("N0", vi));
+                }
             }
 
-            lines.Add("----------------------------------------");
-            lines.Add($"Amount: {invoice.Amount.ToString("N0", CultureInfo.InvariantCulture)} VND");
-            lines.Add($"Deposit: {invoice.TotalDeposit.ToString("N0", CultureInfo.InvariantCulture)} VND");
-            lines.Add($"Balance Due: {invoice.BalanceDue.ToString("N0", CultureInfo.InvariantCulture)} VND");
-            lines.Add($"Paid: {(invoice.IsPaid ? "YES" : "NO")}");
-            lines.Add("Thank you.");
-            return lines;
-        }
+            var totalTop = 318;
+            DrawRect(content, 304, totalTop - 110, 255, 110);
+            WriteText(content, 314, totalTop - 20, 10, "F1", $"Subtotal: {invoice.Amount.ToString("N0", vi)} VND");
+            WriteText(content, 314, totalTop - 38, 10, "F1", $"Deposit: {invoice.TotalDeposit.ToString("N0", vi)} VND");
+            WriteText(content, 314, totalTop - 56, 10, "F1", $"Balance Due: {invoice.BalanceDue.ToString("N0", vi)} VND");
+            WriteText(content, 314, totalTop - 74, 10, "F1", $"Insurance: {insuranceCover}%");
+            WriteText(content, 314, totalTop - 92, 10, "F2", invoice.IsPaid ? "Payment Confirmed" : "Awaiting Payment");
 
-        private static byte[] BuildPdf(IReadOnlyList<string> lines)
-        {
-            var textBuilder = new StringBuilder();
-            textBuilder.AppendLine("BT");
-            textBuilder.AppendLine("/F1 11 Tf");
-            textBuilder.AppendLine("50 800 Td");
+            WriteText(content, 36, 78, 9, "F1", "Generated by Clinic Management System");
+            WriteText(content, 36, 64, 9, "F1", $"Printed at: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
 
-            foreach (var line in lines)
-            {
-                textBuilder.AppendLine($"({EscapeText(ToAscii(line))}) Tj");
-                textBuilder.AppendLine("0 -15 Td");
-            }
-
-            textBuilder.AppendLine("ET");
-            var textContent = textBuilder.ToString();
+            var textContent = content.ToString();
             var textBytes = Encoding.ASCII.GetBytes(textContent);
 
             var objects = new List<string>
             {
                 "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
                 "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
-                "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj",
+                "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >> endobj",
                 "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj",
+                "6 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj",
                 $"5 0 obj << /Length {textBytes.Length} >> stream\n{textContent}\nendstream endobj"
             };
 
@@ -96,6 +133,27 @@ namespace ClinicManagement.Api.Utils
             return Encoding.ASCII.GetBytes(pdf.ToString());
         }
 
+        private static void DrawRect(StringBuilder sb, double x, double y, double w, double h)
+        {
+            sb.AppendLine($"{x.ToString(CultureInfo.InvariantCulture)} {y.ToString(CultureInfo.InvariantCulture)} {w.ToString(CultureInfo.InvariantCulture)} {h.ToString(CultureInfo.InvariantCulture)} re S");
+        }
+
+        private static void WriteText(StringBuilder sb, double x, double y, int size, string fontAlias, string text)
+        {
+            sb.AppendLine("BT");
+            sb.AppendLine($"/{fontAlias} {size} Tf");
+            sb.AppendLine($"1 0 0 1 {x.ToString(CultureInfo.InvariantCulture)} {y.ToString(CultureInfo.InvariantCulture)} Tm");
+            sb.AppendLine($"({EscapeText(ToAscii(text))}) Tj");
+            sb.AppendLine("ET");
+        }
+
+        private static string Clip(string? value, int max)
+        {
+            var raw = string.IsNullOrWhiteSpace(value) ? "N/A" : value.Trim();
+            if (raw.Length <= max) return raw;
+            return raw[..(max - 3)] + "...";
+        }
+
         private static string EscapeText(string value)
             => value.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
 
@@ -114,4 +172,3 @@ namespace ClinicManagement.Api.Utils
         }
     }
 }
-
