@@ -1,4 +1,4 @@
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs.Appointments;
 using ClinicManagement.Api.Extensions;
@@ -49,14 +49,13 @@ namespace ClinicManagement.Api.Controllers
             _appointmentBookingService.NormalizeInput(dto);
 
             if (dto.AppointmentDate.Date < today)
-                return this.ApiBadRequest("Chi duoc dat lich tu hom nay tro di");
+                return this.ApiBadRequest("Chỉ được đặt lịch từ hôm nay trở đi");
 
             var localNow = DateTime.Now;
             if (dto.AppointmentDate.Date == localNow.Date && dto.AppointmentTime <= localNow.TimeOfDay)
-                return this.ApiBadRequest("Chi duoc dat lich o gio tuong lai");
-
+                return this.ApiBadRequest("Chỉ được đặt lịch ở giờ tương lai");
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
-                return this.ApiBadRequest("Chi nhan dat lich trong khung gio 07:00-22:00");
+                return this.ApiBadRequest("Chỉ được đặt lịch trong khung giờ 07:00-22:00");
 
             Doctor? doctor = null;
             if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
@@ -67,7 +66,7 @@ namespace ClinicManagement.Api.Controllers
                     .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
                 if (doctor == null)
-                    return this.ApiBadRequest("Bac si khong kha dung");
+                    return this.ApiBadRequest("Bác sĩ không khả dụng");
 
                 var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
                     dto.DoctorId.Value,
@@ -98,7 +97,7 @@ namespace ClinicManagement.Api.Controllers
                 dto.AppointmentTime);
 
             if (existed)
-                return this.ApiConflict("Benh nhan da co lich o khung gio nay", "appointment_exists");
+                return this.ApiConflict("Bệnh nhân đã có lịch ở khung giờ này", "appointment_exists");
 
             var code = await _appointmentBookingService.GenerateUniqueAppointmentCodeAsync();
 
@@ -202,7 +201,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
             if (appointment == null)
-                return this.ApiNotFound("Appointment not found");
+                return this.ApiNotFound("Không tìm thấy lịch hẹn");
 
             var doctor = await _context.Doctors
                 .AsNoTracking()
@@ -210,7 +209,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(d => d.Id == dto.DoctorId && d.Status != DoctorStatus.Inactive);
 
             if (doctor == null)
-                return this.ApiBadRequest("Doctor is not available");
+                return this.ApiBadRequest("Bác sĩ không khả dụng");
 
             var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
                 dto.DoctorId,
@@ -231,7 +230,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new
             {
-                message = "Assigned doctor successfully",
+                message = "Đã gán bác sĩ thành công",
                 doctorCode = doctor.Code
             });
         }
@@ -246,7 +245,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(a => a.Id == dto.AppointmentId);
 
             if (appointment == null)
-                return this.ApiNotFound("Appointment not found");
+                return this.ApiNotFound("Không tìm thấy lịch hẹn");
 
             if (appointment.Patient != null && string.IsNullOrWhiteSpace(appointment.Patient.PatientCode))
             {
@@ -255,12 +254,12 @@ namespace ClinicManagement.Api.Controllers
             }
 
             if (appointment.Status == AppointmentStatus.Cancelled || appointment.Status == AppointmentStatus.Completed)
-                return this.ApiBadRequest("Cannot check-in cancelled/completed appointment");
+                return this.ApiBadRequest("Không thể check-in lịch hẹn đã hủy/hoàn thành");
             if (appointment.Status == AppointmentStatus.CheckedIn)
-                return this.ApiConflict("Appointment already checked in", "already_checked_in");
+                return this.ApiConflict("Lịch hẹn đã được check-in", "already_checked_in");
 
             if (dto.DepositAmount > depositCap)
-                return this.ApiBadRequest($"Deposit cannot exceed {depositCap:N0} VND");
+                return this.ApiBadRequest($"Tiền đặt cọc không được vượt quá {depositCap:N0} VND");
 
             if (dto.DoctorId.HasValue)
             {
@@ -269,7 +268,7 @@ namespace ClinicManagement.Api.Controllers
                     .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
                 if (doctor == null)
-                    return this.ApiBadRequest("Doctor is not available");
+                    return this.ApiBadRequest("Bác sĩ không khả dụng");
 
                 var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
                     dto.DoctorId.Value,
@@ -290,13 +289,13 @@ namespace ClinicManagement.Api.Controllers
                     appointment.AppointmentTime);
 
                 if (roomSlot == null)
-                    return this.ApiBadRequest("Selected room does not have a scheduled doctor on duty at this slot");
+                    return this.ApiBadRequest("Phòng được chọn không có bác sĩ trực tại ca này");
 
                 appointment.DoctorId = roomSlot.DoctorId;
             }
             else if (appointment.DoctorId == null)
             {
-                return this.ApiBadRequest("Please select a room with doctor on duty before check-in");
+                return this.ApiBadRequest("Vui lòng chọn phòng có bác sĩ trực trước khi check-in");
             }
 
             appointment.Status = AppointmentStatus.CheckedIn;
@@ -310,7 +309,7 @@ namespace ClinicManagement.Api.Controllers
                     : null;
 
                 if (!string.IsNullOrWhiteSpace(dto.InsuranceCode) && plan == null)
-                    return this.ApiBadRequest("Ma bao hiem khong hop le hoac da het han");
+                    return this.ApiBadRequest("Mã bảo hiểm không hợp lệ hoặc đã hết hạn");
 
                 var cover = dto.InsuranceCoverPercent ?? plan?.CoveragePercent ?? 0m;
                 cover = FinanceHelper.Clamp01(cover);
@@ -354,7 +353,7 @@ namespace ClinicManagement.Api.Controllers
 
                     return Ok(new
                     {
-                        message = "Checked in successfully",
+                        message = "Check-in thành công",
                         appointment.Status,
                         totalDeposit = existingDeposit,
                         depositPaymentId = (Guid?)null
@@ -387,7 +386,7 @@ namespace ClinicManagement.Api.Controllers
 
             return Ok(new
             {
-                message = "Checked in successfully",
+                message = "Check-in thành công",
                 appointment.Status,
                 totalDeposit,
                 depositPaymentId = depositPayment?.Id
@@ -404,7 +403,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (appointment == null || appointment.Patient == null)
-                return NotFound(new ApiErrorResponse { Code = "not_found", Message = "Appointment not found" });
+                return NotFound(new ApiErrorResponse { Code = "not_found", Message = "Không tìm thấy lịch hẹn" });
 
             return Ok(ToDetailDto(appointment, appointment.Patient, appointment.Doctor));
         }

@@ -28,19 +28,18 @@ namespace ClinicManagement.Api.Controllers
         }
 
         // ==============================
-        // Táº¡o hÃ³a Ä‘Æ¡n
+        // Tạo hóa đơn
         // ==============================
         [HttpPost]
         public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto dto)
         {
             var appointment = await _context.Appointments.FindAsync(dto.AppointmentId);
             if (appointment == null)
-                return NotFound(new { message = "KhÃ´ng tÃ¬m tháº¥y lá»‹ch háº¹n" });
+                return NotFound(new { message = "Không tìm thấy lịch hẹn" });
 
             var existed = await _context.Invoices.AnyAsync(i => i.AppointmentId == dto.AppointmentId);
             if (existed)
-                return BadRequest(new { message = "Lá»‹ch háº¹n Ä‘Ã£ cÃ³ hÃ³a Ä‘Æ¡n" });
-
+                return BadRequest(new { message = "Lịch hẹn đã có hóa đơn" });
             var invoice = new Invoice
             {
                 AppointmentId = dto.AppointmentId,
@@ -56,11 +55,11 @@ namespace ClinicManagement.Api.Controllers
             _context.Invoices.Add(invoice);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Táº¡o hÃ³a Ä‘Æ¡n thÃ nh cÃ´ng", invoiceId = invoice.Id });
+            return Ok(new { message = "Tạo hóa đơn thành công", invoiceId = invoice.Id });
         }
 
         // ==============================
-        // Láº¥y chi tiáº¿t hÃ³a Ä‘Æ¡n
+        // Lấy chi tiết hóa đơn
         // ==============================
         [HttpGet("{id}")]
         public async Task<IActionResult> GetInvoice(Guid id)
@@ -74,7 +73,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (invoice == null)
-                return NotFound(new { message = "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n" });
+                return NotFound(new { message = "Không tìm thấy hóa đơn" });
 
             var record = await _context.MedicalRecords
                 .AsNoTracking()
@@ -95,16 +94,16 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(i => i.Id == id);
 
             if (invoice == null)
-                return NotFound(new { message = "Khong tim thay hoa don" });
+                return NotFound(new { message = "Không tìm thấy hóa đơn" });
 
             if (!invoice.IsPaid)
-                return BadRequest(new { message = "Chi duoc tai PDF sau khi hoa don da thanh toan" });
+                return BadRequest(new { message = "Chỉ được tải PDF sau khi hóa đơn đã thanh toán" });
 
             var record = await _context.MedicalRecords
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.AppointmentId == invoice.AppointmentId);
 
-            var bytes = SimplePdfInvoiceExporter.Build(invoice, record);
+            var bytes = InvoicePdfExporter.Build(invoice, record);
             var appointmentCode = invoice.Appointment?.AppointmentCode ?? invoice.AppointmentId.ToString("N")[..8];
             var fileName = $"invoice-{appointmentCode}.pdf";
 
@@ -156,17 +155,17 @@ namespace ClinicManagement.Api.Controllers
         {
             var invoice = await _context.Invoices.FindAsync(id);
             if (invoice == null)
-                return NotFound(new { message = "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n" });
+                return NotFound(new { message = "Không tìm thấy hóa đơn" });
 
             if (invoice.IsPaid)
-                return BadRequest(new { message = "HÃ³a Ä‘Æ¡n Ä‘Ã£ thanh toÃ¡n" });
+                return BadRequest(new { message = "Hóa đơn đã thanh toán" });
 
             if (invoice.Amount <= 0)
             {
                 invoice.IsPaid = true;
                 invoice.PaymentDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "HÃ³a Ä‘Æ¡n khÃ´ng cÃ²n sá»‘ tiá»n pháº£i thu" });
+                return Ok(new { message = "Hóa đơn không còn số tiền phải thu" });
             }
 
             var payment = new Payment
@@ -189,28 +188,28 @@ namespace ClinicManagement.Api.Controllers
             await _context.SaveChangesAsync();
             return Ok(new
             {
-                message = "Thanh toÃ¡n thÃ nh cÃ´ng",
+                message = "Thanh toán thành công",
                 invoice,
                 payment
             });
         }
 
         // ==============================
-        // Cáº­p nháº­t báº£o hiá»ƒm/phá»¥ thu/giáº£m trá»« vÃ  tÃ­nh láº¡i hÃ³a Ä‘Æ¡n
+        // Cập nhật bảo hiểm/phụ thu/giảm trừ và tính lại hóa đơn
         // ==============================
         [HttpPost("recalculate")]
         public async Task<IActionResult> Recalculate([FromBody] UpdateBillingDto dto)
         {
             if (dto.AppointmentId == Guid.Empty)
-                return BadRequest(new { message = "Thiáº¿u AppointmentId" });
+                return BadRequest(new { message = "Thiếu AppointmentId" });
 
             var record = await _context.MedicalRecords
                 .FirstOrDefaultAsync(r => r.AppointmentId == dto.AppointmentId);
 
             if (record == null)
-                return NotFound(new { message = "KhÃ´ng tÃ¬m tháº¥y há»“ sÆ¡ khÃ¡m" });
+                return NotFound(new { message = "Không tìm thấy hồ sơ khám" });
 
-            // cáº­p nháº­t thÃ´ng tin tÃ i chÃ­nh do cashier nháº­p
+            // cập nhật thông tin tài chính do cashier nhập
             if (dto.InsuranceCoverPercent.HasValue)
             {
                 var cover = dto.InsuranceCoverPercent.Value;
@@ -223,7 +222,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 var plan = _fakeInsuranceService.Verify(dto.InsuranceCode);
                 if (plan == null)
-                    return BadRequest(new { message = "Báº£o hiá»ƒm khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n" });
+                    return BadRequest(new { message = "Bảo hiểm không hợp lệ hoặc đã hết hạn" });
 
                 record.InsurancePlanCode = plan.Code;
                 record.InsuranceCoverPercent = FinanceHelper.Clamp01(plan.CoveragePercent);
@@ -234,7 +233,7 @@ namespace ClinicManagement.Api.Controllers
             var invoice = await _billingService.GenerateInvoiceAsync(dto.AppointmentId);
 
             if (invoice == null)
-                return NotFound(new { message = "KhÃ´ng táº¡o Ä‘Æ°á»£c hÃ³a Ä‘Æ¡n" });
+                return NotFound(new { message = "Không tạo được hóa đơn" });
 
             var result = await _context.Invoices
                 .AsNoTracking()
@@ -258,9 +257,9 @@ namespace ClinicManagement.Api.Controllers
         public async Task<IActionResult> CreateDrugInvoice([FromBody] CreateDrugInvoiceDto dto)
         {
             if (dto.PrescriptionId == Guid.Empty)
-                return BadRequest(new { message = "Thiáº¿u PrescriptionId" });
+                return BadRequest(new { message = "Thiếu PrescriptionId" });
             var invoice = await _billingService.GenerateDrugInvoiceAsync(dto.PrescriptionId);
-            if (invoice == null) return NotFound(new { message = "KhÃ´ng táº¡o Ä‘Æ°á»£c hÃ³a Ä‘Æ¡n thuá»‘c" });
+            if (invoice == null) return NotFound(new { message = "Không tạo được hóa đơn thuốc" });
 
             var result = await _context.Invoices
                 .AsNoTracking()
@@ -280,7 +279,7 @@ namespace ClinicManagement.Api.Controllers
                 .Include(i => i.InvoiceLines)
                 .FirstOrDefaultAsync(i => i.PrescriptionId == id && i.InvoiceType == InvoiceType.Drug);
 
-            if (invoice == null) return NotFound(new { message = "KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n thuá»‘c" });
+            if (invoice == null) return NotFound(new { message = "Không tìm thấy hóa đơn thuốc" });
             return Ok(MapInvoice(invoice, null));
         }
 

@@ -1,174 +1,208 @@
-using ClinicManagement.Api.Models;
+﻿using ClinicManagement.Api.Models;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System.Globalization;
-using System.Text;
 
 namespace ClinicManagement.Api.Utils
 {
-    public static class SimplePdfInvoiceExporter
+    public static class InvoicePdfExporter
     {
-        public static byte[] Build(Invoice invoice, MedicalRecord? record)
+        static InvoicePdfExporter()
         {
-            return BuildPdf(invoice, record);
+            // Bắt buộc khai báo license trước khi dùng QuestPDF
+            // Community license miễn phí cho dự án có doanh thu < $1M/năm
+            QuestPDF.Settings.License = LicenseType.Community;
         }
 
-        private static byte[] BuildPdf(Invoice invoice, MedicalRecord? record)
+        public static byte[] Build(Invoice invoice, MedicalRecord? record)
         {
-            var content = new StringBuilder();
+            return Document.Create(container => container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(36);
+                page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(10));
+
+                page.Header().Element(header => ComposeHeader(header, invoice));
+                page.Content().Element(content => ComposeContent(content, invoice, record));
+                page.Footer().Element(ComposeFooter);
+            }))
+            .GeneratePdf();
+        }
+
+        // =============================================
+        // HEADER
+        // =============================================
+        private static void ComposeHeader(IContainer container, Invoice invoice)
+        {
+            container
+                .Background("#F0F5FF")
+                .Padding(12)
+                .Row(row =>
+                {
+                    row.RelativeItem().Column(col =>
+                    {
+                        col.Item().Text("CLINIC MANAGEMENT SYSTEM")
+                            .FontSize(16).Bold().FontColor("#1A3C6E");
+                        col.Item().Text("HÓA ĐƠN THANH TOÁN")
+                            .FontSize(10).FontColor("#555555");
+                    });
+
+                    row.ConstantItem(180).Column(col =>
+                    {
+                        col.Item().AlignRight().Text($"Mã HĐ: {invoice.Id.ToString("N")[..10].ToUpperInvariant()}")
+                            .FontSize(9).FontColor("#555555");
+                        col.Item().AlignRight()
+                            .Text(invoice.IsPaid ? "ĐÃ THANH TOÁN" : "CHƯA THANH TOÁN")
+                            .FontSize(11).Bold()
+                            .FontColor(invoice.IsPaid ? "#1A7A4A" : "#C0392B");
+                    });
+                });
+        }
+
+        // =============================================
+        // CONTENT
+        // =============================================
+        private static void ComposeContent(IContainer container, Invoice invoice, MedicalRecord? record)
+        {
             var vi = new CultureInfo("vi-VN");
-            var appointmentCode = invoice.Appointment?.AppointmentCode ?? invoice.AppointmentId.ToString("N")[..8];
+            var appointmentCode = invoice.Appointment?.AppointmentCode
+                                  ?? invoice.AppointmentId.ToString("N")[..8];
             var patientName = invoice.Appointment?.Patient?.FullName ?? "N/A";
             var patientPhone = invoice.Appointment?.Patient?.Phone ?? "N/A";
             var insuranceCover = Math.Round((record?.InsuranceCoverPercent ?? 0m) * 100m);
 
-            // Header band
-            content.AppendLine("0.94 0.97 1 rg");
-            content.AppendLine("36 760 523 60 re f");
-            content.AppendLine("0 g");
-
-            WriteText(content, 50, 800, 16, "F2", "CLINIC MANAGEMENT SYSTEM");
-            WriteText(content, 50, 784, 10, "F1", "INVOICE");
-            WriteText(content, 405, 798, 10, "F1", $"Invoice ID: {invoice.Id.ToString("N")[..10].ToUpperInvariant()}");
-            WriteText(content, 405, 784, 10, "F1", $"Status: {(invoice.IsPaid ? "PAID" : "UNPAID")}");
-
-            // Information boxes
-            DrawRect(content, 36, 666, 255, 88);
-            DrawRect(content, 304, 666, 255, 88);
-
-            WriteText(content, 46, 742, 9, "F2", "PATIENT INFORMATION");
-            WriteText(content, 46, 726, 10, "F1", $"Name: {patientName}");
-            WriteText(content, 46, 712, 10, "F1", $"Phone: {patientPhone}");
-            WriteText(content, 46, 698, 10, "F1", $"Appt Code: {appointmentCode}");
-            WriteText(content, 46, 684, 10, "F1", $"Insurance Cover: {insuranceCover}%");
-
-            WriteText(content, 314, 742, 9, "F2", "INVOICE INFORMATION");
-            WriteText(content, 314, 726, 10, "F1", $"Type: {invoice.InvoiceType}");
-            WriteText(content, 314, 712, 10, "F1", $"Created: {invoice.CreatedAt:dd/MM/yyyy HH:mm}");
-            WriteText(content, 314, 698, 10, "F1", $"Paid At: {(invoice.PaymentDate.HasValue ? invoice.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")}");
-            WriteText(content, 314, 684, 10, "F1", $"Record Ref: {invoice.AppointmentId.ToString("N")[..10].ToUpperInvariant()}");
-
-            // Item table
-            var tableTop = 640;
-            var rowHeight = 22;
-            var col1 = 46;   // description
-            var col2 = 340;  // type
-            var col3 = 430;  // amount
-
-            DrawRect(content, 36, tableTop - rowHeight, 523, rowHeight);
-            content.AppendLine("0.95 0.95 0.95 rg");
-            content.AppendLine($"{36} {tableTop - rowHeight} 523 {rowHeight} re f");
-            content.AppendLine("0 g");
-            DrawRect(content, 36, tableTop - rowHeight, 523, rowHeight);
-            WriteText(content, col1, tableTop - 15, 10, "F2", "Description");
-            WriteText(content, col2, tableTop - 15, 10, "F2", "Category");
-            WriteText(content, col3, tableTop - 15, 10, "F2", "Amount (VND)");
-
-            var lines = invoice.InvoiceLines ?? new List<InvoiceLine>();
-            if (lines.Count == 0)
+            container.Column(col =>
             {
-                DrawRect(content, 36, tableTop - 2 * rowHeight, 523, rowHeight);
-                WriteText(content, col1, tableTop - rowHeight - 15, 10, "F1", "No line items.");
-            }
-            else
-            {
-                var y = tableTop - rowHeight;
-                foreach (var line in lines.Take(12))
+                col.Spacing(12);
+
+                // ---- Info boxes ----
+                col.Item().Row(row =>
                 {
-                    y -= rowHeight;
-                    DrawRect(content, 36, y, 523, rowHeight);
-                    WriteText(content, col1, y + 7, 10, "F1", Clip(line.Description, 48));
-                    WriteText(content, col2, y + 7, 10, "F1", Clip(line.ItemType, 14));
-                    WriteText(content, col3, y + 7, 10, "F1", line.Amount.ToString("N0", vi));
-                }
-            }
+                    row.RelativeItem().Border(1).BorderColor("#CCCCCC").Padding(10).Column(c =>
+                    {
+                        c.Item().Text("THÔNG TIN BỆNH NHÂN").Bold().FontSize(9).FontColor("#555555");
+                        c.Item().Height(6);
+                        InfoLine(c, "Họ tên", patientName);
+                        InfoLine(c, "Điện thoại", patientPhone);
+                        InfoLine(c, "Mã lịch hẹn", appointmentCode);
+                        InfoLine(c, "Bảo hiểm", $"{insuranceCover}%");
+                    });
 
-            var totalTop = 318;
-            DrawRect(content, 304, totalTop - 110, 255, 110);
-            WriteText(content, 314, totalTop - 20, 10, "F1", $"Subtotal: {invoice.Amount.ToString("N0", vi)} VND");
-            WriteText(content, 314, totalTop - 38, 10, "F1", $"Deposit: {invoice.TotalDeposit.ToString("N0", vi)} VND");
-            WriteText(content, 314, totalTop - 56, 10, "F1", $"Balance Due: {invoice.BalanceDue.ToString("N0", vi)} VND");
-            WriteText(content, 314, totalTop - 74, 10, "F1", $"Insurance: {insuranceCover}%");
-            WriteText(content, 314, totalTop - 92, 10, "F2", invoice.IsPaid ? "Payment Confirmed" : "Awaiting Payment");
+                    row.ConstantItem(12); // gap
 
-            WriteText(content, 36, 78, 9, "F1", "Generated by Clinic Management System");
-            WriteText(content, 36, 64, 9, "F1", $"Printed at: {DateTime.Now:dd/MM/yyyy HH:mm:ss}");
+                    row.RelativeItem().Border(1).BorderColor("#CCCCCC").Padding(10).Column(c =>
+                    {
+                        c.Item().Text("THÔNG TIN HÓA ĐƠN").Bold().FontSize(9).FontColor("#555555");
+                        c.Item().Height(6);
+                        InfoLine(c, "Loại HĐ", invoice.InvoiceType.ToString());
+                        InfoLine(c, "Ngày tạo", invoice.CreatedAt.ToString("dd/MM/yyyy HH:mm"));
+                        InfoLine(c, "Ngày thanh toán",
+                            invoice.PaymentDate.HasValue
+                                ? invoice.PaymentDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                : "N/A");
+                        InfoLine(c, "Mã tham chiếu", invoice.AppointmentId.ToString("N")[..10].ToUpperInvariant());
+                    });
+                });
 
-            var textContent = content.ToString();
-            var textBytes = Encoding.ASCII.GetBytes(textContent);
+                // ---- Line items table ----
+                var lines = invoice.InvoiceLines ?? new List<InvoiceLine>();
 
-            var objects = new List<string>
-            {
-                "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
-                "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
-                "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >> endobj",
-                "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj",
-                "6 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj",
-                $"5 0 obj << /Length {textBytes.Length} >> stream\n{textContent}\nendstream endobj"
-            };
+                col.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(cols =>
+                    {
+                        cols.RelativeColumn(5);   // Mô tả
+                        cols.RelativeColumn(2);   // Loại
+                        cols.RelativeColumn(2);   // Số tiền
+                    });
 
-            var pdf = new StringBuilder();
-            pdf.AppendLine("%PDF-1.4");
+                    // Header row
+                    table.Header(header =>
+                    {
+                        header.Cell().Background("#1A3C6E").Padding(6)
+                            .Text("Mô tả").Bold().FontColor(Colors.White).FontSize(10);
+                        header.Cell().Background("#1A3C6E").Padding(6)
+                            .Text("Loại").Bold().FontColor(Colors.White).FontSize(10);
+                        header.Cell().Background("#1A3C6E").Padding(6).AlignRight()
+                            .Text("Số tiền (VNĐ)").Bold().FontColor(Colors.White).FontSize(10);
+                    });
 
-            var offsets = new List<int>();
-            foreach (var obj in objects)
-            {
-                offsets.Add(Encoding.ASCII.GetByteCount(pdf.ToString()));
-                pdf.AppendLine(obj);
-            }
+                    if (lines.Count == 0)
+                    {
+                        table.Cell().ColumnSpan(3).Padding(8)
+                            .Text("Không có dòng chi tiết.").Italic().FontColor("#888888");
+                    }
+                    else
+                    {
+                        var isOdd = false;
+                        foreach (var line in lines)
+                        {
+                            var bg = isOdd ? "#F7F9FC" : "#FFFFFF";
+                            isOdd = !isOdd;
 
-            var xrefOffset = Encoding.ASCII.GetByteCount(pdf.ToString());
-            pdf.AppendLine("xref");
-            pdf.AppendLine($"0 {objects.Count + 1}");
-            pdf.AppendLine("0000000000 65535 f ");
-            foreach (var offset in offsets)
-            {
-                pdf.AppendLine($"{offset:D10} 00000 n ");
-            }
+                            table.Cell().Background(bg).Padding(6).Text(line.Description ?? "N/A");
+                            table.Cell().Background(bg).Padding(6).Text(line.ItemType ?? "N/A");
+                            table.Cell().Background(bg).Padding(6).AlignRight()
+                                .Text(line.Amount.ToString("N0", vi));
+                        }
+                    }
+                });
 
-            pdf.AppendLine("trailer");
-            pdf.AppendLine($"<< /Size {objects.Count + 1} /Root 1 0 R >>");
-            pdf.AppendLine("startxref");
-            pdf.AppendLine(xrefOffset.ToString());
-            pdf.AppendLine("%%EOF");
+                // ---- Totals box ----
+                col.Item().AlignRight().Width(260).Border(1).BorderColor("#CCCCCC").Padding(12).Column(c =>
+                {
+                    c.Spacing(4);
+                    TotalLine(c, "Tạm tính", invoice.Amount.ToString("N0", vi) + " VNĐ");
+                    TotalLine(c, "Đặt cọc", invoice.TotalDeposit.ToString("N0", vi) + " VNĐ");
+                    TotalLine(c, "Còn lại", invoice.BalanceDue.ToString("N0", vi) + " VNĐ");
+                    TotalLine(c, "Bảo hiểm", $"{insuranceCover}%");
 
-            return Encoding.ASCII.GetBytes(pdf.ToString());
+                    c.Item().PaddingTop(6)
+                        .Text(invoice.IsPaid ? "✓ Đã thanh toán" : "⚠ Chờ thanh toán")
+                        .Bold()
+                        .FontColor(invoice.IsPaid ? "#1A7A4A" : "#C0392B");
+                });
+            });
         }
 
-        private static void DrawRect(StringBuilder sb, double x, double y, double w, double h)
+        // =============================================
+        // FOOTER
+        // =============================================
+        private static void ComposeFooter(IContainer container)
         {
-            sb.AppendLine($"{x.ToString(CultureInfo.InvariantCulture)} {y.ToString(CultureInfo.InvariantCulture)} {w.ToString(CultureInfo.InvariantCulture)} {h.ToString(CultureInfo.InvariantCulture)} re S");
+            container
+                .BorderTop(1).BorderColor("#DDDDDD")
+                .PaddingTop(8)
+                .Row(row =>
+                {
+                    row.RelativeItem().Text("Hệ thống Quản lý Phòng khám")
+                        .FontSize(8).FontColor("#888888");
+                    row.RelativeItem().AlignRight()
+                        .Text($"In lúc: {DateTime.Now:dd/MM/yyyy HH:mm:ss}")
+                        .FontSize(8).FontColor("#888888");
+                });
         }
 
-        private static void WriteText(StringBuilder sb, double x, double y, int size, string fontAlias, string text)
+        // =============================================
+        // HELPERS
+        // =============================================
+        private static void InfoLine(ColumnDescriptor col, string label, string value)
         {
-            sb.AppendLine("BT");
-            sb.AppendLine($"/{fontAlias} {size} Tf");
-            sb.AppendLine($"1 0 0 1 {x.ToString(CultureInfo.InvariantCulture)} {y.ToString(CultureInfo.InvariantCulture)} Tm");
-            sb.AppendLine($"({EscapeText(ToAscii(text))}) Tj");
-            sb.AppendLine("ET");
-        }
-
-        private static string Clip(string? value, int max)
-        {
-            var raw = string.IsNullOrWhiteSpace(value) ? "N/A" : value.Trim();
-            if (raw.Length <= max) return raw;
-            return raw[..(max - 3)] + "...";
-        }
-
-        private static string EscapeText(string value)
-            => value.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
-
-        private static string ToAscii(string input)
-        {
-            var normalized = input.Normalize(NormalizationForm.FormD);
-            var sb = new StringBuilder(normalized.Length);
-            foreach (var ch in normalized)
+            col.Item().Row(row =>
             {
-                var unicode = CharUnicodeInfo.GetUnicodeCategory(ch);
-                if (unicode == UnicodeCategory.NonSpacingMark) continue;
-                sb.Append(ch <= 127 ? ch : '?');
-            }
+                row.ConstantItem(110).Text(label + ":").FontColor("#555555");
+                row.RelativeItem().Text(value).Bold();
+            });
+        }
 
-            return sb.ToString().Normalize(NormalizationForm.FormC);
+        private static void TotalLine(ColumnDescriptor col, string label, string value)
+        {
+            col.Item().Row(row =>
+            {
+                row.RelativeItem().Text(label + ":").FontColor("#555555");
+                row.ConstantItem(120).AlignRight().Text(value).Bold();
+            });
         }
     }
 }
