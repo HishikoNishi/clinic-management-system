@@ -56,13 +56,13 @@ const downloadPdf = async () => {
     link.remove()
     URL.revokeObjectURL(url)
   } catch (err: any) {
-    error.value = err?.response?.data?.message || 'Khong tai duoc file PDF'
+    error.value = err?.response?.data?.message || 'Không tải được file PDF'
   }
 }
 
 const createDrugInvoice = async () => {
   if (!prescriptionId.value.trim()) {
-    alert('Nhap PrescriptionId')
+    alert('Nhập PrescriptionId')
     return
   }
   creatingDrug.value = true
@@ -72,9 +72,9 @@ const createDrugInvoice = async () => {
     const id = res?.id || res?.Id || res?.invoiceId
     await loadData()
     if (id) await handleView(id)
-    alert('Tao hoa don thuoc thanh cong')
+    alert('Tạo hóa đơn thuốc thành công')
   } catch (err: any) {
-    error.value = err?.response?.data?.message ?? 'Khong tao duoc hoa don thuoc'
+    error.value = err?.response?.data?.message ?? 'Không tạo được hóa đơn thuốc'
   } finally {
     creatingDrug.value = false
   }
@@ -82,7 +82,7 @@ const createDrugInvoice = async () => {
 
 const lookupPrescription = async () => {
   if (!searchText.value.trim()) {
-    alert('Nhap ma lich hen (AppointmentId hoac AppointmentCode) vao o tim kiem roi bam Lay don')
+    alert('Nhập mã lịch hẹn (AppointmentId hoặc AppointmentCode) vào ô tìm kiếm rồi bấm lấy đơn')
     return
   }
   try {
@@ -92,13 +92,13 @@ const lookupPrescription = async () => {
       const res = await invoiceApi.lookupAppointment(code)
       appointmentId = res?.id || res?.appointmentId || ''
     }
-    if (!appointmentId) throw new Error('Khong tim thay lich hen')
+    if (!appointmentId) throw new Error('Không tìm thấy lịch hẹn')
     const { data } = await api.get(`/Prescription/by-appointment/${appointmentId}`)
     prescriptionId.value = data?.id || ''
-    if (!prescriptionId.value) throw new Error('Khong thay PrescriptionId')
-    alert('Da lay duoc PrescriptionId, bam Tao hoa don thuoc de tao')
+    if (!prescriptionId.value) throw new Error('Không tìm thấy PrescriptionId')
+    alert('Đã lấy được PrescriptionId, bấm Tạo hóa đơn thuốc để tạo')
   } catch (err: any) {
-    error.value = err?.response?.data?.message || err.message || 'Khong tim duoc don thuoc'
+    error.value = err?.response?.data?.message || err.message || 'Không tìm được PrescriptionId từ lịch hẹn'
   }
 }
 
@@ -111,13 +111,13 @@ watch(filterStatus, loadData)
     <div class="page-header">
       <div>
         <div class="page-eyebrow">Cashier</div>
-        <h2 class="page-title mb-0">Danh sach hoa don</h2>
-        <p class="page-subtitle">Tim theo ma hoa don / ma lich kham / ten benh nhan va loc theo trang thai, loai hoa don.</p>
+        <h2 class="page-title mb-0">Danh sách hóa đơn</h2>
+        <p class="page-subtitle">Tìm theo mã hóa đơn / mã lịch khám / tên bệnh nhân và lọc theo trạng thái, loại hóa đơn.</p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <input v-model="searchText" type="search" class="form-control" placeholder="Tim theo ma / ten benh nhan" />
+        <input v-model="searchText" type="search" class="form-control" placeholder="Tìm theo mã / tên bệnh nhân" />
         <button class="btn btn-outline-secondary" :disabled="listLoading" @click="loadData">
-          <span v-if="listLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true" />Lam moi
+          <span v-if="listLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true" />Làm mới
         </button>
       </div>
     </div>
@@ -129,8 +129,8 @@ watch(filterStatus, loadData)
         <div class="card shadow-sm h-100 page-card">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title mb-0">Hoa don</h5>
-              <span class="text-muted small">{{ filteredList().length }} muc</span>
+              <h5 class="card-title mb-0">Hóa đơn</h5>
+              <span class="text-muted small">{{ filteredList().length }} mục</span>
             </div>
             <InvoiceTable :items="filteredList()" :loading="loading" @view="handleView" />
           </div>
@@ -141,22 +141,22 @@ watch(filterStatus, loadData)
         <InvoiceDetail :invoice="invoice">
           <template #top>
             <div class="mb-3 pb-3 border-bottom">
-              <h6 class="card-title mb-3">Bo loc</h6>
+              <h6 class="card-title mb-3">Bộ lọc</h6>
               <div class="row g-2">
                 <div class="col-6">
-                  <label class="form-label small">Trang thai</label>
+                  <label class="form-label small">Trạng thái</label>
                   <select v-model="filterStatus" class="form-select form-select-sm">
-                    <option value="all">Tat ca</option>
-                    <option value="paid">Da thanh toan</option>
-                    <option value="unpaid">Chua thanh toan</option>
+                    <option value="all">Tất cả</option>
+                    <option value="paid">Đã thanh toán</option>
+                    <option value="unpaid">Chưa thanh toán</option>
                   </select>
                 </div>
                 <div class="col-6">
-                  <label class="form-label small">Loai hoa don</label>
+                  <label class="form-label small">Loại hóa đơn</label>
                   <select v-model="filterType" class="form-select form-select-sm">
-                    <option value="all">Moi loai</option>
-                    <option value="clinic">Hoa don kham</option>
-                    <option value="drug">Hoa don thuoc</option>
+                    <option value="all">Tất cả</option>
+                    <option value="clinic">Hóa đơn khám</option>
+                    <option value="drug">Hóa đơn thuốc</option>
                   </select>
                 </div>
               </div>
@@ -164,15 +164,15 @@ watch(filterStatus, loadData)
           </template>
 
           <div v-if="invoice && !invoice.isPaid" class="alert alert-info mt-3 py-2 mb-0">
-            Hoa don chua thanh toan. Vui long vao
-            <router-link to="/cashier/invoices" class="fw-semibold">Hoa don & thanh toan</router-link>
-            (hoa don kham) hoac
-            <router-link to="/cashier/drug-invoices" class="fw-semibold">Hoa don thuoc</router-link>
-            de thuc hien thanh toan.
+            Hóa đơn chưa thanh toán. Vui lòng vào
+            <router-link to="/cashier/invoices" class="fw-semibold">Hóa đơn & thanh toán</router-link>
+            (hóa đơn khám) hoặc
+            <router-link to="/cashier/drug-invoices" class="fw-semibold">Hóa đơn thuốc</router-link>
+            để thực hiện thanh toán.
           </div>
 
           <div v-if="invoice?.isPaid" class="mt-3">
-            <button class="btn btn-outline-success btn-sm" @click="downloadPdf">Tai PDF hoa don</button>
+            <button class="btn btn-outline-success btn-sm" @click="downloadPdf">Tải PDF hóa đơn</button>
           </div>
         </InvoiceDetail>
       </div>
