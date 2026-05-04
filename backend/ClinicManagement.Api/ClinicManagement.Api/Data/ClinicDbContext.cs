@@ -108,7 +108,7 @@ namespace ClinicManagement.Api.Data
             foreach (var entry in ChangeTracker.Entries())
             {
                 if (!IsAuditableEntry(entry)) continue;
-
+                //**Soft delete generic** 
                 var action = entry.State switch
                 {
                     EntityState.Added => "Create",

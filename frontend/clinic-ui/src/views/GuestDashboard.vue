@@ -155,6 +155,12 @@
                 </div>
               </div>
 
+              <div class="d-flex justify-content-end mb-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" @click="fillRandomPatientInfo">
+                  <i class="bi bi-magic me-1"></i>Điền ngẫu nhiên thông tin bệnh nhân
+                </button>
+              </div>
+
               <!-- Patient info -->
               <div class="form-row">
                 <div class="form-group">
@@ -268,7 +274,7 @@
                   <label class="form-label">Khoa muốn khám (tùy chọn)</label>
                   <select v-model="selectedDepartmentId" class="form-select">
                     <option value="">Chọn khoa</option>
-                    <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+                    <option v-for="d in departments" :key="d.id" :value="d.id">{{ toVietnameseDepartmentName(d.name) }}</option>
                   </select>
                 </div>
               </div>
@@ -301,7 +307,7 @@
                       :value="(slot.startTime || '').slice(0, 5)"
                       :disabled="slot.isBooked"
                     >
-                      {{ slot.slotLabel || (slot.startTime || '').slice(0, 5) }}{{ slot.isBooked ? ' (Đã đặt)' : '' }}
+                      {{ slot.slotLabel || (slot.startTime || '').slice(0, 5) }}{{ slot.isBooked ? ' (Bác sĩ đã được đặt trong khung giờ này)' : '' }}
                     </option>
                   </select>
                   <span v-if="bookingErrors.appointmentTime" class="form-error">{{ bookingErrors.appointmentTime }}</span>
@@ -382,62 +388,6 @@
                   <div class="result-item"><label>Điện thoại</label><p class="result-value">{{ searchResult.phone }}</p></div>
                   <div class="result-item"><label>Email</label><p class="result-value">{{ searchResult.email }}</p></div>
                   <div class="result-item"><label>Lý do</label><p class="result-value">{{ searchResult.reason }}</p></div>
-                </div>
-                <div class="mt-3 border rounded-3 p-3 bg-light">
-                  <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                    <div>
-                      <h4 class="h6 mb-1">Theo dõi hàng chờ</h4>
-                      <p class="text-muted small mb-0">Số thứ tự sẽ xuất hiện sau khi nhân viên check-in tại quầy.</p>
-                    </div>
-                    <button class="btn btn-outline-secondary btn-sm" @click="loadPatientQueueStatus(searchResult.appointmentCode)">
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                  </div>
-
-                  <div v-if="queueStatusLoading" class="text-muted small">
-                    <span class="spinner-border spinner-border-sm me-2"></span>Đang tải trạng thái hàng chờ...
-                  </div>
-
-                  <div v-else-if="queueStatusError" class="alert alert-warning py-2 mb-0">
-                    {{ queueStatusError }}
-                  </div>
-
-                  <template v-else-if="patientQueueStatus">
-                    <div v-if="patientQueueStatus.ownQueue" class="row g-3">
-                      <div class="col-md-6">
-                        <div class="border rounded-3 p-3 h-100">
-                          <div class="text-muted small text-uppercase">Số thứ tự của bạn</div>
-                          <div class="display-6 fw-bold mb-1">#{{ patientQueueStatus.ownQueue.queueNumber }}</div>
-                          <div class="small">Phòng: {{ patientQueueStatus.ownQueue.roomName }}</div>
-                          <div class="small text-muted">Trạng thái: {{ patientQueueStatus.ownQueue.status }}</div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="border rounded-3 p-3 h-100">
-                          <div class="text-muted small text-uppercase">Đang được gọi</div>
-                          <div class="display-6 fw-bold mb-1">
-                            {{ patientQueueStatus.currentCalling ? `#${patientQueueStatus.currentCalling.queueNumber}` : '—' }}
-                          </div>
-                          <div class="small" v-if="patientQueueStatus.currentCalling">
-                            {{ patientQueueStatus.currentCalling.fullName }}
-                          </div>
-                          <div class="small text-muted">
-                            {{ patientQueueStatus.currentCalling?.roomName || patientQueueStatus.ownQueue.roomName }}
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-12">
-                        <div class="alert alert-info py-2 mb-0">
-                          Còn <strong>{{ patientQueueStatus.waitingAhead }}</strong> người ở trước bạn.
-                          <span v-if="patientQueueStatus.message"> {{ patientQueueStatus.message }}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div v-else class="alert alert-secondary py-2 mb-0">
-                      {{ patientQueueStatus.message || 'Lịch khám này chưa được check-in vào hàng chờ.' }}
-                    </div>
-                  </template>
                 </div>
                 <div class="mt-3 border rounded-3 p-3 bg-light">
                   <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -597,6 +547,7 @@ import { doctorScheduleService } from '@/services/doctorScheduleService'
 import { queueService, type PatientQueueStatus } from '@/services/queueService'
 import { buildBusinessHourSlots } from '@/utils/appointmentSlots'
 import { toLocalDateInputValue } from '@/utils/date'
+import { fillRandomGuestPatient } from '@/utils/guestBookingAutofill'
 import '@/styles/layouts/guest-dashboard.css'
 import DoctorShowcase from '@/components/landing/DoctorShowcase.vue'
 import FacilityHighlights from '@/components/landing/FacilityHighlights.vue'
@@ -792,6 +743,28 @@ const applyPrefill = (data: any) => {
 const clearPrefill = () => {
   isReturning.value = false
   lookupError.value = ''
+}
+
+const fillRandomPatientInfo = () => {
+  clearPrefill()
+  fillRandomGuestPatient(bookingForm)
+
+  bookingErrors.fullName = ''
+  bookingErrors.dateOfBirth = ''
+  bookingErrors.gender = ''
+  bookingErrors.phone = ''
+  bookingErrors.email = ''
+  bookingErrors.address = ''
+
+  otpCode.value = ''
+  otpSent.value = false
+  otpVerified.value = false
+  otpError.value = ''
+  countdown.value = 0
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
 }
 
 const loadDoctors = async () => {

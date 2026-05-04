@@ -1,4 +1,4 @@
-using ClinicManagement.Api.Data;
+﻿using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Appointments;
 using ClinicManagement.Api.DTOs;
 using ClinicManagement.Api.DTOs.Appointments;
@@ -37,17 +37,17 @@ namespace ClinicManagement.Api.Controllers
             _appointmentBookingService.NormalizeInput(dto);
 
             if (dto.AppointmentDate.Date < today)
-                return this.ApiBadRequest("Chi duoc dat lich tu hom nay tro di");
+                return this.ApiBadRequest("Chỉ được đặt lịch từ hôm nay trở đi");
 
             var localNow = DateTime.Now;
             if (dto.AppointmentDate.Date == localNow.Date && dto.AppointmentTime <= localNow.TimeOfDay)
-                return this.ApiBadRequest("Chi duoc dat lich o gio tuong lai");
+                return this.ApiBadRequest("Chỉ được đặt lịch ở giờ tương lai");
 
             if (dto.AppointmentTime < businessStart || dto.AppointmentTime > businessEnd)
-                return this.ApiBadRequest("Chi nhan dat lich 07:00 - 22:00");
+                return this.ApiBadRequest("Chỉ nhận đặt lịch 07:00 - 22:00");
 
             if (string.IsNullOrWhiteSpace(dto.Email))
-                return this.ApiBadRequest("Email bat buoc");
+                return this.ApiBadRequest("Email bắt buộc");
 
             Doctor? doctor = null;
             if (dto.DoctorId.HasValue && dto.DoctorId.Value != Guid.Empty)
@@ -58,7 +58,7 @@ namespace ClinicManagement.Api.Controllers
                     .FirstOrDefaultAsync(d => d.Id == dto.DoctorId.Value && d.Status != DoctorStatus.Inactive);
 
                 if (doctor == null)
-                    return this.ApiBadRequest("Bac si khong kha dung");
+                    return this.ApiBadRequest("Bác sĩ không khả dụng");
 
                 var slotError = await _appointmentBookingService.ValidateDoctorSlotAsync(
                     dto.DoctorId.Value,
@@ -71,12 +71,12 @@ namespace ClinicManagement.Api.Controllers
             if (!string.IsNullOrWhiteSpace(dto.CitizenId) &&
                 (!dto.CitizenId.All(char.IsDigit) || dto.CitizenId.Length != 12))
             {
-                return this.ApiBadRequest("CCCD phai gom 12 chu so");
+                return this.ApiBadRequest("CCCD phải gồm 12 chữ số");
             }
 
             var verified = await _appointmentBookingService.IsOtpVerifiedAsync(dto.Email);
             if (!verified)
-                return this.ApiBadRequest("Email chua xac thuc OTP");
+                return this.ApiBadRequest("Email chưa xác thực OTP");
 
             var patient = await _appointmentBookingService.FindPatientAsync(dto);
 
@@ -86,7 +86,15 @@ namespace ClinicManagement.Api.Controllers
                 patient = _appointmentBookingService.BuildNewPatient(dto, patientCode);
 
                 _context.Patients.Add(patient);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex) when (
+                    ex.InnerException?.Message.Contains("IX_Patients_InsuranceCardNumber") == true)
+                {
+                    return this.ApiConflict("Số thẻ BHYT này đã được đăng ký cho bệnh nhân khác trong hệ thống.", "insurance_duplicate");
+                }
             }
             else
             {
