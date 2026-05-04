@@ -41,7 +41,7 @@
               >
                 <option value="">Tất cả khoa</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">
-                  {{ d.name }}
+                  {{ toVietnameseDepartmentName(d.name) }}
                 </option>
               </select>
             </div>
@@ -273,6 +273,7 @@
 import { computed, ref, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import api from "@/services/api"
+import { toVietnameseDepartmentName } from "@/utils/departmentName"
 
 const tests = ref<any[]>([])
 const patients = ref<any[]>([])

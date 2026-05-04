@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.Security.Claims;
 using ClinicManagement.Api.Data;
 using ClinicManagement.Api.Dtos.Queues;
@@ -60,7 +60,7 @@ namespace ClinicManagement.Api.Controllers
         {
             if (dto.AppointmentId == Guid.Empty)
             {
-                return BadRequest(new { message = "AppointmentId la bat buoc" });
+                return BadRequest(new { message = "AppointmentId là bắt buộc" });
             }
 
             var appointment = await _context.Appointments
@@ -70,14 +70,14 @@ namespace ClinicManagement.Api.Controllers
 
             if (appointment == null)
             {
-                return NotFound(new { message = "Khong tim thay lich kham" });
+                return NotFound(new { message = "Không tìm thấy lịch khám" });
             }
 
             if (appointment.Status == AppointmentStatus.Cancelled ||
                 appointment.Status == AppointmentStatus.Completed ||
                 appointment.Status == AppointmentStatus.NoShow)
             {
-                return BadRequest(new { message = "Lich kham nay khong the check-in vao hang cho" });
+                return BadRequest(new { message = "Lịch khám này không thể check-in vào hàng chờ" });
             }
 
             var assignment = await ResolveCheckInAssignmentAsync(appointment, dto.RoomId);
@@ -86,8 +86,8 @@ namespace ClinicManagement.Api.Controllers
                 return BadRequest(new
                 {
                     message = appointment.DoctorId.HasValue
-                        ? "Bac si cua lich kham chua co phong trong slot nay"
-                        : "Phong duoc chon chua co bac si truc trong slot nay"
+                        ? "Bác sĩ của lịch khám chưa có phòng trong slot này"
+                        : "Phòng được chọn chưa có bác sĩ trực trong slot này"
                 });
             }
 
@@ -113,7 +113,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 return BadRequest(new
                 {
-                    message = "Benh nhan da co so thu tu trong ngay hom nay",
+                    message = "Bệnh nhân đã có số thứ tự trong ngày hôm nay",
                     queue = MapQueueItem(existingQueue)
                 });
             }
@@ -171,7 +171,7 @@ namespace ClinicManagement.Api.Controllers
                 doctorId = await GetCurrentDoctorIdAsync();
                 if (!doctorId.HasValue)
                 {
-                    return Unauthorized(new { message = "Khong xac dinh duoc bac si hien tai" });
+                    return Unauthorized(new { message = "Không xác định được bác sĩ hiện tại" });
                 }
 
                 var roomOwnedByDoctor = await DoctorOwnsRoomAsync(doctorId.Value, roomId, DateTime.Today);
@@ -185,7 +185,7 @@ namespace ClinicManagement.Api.Controllers
             var state = await BuildRoomStateAsync(roomId, doctorId);
             if (state == null)
             {
-                return NotFound(new { message = "Khong tim thay phong kham" });
+                return NotFound(new { message = "Không tìm thấy phòng khám" });
             }
 
             return Ok(state);
@@ -198,7 +198,7 @@ namespace ClinicManagement.Api.Controllers
             var doctorId = await GetCurrentDoctorIdAsync();
             if (!doctorId.HasValue)
             {
-                return Unauthorized(new { message = "Khong xac dinh duoc bac si hien tai" });
+                return Unauthorized(new { message = "Không xác định được bác sĩ hiện tại" });
             }
 
             var dayStart = DateTime.Today;
@@ -250,7 +250,7 @@ namespace ClinicManagement.Api.Controllers
             var doctorId = await GetCurrentDoctorIdAsync();
             if (!doctorId.HasValue)
             {
-                return Unauthorized(new { message = "Khong xac dinh duoc bac si hien tai" });
+                return Unauthorized(new { message = "Không xác định được bác sĩ hiện tại" });
             }
 
             var room = await _context.Rooms
@@ -258,7 +258,7 @@ namespace ClinicManagement.Api.Controllers
                 .FirstOrDefaultAsync(r => r.Id == roomId && r.IsActive);
             if (room == null)
             {
-                return NotFound(new { message = "Khong tim thay phong kham" });
+                return NotFound(new { message = "Không tìm thấy phòng khám" });
             }
 
             if (!await DoctorOwnsRoomAsync(doctorId.Value, roomId, DateTime.Today))
@@ -286,7 +286,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 return BadRequest(new
                 {
-                    message = "Dang co benh nhan trong phong. Hay hoan tat hoac bo luot truoc khi goi tiep.",
+                    message = "Đang có bệnh nhân trong phòng. Hãy hoàn tất hoặc bỏ lượt trước khi gọi tiếp.",
                     current = MapQueueItem(current)
                 });
             }
@@ -309,10 +309,10 @@ namespace ClinicManagement.Api.Controllers
 
             if (next == null)
             {
-                return NotFound(new { message = "Khong con benh nhan dang cho trong phong nay" });
+                return NotFound(new { message = "Không còn bệnh nhân đang chờ trong phòng này" });
             }
-            // Gan bac si cho lich kham neu benh nhan dat lich khong chon bac si (DoctorId null).
-            // Neu lich da gan bac si khac thi chan goi nham phong/nham bac si.
+            // Gán bác sĩ cho lịch khám nếu bệnh nhân đặt lịch không chọn bác sĩ (DoctorId null).
+            // Nếu lịch đã gán bác sĩ khác thì chặn gọi nhầm phòng/nhầm bác sĩ.
             if (next.Appointment != null)
             {
                 if (!next.Appointment.DoctorId.HasValue)
@@ -323,7 +323,7 @@ namespace ClinicManagement.Api.Controllers
                 {
                     return BadRequest(new
                     {
-                        message = "Lich kham nay da duoc gan cho bac si khac, khong the goi vao phong nay."
+                        message = "Lịch khám này đã được gán cho bác sĩ khác, không thể gọi vào phòng này."
                     });
                 }
             }
@@ -361,7 +361,7 @@ namespace ClinicManagement.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(appointmentCode))
             {
-                return BadRequest(new { message = "AppointmentCode la bat buoc" });
+                return BadRequest(new { message = "AppointmentCode là bắt buộc" });
             }
 
             var appointment = await _context.Appointments
@@ -370,7 +370,7 @@ namespace ClinicManagement.Api.Controllers
 
             if (appointment == null)
             {
-                return NotFound(new { message = "Khong tim thay lich kham" });
+                return NotFound(new { message = "Không tìm thấy lịch khám" });
             }
 
             var dayStart = DateTime.Today;
@@ -397,7 +397,7 @@ namespace ClinicManagement.Api.Controllers
                     AppointmentCode = appointment.AppointmentCode,
                     AppointmentStatus = appointment.Status.ToString(),
                     WaitingAhead = 0,
-                    Message = "Benh nhan chua duoc check-in vao hang cho"
+                    Message = "Bệnh nhân chưa được check-in vào hàng chờ"
                 });
             }
 
@@ -421,7 +421,7 @@ namespace ClinicManagement.Api.Controllers
                 CurrentCalling = currentCalling,
                 WaitingAhead = waitingAhead,
                 Message = ownQueue.Status == QueueStatus.Done
-                    ? "Benh nhan da duoc goi xong trong ngay hom nay"
+                    ? "Bệnh nhân đã được gọi xong trong ngày hôm nay"
                     : null
             });
         }
@@ -431,7 +431,7 @@ namespace ClinicManagement.Api.Controllers
             var doctorId = await GetCurrentDoctorIdAsync();
             if (!doctorId.HasValue)
             {
-                return Unauthorized(new { message = "Khong xac dinh duoc bac si hien tai" });
+                return Unauthorized(new { message = "Không xác định được bác sĩ hiện tại" });
             }
 
             var queue = await _context.QueueEntries
@@ -445,12 +445,12 @@ namespace ClinicManagement.Api.Controllers
 
             if (queue == null)
             {
-                return NotFound(new { message = "Khong tim thay so thu tu" });
+                return NotFound(new { message = "Không tìm thấy số thứ tự" });
             }
 
             if (!await DoctorOwnsRoomAsync(doctorId.Value, queue.RoomId, DateTime.Today))
             {
-                return NotFound(new { message = "Khong tim thay so thu tu" });
+                return NotFound(new { message = "Không tìm thấy số thứ tự" });
             }
 
             // Chan hoan tat khi bac si chua luu ho so kham (tranh "hoan tat" khi chua kham).
@@ -458,7 +458,7 @@ namespace ClinicManagement.Api.Controllers
             {
                 if (queue.Status != QueueStatus.InProgress)
                 {
-                    return BadRequest(new { message = "Chi co the hoan tat khi benh nhan dang duoc kham." });
+                    return BadRequest(new { message = "Chỉ có thể hoàn tất khi bệnh nhân đang được khám." });
                 }
 
                 var hasMedicalRecord = await _context.MedicalRecords.AnyAsync(m =>
@@ -467,7 +467,7 @@ namespace ClinicManagement.Api.Controllers
 
                 if (!hasMedicalRecord)
                 {
-                    return BadRequest(new { message = "Chua co ho so kham. Vui long luu ho so kham truoc khi hoan tat." });
+                    return BadRequest(new { message = "Chưa có hồ sơ khám. Vui lòng lưu hồ sơ khám trước khi hoàn tất." });
                 }
             }
 

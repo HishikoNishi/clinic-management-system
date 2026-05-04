@@ -250,6 +250,7 @@
       </div>
     </div>
 
+    <!-- Chuyển khoa -->
     <div class="card shadow-sm mt-3">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="mb-0">Chuyển khoa</h6>
@@ -268,7 +269,7 @@
             <label class="form-label">Khoa đích</label>
             <select v-model="transferForm.targetDepartmentId" class="form-select">
               <option value="">Chọn khoa</option>
-              <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+              <option v-for="d in departments" :key="d.id" :value="d.id">{{ toVietnameseDepartmentName(d.name) }}</option>
             </select>
           </div>
           <div class="col-md-4">
@@ -385,6 +386,7 @@ import api from "@/services/api"
 import { useAuthStore } from "@/stores/auth"
 import type { AxiosError } from "axios"
 import { useToast } from "@/composables/useToast"
+import { toVietnameseDepartmentName } from "@/utils/departmentName"
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
