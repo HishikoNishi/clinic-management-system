@@ -125,49 +125,6 @@ SQL Server
 
 ---
 
-# 📷 Screenshots
-
-## Login
-
-![Login](images/login.png)
-
----
-
-## Dashboard
-
-![Dashboard](images/dashboard.png)
-
----
-
-## Patient Management
-
-![Patient](images/patient.png)
-
----
-
-## Appointment
-
-![Appointment](images/appointment.png)
-
----
-
-## Medical Record
-
-![MedicalRecord](images/medicalrecord.png)
-
----
-
-## Payment
-
-![Payment](images/payment.png)
-
----
-
-## Invoice PDF
-
-![Invoice](images/invoice.png)
-
----
 
 # 🚀 Getting Started
 
