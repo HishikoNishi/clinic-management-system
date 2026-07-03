@@ -125,6 +125,16 @@ SQL Server
 
 ---
 
+# 🎬 Demo
+
+## 🔐 Authentication Flow
+![Login Demo](./gifs/login.gif)
+
+## 📅 Appointment Booking
+![Booking Demo](./gifs/booking.gif)
+
+## 💳 Payment Flow
+![Payment Demo](<img width="1080" height="521" alt="Cashier" src="https://github.com/user-attachments/assets/391024df-77e3-42b1-9b81-59f94deaa7c9" />)
 
 # 🚀 Getting Started
 
