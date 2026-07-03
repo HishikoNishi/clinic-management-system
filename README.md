@@ -125,16 +125,32 @@ SQL Server
 
 ---
 
-# 🎬 Demo
+# 🎬 Demo System
 
-## 🔐 Authentication Flow
-![Login Demo](./gifs/login.gif)
+---
+
+## 👤 Staff Management
+![Staff Demo](./gif/Staff.gif)
+
+---
+
+## 🧑‍⚕️ Doctor Dashboard
+![Doctor Demo](./gif/doctor.gif)
+
+---
 
 ## 📅 Appointment Booking
-![Booking Demo](./gifs/booking.gif)
+![Booking Demo](./gif/Dat-lich.gif)
 
-## 💳 Payment Flow
-![Payment Demo](<img width="1080" height="521" alt="Cashier" src="https://github.com/user-attachments/assets/391024df-77e3-42b1-9b81-59f94deaa7c9" />)
+---
+
+## 💳 Cashier / Payment Flow
+![Cashier Demo](./gif/Cashier.gif)
+
+---
+
+## 🛠 Tech / Admin Panel
+![Tech Demo](./gif/tech.gif)
 
 # 🚀 Getting Started
 
