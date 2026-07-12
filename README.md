@@ -125,6 +125,32 @@ SQL Server
 
 ---
 
+# 🎬 Demo System
+
+---
+
+## 👤 Staff Management
+![Staff Demo](./gif/Staff.gif)
+
+---
+
+## 🧑‍⚕️ Doctor Dashboard
+![Doctor Demo](./gif/doctor.gif)
+
+---
+
+## 📅 Appointment Booking
+![Booking Demo](./gif/Dat-lich.gif)
+
+---
+
+## 💳 Cashier / Payment Flow
+![Cashier Demo](./gif/Cashier.gif)
+
+---
+
+## 🛠 Tech / Admin Panel
+![Tech Demo](./gif/tech.gif)
 
 # 🚀 Getting Started
 
