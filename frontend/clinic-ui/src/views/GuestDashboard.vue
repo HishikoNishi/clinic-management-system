@@ -11,7 +11,7 @@
       <div class="container hero-inner">
         <div class="hero-copy">
           <p class="hero-eyebrow">Chăm sóc sức khỏe chủ động</p>
-          <h1 class="hero-title">Phòng khám đồng hành cùng bạn</h1>
+          <h1 class="hero-title text-white">Phòng khám đồng hành cùng bạn</h1>
           <p class="hero-subtitle">
             Đặt lịch trực tuyến trong vài phút, xác thực OTP qua email và nhận mã khám để tra cứu mọi lúc.
           </p>
